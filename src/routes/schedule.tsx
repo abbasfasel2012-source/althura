@@ -44,16 +44,19 @@ function SchedulePage() {
 
       {/* Now Card */}
       {day === 1 && (
-        <Card className="mt-4 animate-reveal [animation-delay:80ms] bg-accent text-accent-foreground">
+        <div
+          className="mt-4 animate-reveal [animation-delay:80ms] rounded-3xl p-5 shadow-glass relative overflow-hidden"
+          style={{ background: "var(--accent)", color: "var(--accent-foreground)" }}
+        >
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-[10px] tracking-[0.2em] opacity-70 font-bold uppercase">
+              <div className="text-[10px] tracking-[0.2em] opacity-80 font-bold uppercase">
                 الحصة الحالية
               </div>
               <div className="text-xl font-bold mt-1">
                 {TODAY_SCHEDULE.find((c) => c.status === "now")?.subject}
               </div>
-              <div className="text-xs opacity-80 mt-1">
+              <div className="text-xs opacity-90 mt-1">
                 {TODAY_SCHEDULE.find((c) => c.status === "now")?.room}
               </div>
             </div>
@@ -61,7 +64,7 @@ function SchedulePage() {
               {TODAY_SCHEDULE.find((c) => c.status === "now")?.time}
             </div>
           </div>
-        </Card>
+        </div>
       )}
 
       {/* Timeline */}
