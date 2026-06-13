@@ -58,6 +58,33 @@ export function useUser(): User | null {
   return u;
 }
 
+// Generic localStorage hook for small persisted prefs (theme, settings, notes...).
+export function useLocalStorage<T>(key: string, initial: T): [T, (v: T) => void] {
+  const [v, setV] = useState<T>(initial);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw) setV(JSON.parse(raw) as T);
+    } catch {
+      /* noop */
+    }
+  }, [key]);
+  const set = (nv: T) => {
+    setV(nv);
+    try {
+      localStorage.setItem(key, JSON.stringify(nv));
+    } catch {
+      /* noop */
+    }
+  };
+  return [v, set];
+}
+
+// Localize digits to Arabic-Indic.
+export function ar(n: number | string): string {
+  return String(n).replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[+d]);
+}
+
 // ---------- demo data ----------
 
 export const TODAY_SCHEDULE = [
@@ -69,47 +96,32 @@ export const TODAY_SCHEDULE = [
 ];
 
 export const WEEK_SCHEDULE: { day: string; items: { time: string; subject: string }[] }[] = [
-  {
-    day: "الأحد",
-    items: [
+  { day: "الأحد", items: [
       { time: "٠٨:٠٠", subject: "اللغة العربية" },
       { time: "٠٩:٠٠", subject: "الإسلامية" },
       { time: "١٠:٣٠", subject: "الرياضيات" },
-    ],
-  },
-  {
-    day: "الاثنين",
-    items: [
+    ] },
+  { day: "الاثنين", items: [
       { time: "٠٨:٠٠", subject: "اللغة العربية" },
       { time: "٠٩:٠٠", subject: "الفيزياء" },
       { time: "١٠:٣٠", subject: "الرياضيات" },
       { time: "١٢:٠٠", subject: "الإنجليزية" },
-    ],
-  },
-  {
-    day: "الثلاثاء",
-    items: [
+    ] },
+  { day: "الثلاثاء", items: [
       { time: "٠٨:٠٠", subject: "الكيمياء" },
       { time: "٠٩:٠٠", subject: "الأحياء" },
       { time: "١٠:٣٠", subject: "اللغة العربية" },
-    ],
-  },
-  {
-    day: "الأربعاء",
-    items: [
+    ] },
+  { day: "الأربعاء", items: [
       { time: "٠٨:٠٠", subject: "الفيزياء" },
       { time: "٠٩:٠٠", subject: "الرياضيات" },
       { time: "١٠:٣٠", subject: "الإسلامية" },
-    ],
-  },
-  {
-    day: "الخميس",
-    items: [
+    ] },
+  { day: "الخميس", items: [
       { time: "٠٨:٠٠", subject: "الإنجليزية" },
       { time: "٠٩:٠٠", subject: "الحاسوب" },
       { time: "١٠:٣٠", subject: "الرياضة" },
-    ],
-  },
+    ] },
 ];
 
 export const EXAMS = [
@@ -126,27 +138,9 @@ export const HOMEWORK = [
 ];
 
 export const ANNOUNCEMENTS = [
-  {
-    title: "تأجيل اختبار الكيمياء",
-    body: "تم تأجيل اختبار الكيمياء الفصلي من يوم الخميس إلى يوم الأحد القادم بسبب إجازة رسمية.",
-    date: "اليوم • ١٠:٢٠",
-    tag: "مهم",
-    pinned: true,
-  },
-  {
-    title: "اجتماع أولياء الأمور",
-    body: "يُعقد اجتماع أولياء أمور الصف السادس يوم الثلاثاء الساعة الخامسة عصراً في قاعة المحاضرات.",
-    date: "أمس • ٠٤:٠٠",
-    tag: "إعلان",
-    pinned: false,
-  },
-  {
-    title: "نتائج المسابقة العلمية",
-    body: "أُعلنت نتائج المسابقة العلمية. مبارك لجميع الفائزين، التتويج يوم الخميس.",
-    date: "قبل يومين",
-    tag: "أخبار",
-    pinned: false,
-  },
+  { title: "تأجيل اختبار الكيمياء", body: "تم تأجيل اختبار الكيمياء الفصلي من يوم الخميس إلى يوم الأحد القادم بسبب إجازة رسمية.", date: "اليوم • ١٠:٢٠", tag: "مهم", pinned: true },
+  { title: "اجتماع أولياء الأمور", body: "يُعقد اجتماع أولياء أمور الصف السادس يوم الثلاثاء الساعة الخامسة عصراً في قاعة المحاضرات.", date: "أمس • ٠٤:٠٠", tag: "إعلان", pinned: false },
+  { title: "نتائج المسابقة العلمية", body: "أُعلنت نتائج المسابقة العلمية. مبارك لجميع الفائزين، التتويج يوم الخميس.", date: "قبل يومين", tag: "أخبار", pinned: false },
 ];
 
 export const BOOKS = [
@@ -173,3 +167,46 @@ export const EVENTS = [
   { title: "اليوم العلمي السنوي", when: "الخميس ٢٤ تشرين الأول", place: "القاعة الكبرى" },
   { title: "معرض الفنون والعلوم", when: "الأحد ٢٧ تشرين الأول", place: "ساحة المدرسة" },
 ];
+
+export const TEACHERS = [
+  { name: "أ. حيدر الموسوي", subject: "الفيزياء", years: 12, rating: 4.9 },
+  { name: "أ. زينب الخفاجي", subject: "الكيمياء", years: 9, rating: 4.8 },
+  { name: "أ. كرار العامري", subject: "الرياضيات", years: 15, rating: 4.9 },
+  { name: "أ. فاطمة الحسيني", subject: "اللغة العربية", years: 11, rating: 4.7 },
+  { name: "أ. علي البياتي", subject: "اللغة الإنجليزية", years: 8, rating: 4.6 },
+  { name: "أ. مرتضى الجبوري", subject: "الأحياء", years: 7, rating: 4.7 },
+];
+
+export const GRADES_RESULTS = [
+  { subject: "الفيزياء", score: 92, max: 100, trend: "+٣" },
+  { subject: "الكيمياء", score: 87, max: 100, trend: "+١" },
+  { subject: "الرياضيات", score: 95, max: 100, trend: "+٥" },
+  { subject: "اللغة العربية", score: 89, max: 100, trend: "—" },
+  { subject: "اللغة الإنجليزية", score: 84, max: 100, trend: "-٢" },
+  { subject: "الأحياء", score: 90, max: 100, trend: "+٢" },
+];
+
+export const ACHIEVEMENTS = [
+  { title: "متفوّق الشهر", desc: "أعلى معدل في الصف", icon: "🏆", unlocked: true },
+  { title: "منجز الواجبات", desc: "أنجزت ٢٠ واجباً متتالياً", icon: "✅", unlocked: true },
+  { title: "قارئ نهم", desc: "قرأت ٥ كتب هذا الفصل", icon: "📚", unlocked: true },
+  { title: "بطل الكيمياء", desc: "علامة كاملة في تجربة المختبر", icon: "🧪", unlocked: false },
+  { title: "مساهم نشط", desc: "١٠٠ رسالة في الكروبات", icon: "💬", unlocked: false },
+];
+
+export const CALENDAR_DAYS = [
+  { day: 18, label: "اليوم", kind: "today" as const },
+  { day: 20, label: "اختبار الفيزياء", kind: "exam" as const },
+  { day: 22, label: "اجتماع الأهالي", kind: "event" as const },
+  { day: 24, label: "اختبار الكيمياء", kind: "exam" as const },
+  { day: 24, label: "اليوم العلمي", kind: "event" as const },
+  { day: 27, label: "معرض الفنون", kind: "event" as const },
+  { day: 28, label: "اختبار العربية", kind: "exam" as const },
+];
+
+export const STUDENT_STATS = {
+  average: 89.5,
+  attendance: 96,
+  rank: 4,
+  streak: 12,
+};
