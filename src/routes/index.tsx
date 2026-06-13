@@ -290,6 +290,9 @@ function HomePage() {
           ))}
         </div>
       </div>
+        </>
+      )}
     </AppShell>
   );
 }
+
