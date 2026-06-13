@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { setUser, GRADE_NAMES, type Grade, type Section } from "@/lib/store";
+import { Shield } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -12,7 +13,10 @@ export const Route = createFileRoute("/login")({
   component: LoginPage,
 });
 
-type Tab = "login" | "register" | "guest";
+type Tab = "login" | "guest" | "owner";
+
+// كلمة مرور المالك (محلية فقط، للعرض). عند ربط Lovable Cloud ستصبح مصادقة حقيقية.
+const OWNER_PASSWORD = "aldhura2026";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -20,20 +24,11 @@ function LoginPage() {
   const [fullName, setFullName] = useState("");
   const [grade, setGrade] = useState<Grade>("6");
   const [section, setSection] = useState<Section>("أ");
-
-  const submit = (role: "student" | "owner" | "guest") => {
-    setUser({
-      fullName: role === "guest" ? "زائر" : fullName || "طالب الذرى",
-      grade,
-      section,
-      role,
-    });
-    navigate({ to: "/" });
-  };
+  const [ownerPass, setOwnerPass] = useState("");
+  const [ownerErr, setOwnerErr] = useState("");
 
   return (
     <div className="min-h-screen flex flex-col px-5 py-6">
-      {/* Brand */}
       <div className="flex items-center gap-3 mb-8 animate-reveal">
         <div className="size-12 rounded-2xl bg-accent text-accent-foreground grid place-items-center font-bold text-xl shadow-glass">
           ذ
@@ -44,7 +39,6 @@ function LoginPage() {
         </div>
       </div>
 
-      {/* Hero */}
       <div className="animate-reveal [animation-delay:80ms]">
         <h1 className="text-4xl font-bold leading-tight tracking-tight">
           منصة <span className="text-primary">الذرى</span>
@@ -56,49 +50,103 @@ function LoginPage() {
         </p>
       </div>
 
-      {/* Tabs */}
       <div className="mt-8 glass-strong rounded-2xl p-1.5 grid grid-cols-3 gap-1 animate-reveal [animation-delay:140ms]">
         {(
           [
-            ["login", "دخول"],
-            ["register", "تسجيل جديد"],
+            ["login", "طالب"],
             ["guest", "ضيف"],
+            ["owner", "مالك"],
           ] as const
         ).map(([id, label]) => (
           <button
             key={id}
             onClick={() => setTab(id)}
-            className={`py-2.5 rounded-xl text-xs font-bold transition ${
+            className={`py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
               tab === id ? "bg-accent text-accent-foreground" : "text-muted-foreground"
             }`}
           >
+            {id === "owner" && <Shield className="size-3.5" />}
             {label}
           </button>
         ))}
       </div>
 
-      {/* Form */}
       <div className="mt-5 glass-strong rounded-3xl p-5 shadow-soft animate-reveal [animation-delay:200ms]">
-        {tab === "guest" ? (
+        {tab === "guest" && (
           <div className="text-center py-2">
             <div className="text-base font-bold mb-1">دخول كزائر</div>
             <p className="text-xs text-muted-foreground mb-5">
-              تصفّح المحتوى العام دون الحاجة لحساب.
+              تصفّح فقط المحتوى العام: التبليغات، الأخبار، الفعاليات، والكتب. لن تظهر بيانات شخصية.
             </p>
             <button
-              onClick={() => submit("guest")}
+              onClick={() => {
+                setUser({ fullName: "زائر", grade: "general", role: "guest" });
+                navigate({ to: "/" });
+              }}
               className="w-full py-3 rounded-xl bg-accent text-accent-foreground font-bold text-sm"
             >
               تصفّح كضيف
             </button>
           </div>
-        ) : (
+        )}
+
+        {tab === "owner" && (
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              const role =
-                fullName.trim().toLowerCase() === "admin" ? "owner" : "student";
-              submit(role);
+              if (ownerPass !== OWNER_PASSWORD) {
+                setOwnerErr("كلمة المرور غير صحيحة");
+                return;
+              }
+              setUser({ fullName: "مالك المنصة", grade: "general", role: "owner" });
+              navigate({ to: "/admin" });
+            }}
+            className="space-y-3"
+          >
+            <div className="text-center mb-2">
+              <Shield className="size-8 text-primary mx-auto mb-2" />
+              <div className="text-base font-bold">دخول المالك</div>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                للإدارة فقط — الوصول إلى لوحة التحكم.
+              </p>
+            </div>
+            <input
+              type="password"
+              value={ownerPass}
+              onChange={(e) => { setOwnerPass(e.target.value); setOwnerErr(""); }}
+              required
+              placeholder="كلمة مرور المالك"
+              className="w-full px-4 py-3 rounded-xl bg-surface-2 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-ring text-center font-mono"
+            />
+            {ownerErr && (
+              <div className="text-[11px] text-destructive text-center font-bold">{ownerErr}</div>
+            )}
+            <button
+              type="submit"
+              className="w-full py-3 rounded-xl bg-accent text-accent-foreground font-bold text-sm"
+            >
+              دخول لوحة التحكم
+            </button>
+            <p className="text-[10px] text-center text-muted-foreground">
+              كلمة المرور الافتراضية:{" "}
+              <span className="font-mono font-bold text-primary">aldhura2026</span>
+              <br />
+              (يمكن تغييرها لاحقاً عند تفعيل قاعدة البيانات)
+            </p>
+          </form>
+        )}
+
+        {tab === "login" && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              setUser({
+                fullName: fullName || "طالب الذرى",
+                grade,
+                section,
+                role: "student",
+              });
+              navigate({ to: "/" });
             }}
             className="space-y-3"
           >
@@ -152,12 +200,8 @@ function LoginPage() {
               type="submit"
               className="w-full py-3 rounded-xl bg-accent text-accent-foreground font-bold text-sm mt-2"
             >
-              {tab === "login" ? "تسجيل الدخول" : "إرسال الطلب"}
+              تسجيل الدخول
             </button>
-            <p className="text-[11px] text-center text-muted-foreground">
-              للمالك: اكتب{" "}
-              <span className="font-mono font-bold text-primary">admin</span> في الاسم.
-            </p>
           </form>
         )}
       </div>
