@@ -46,41 +46,105 @@ function HomePage() {
 
   const name = user?.fullName?.split(" ")[0] ?? "زائر";
   const nowClass = TODAY_SCHEDULE.find((c) => c.status === "now");
+  const isGuest = user?.role === "guest";
+  const isOwner = user?.role === "owner";
 
   return (
     <AppShell title="الرئيسية">
-      {/* Hero greeting */}
       <section className="mb-5 animate-reveal">
         <div className="text-[11px] tracking-[0.2em] text-primary font-bold uppercase mb-1">
           الاثنين • ١٤ تشرين الأول
         </div>
         <h1 className="text-3xl font-bold leading-tight">
-          أهلاً، <span className="text-primary">{name}</span>
+          {isGuest ? (
+            <>أهلاً بك في <span className="text-primary">الذرى</span></>
+          ) : isOwner ? (
+            <>لوحة <span className="text-primary">المالك</span></>
+          ) : (
+            <>أهلاً، <span className="text-primary">{name}</span></>
+          )}
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          لديك مسار تعليمي حافل اليوم. ركّز، واستمتع.
+          {isGuest
+            ? "تتصفّح كضيف — يظهر لك المحتوى العام فقط دون بيانات شخصية."
+            : isOwner
+            ? "إدارة المنصة، الطلبة، والتبليغات من مكان واحد."
+            : "لديك مسار تعليمي حافل اليوم. ركّز، واستمتع."}
         </p>
 
-        <div className="grid grid-cols-2 gap-3 mt-5">
-          <div className="rounded-2xl p-4 bg-accent text-accent-foreground relative overflow-hidden">
-            <div className="text-[11px] opacity-70 font-medium">الواجبات</div>
-            <div className="text-3xl font-mono font-bold mt-1">
-              {String(HOMEWORK.filter((h) => !h.done).length).padStart(2, "٠")}
+        {isOwner && (
+          <Link
+            to="/admin"
+            className="mt-4 rounded-2xl p-4 bg-accent text-accent-foreground shadow-glass flex items-center justify-between"
+          >
+            <div>
+              <div className="text-[10px] tracking-[0.2em] opacity-70 font-bold uppercase">إدارة</div>
+              <div className="font-bold text-base mt-0.5">فتح لوحة التحكم</div>
             </div>
-            <ClipboardList className="absolute -bottom-2 -left-2 size-16 opacity-10" />
-          </div>
-          <div className="rounded-2xl p-4 glass border border-border">
-            <div className="text-[11px] text-muted-foreground font-medium">الامتحانات</div>
-            <div className="text-3xl font-mono font-bold mt-1 text-primary">
-              {String(EXAMS.length).padStart(2, "٠")}
+            <ArrowLeft className="size-5" />
+          </Link>
+        )}
+
+        {!isGuest && !isOwner && (
+          <div className="grid grid-cols-2 gap-3 mt-5">
+            <div className="rounded-2xl p-4 bg-accent text-accent-foreground relative overflow-hidden">
+              <div className="text-[11px] opacity-70 font-medium">الواجبات</div>
+              <div className="text-3xl font-mono font-bold mt-1">
+                {String(HOMEWORK.filter((h) => !h.done).length).padStart(2, "٠")}
+              </div>
+              <ClipboardList className="absolute -bottom-2 -left-2 size-16 opacity-10" />
             </div>
-            <GraduationCap className="absolute opacity-0" />
+            <div className="rounded-2xl p-4 glass border border-border">
+              <div className="text-[11px] text-muted-foreground font-medium">الامتحانات</div>
+              <div className="text-3xl font-mono font-bold mt-1 text-primary">
+                {String(EXAMS.length).padStart(2, "٠")}
+              </div>
+              <GraduationCap className="absolute opacity-0" />
+            </div>
           </div>
-        </div>
+        )}
       </section>
 
-      {/* Bento */}
-      <section className="grid grid-cols-6 gap-3 auto-rows-[110px]">
+      {isGuest && (
+        <section className="grid grid-cols-2 gap-3 mb-6 animate-reveal [animation-delay:80ms]">
+          <Link to="/announcements" className="glass rounded-2xl p-4 col-span-2 flex items-center gap-3">
+            <Megaphone className="size-5 text-primary shrink-0" />
+            <div className="min-w-0">
+              <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">آخر تبليغ</div>
+              <div className="text-sm font-bold truncate">{ANNOUNCEMENTS[0].title}</div>
+            </div>
+          </Link>
+          <Link to="/books" className="glass rounded-2xl p-4 flex flex-col gap-1">
+            <BookOpen className="size-5 text-primary" />
+            <div className="font-bold text-sm mt-2">الكتب</div>
+            <div className="text-[11px] text-muted-foreground">المكتبة العامة</div>
+          </Link>
+          <Link to="/news" className="glass rounded-2xl p-4 flex flex-col gap-1">
+            <Megaphone className="size-5 text-primary" />
+            <div className="font-bold text-sm mt-2">الأخبار</div>
+            <div className="text-[11px] text-muted-foreground">آخر مستجدات</div>
+          </Link>
+          <Link to="/events" className="glass rounded-2xl p-4 flex flex-col gap-1">
+            <CalendarClock className="size-5 text-primary" />
+            <div className="font-bold text-sm mt-2">الفعاليات</div>
+            <div className="text-[11px] text-muted-foreground">القادمة</div>
+          </Link>
+          <Link to="/contact" className="glass rounded-2xl p-4 flex flex-col gap-1">
+            <MessagesSquare className="size-5 text-primary" />
+            <div className="font-bold text-sm mt-2">تواصل</div>
+            <div className="text-[11px] text-muted-foreground">مع الإدارة</div>
+          </Link>
+          <Link to="/login" className="col-span-2 rounded-2xl p-4 bg-accent text-accent-foreground text-center font-bold text-sm">
+            سجّل حساب طالب للوصول الكامل
+          </Link>
+        </section>
+      )}
+
+      {!isGuest && (
+        <>
+          {/* Bento */}
+          <section className="grid grid-cols-6 gap-3 auto-rows-[110px]">
+
         {/* Today schedule */}
         <Link
           to="/schedule"
@@ -226,6 +290,9 @@ function HomePage() {
           ))}
         </div>
       </div>
+        </>
+      )}
     </AppShell>
   );
 }
+
