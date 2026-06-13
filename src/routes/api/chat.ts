@@ -17,7 +17,7 @@ export const Route = createFileRoute("/api/chat")({
           model: gateway("google/gemini-3-flash-preview"),
           system:
             "أنت عبوسي، مساعد أكاديمي عربي للطلاب في ثانوية الذرى. أجب باللغة العربية الفصحى، بأسلوب ودود ومختصر وواضح. اشرح الدروس بأمثلة عملية، وساعد الطالب في الواجبات والامتحانات.",
-          messages: convertToModelMessages(messages),
+          messages: await convertToModelMessages(messages),
         });
 
         return result.toUIMessageStreamResponse();
