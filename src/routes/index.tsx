@@ -140,12 +140,11 @@ function HomePage() {
         </section>
       )}
 
-      {!isGuest && (<>
-      </>)}
-      </section>
+      {!isGuest && (
+        <>
+          {/* Bento */}
+          <section className="grid grid-cols-6 gap-3 auto-rows-[110px]">
 
-      {/* Bento */}
-      <section className="grid grid-cols-6 gap-3 auto-rows-[110px]">
         {/* Today schedule */}
         <Link
           to="/schedule"
