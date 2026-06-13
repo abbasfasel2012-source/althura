@@ -209,6 +209,9 @@ function HomePage() {
         <SectionTitle eyebrow="استكشف" title="أقسام أخرى" />
         <div className="grid grid-cols-3 gap-3">
           {[
+            { to: "/grades", label: "الدرجات" },
+            { to: "/calendar", label: "التقويم" },
+            { to: "/teachers", label: "المدرّسون" },
             { to: "/news", label: "الأخبار" },
             { to: "/events", label: "الفعاليات" },
             { to: "/contact", label: "تواصل" },

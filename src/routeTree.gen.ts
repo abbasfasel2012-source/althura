@@ -10,15 +10,20 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ToolsRouteImport } from './routes/tools'
+import { Route as TeachersRouteImport } from './routes/teachers'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SearchRouteImport } from './routes/search'
 import { Route as ScheduleRouteImport } from './routes/schedule'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as NewsRouteImport } from './routes/news'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HomeworkRouteImport } from './routes/homework'
 import { Route as GroupsRouteImport } from './routes/groups'
+import { Route as GradesRouteImport } from './routes/grades'
 import { Route as ExamsRouteImport } from './routes/exams'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as BooksRouteImport } from './routes/books'
 import { Route as AnnouncementsRouteImport } from './routes/announcements'
 import { Route as AiRouteImport } from './routes/ai'
@@ -28,6 +33,21 @@ import { Route as IndexRouteImport } from './routes/index'
 const ToolsRoute = ToolsRouteImport.update({
   id: '/tools',
   path: '/tools',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeachersRoute = TeachersRouteImport.update({
+  id: '/teachers',
+  path: '/teachers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ScheduleRoute = ScheduleRouteImport.update({
@@ -60,6 +80,11 @@ const GroupsRoute = GroupsRouteImport.update({
   path: '/groups',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GradesRoute = GradesRouteImport.update({
+  id: '/grades',
+  path: '/grades',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ExamsRoute = ExamsRouteImport.update({
   id: '/exams',
   path: '/exams',
@@ -73,6 +98,11 @@ const EventsRoute = EventsRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalendarRoute = CalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BooksRoute = BooksRouteImport.update({
@@ -107,15 +137,20 @@ export interface FileRoutesByFullPath {
   '/ai': typeof AiRoute
   '/announcements': typeof AnnouncementsRoute
   '/books': typeof BooksRoute
+  '/calendar': typeof CalendarRoute
   '/contact': typeof ContactRoute
   '/events': typeof EventsRoute
   '/exams': typeof ExamsRoute
+  '/grades': typeof GradesRoute
   '/groups': typeof GroupsRoute
   '/homework': typeof HomeworkRoute
   '/login': typeof LoginRoute
   '/news': typeof NewsRoute
   '/profile': typeof ProfileRoute
   '/schedule': typeof ScheduleRoute
+  '/search': typeof SearchRoute
+  '/settings': typeof SettingsRoute
+  '/teachers': typeof TeachersRoute
   '/tools': typeof ToolsRoute
 }
 export interface FileRoutesByTo {
@@ -124,15 +159,20 @@ export interface FileRoutesByTo {
   '/ai': typeof AiRoute
   '/announcements': typeof AnnouncementsRoute
   '/books': typeof BooksRoute
+  '/calendar': typeof CalendarRoute
   '/contact': typeof ContactRoute
   '/events': typeof EventsRoute
   '/exams': typeof ExamsRoute
+  '/grades': typeof GradesRoute
   '/groups': typeof GroupsRoute
   '/homework': typeof HomeworkRoute
   '/login': typeof LoginRoute
   '/news': typeof NewsRoute
   '/profile': typeof ProfileRoute
   '/schedule': typeof ScheduleRoute
+  '/search': typeof SearchRoute
+  '/settings': typeof SettingsRoute
+  '/teachers': typeof TeachersRoute
   '/tools': typeof ToolsRoute
 }
 export interface FileRoutesById {
@@ -142,15 +182,20 @@ export interface FileRoutesById {
   '/ai': typeof AiRoute
   '/announcements': typeof AnnouncementsRoute
   '/books': typeof BooksRoute
+  '/calendar': typeof CalendarRoute
   '/contact': typeof ContactRoute
   '/events': typeof EventsRoute
   '/exams': typeof ExamsRoute
+  '/grades': typeof GradesRoute
   '/groups': typeof GroupsRoute
   '/homework': typeof HomeworkRoute
   '/login': typeof LoginRoute
   '/news': typeof NewsRoute
   '/profile': typeof ProfileRoute
   '/schedule': typeof ScheduleRoute
+  '/search': typeof SearchRoute
+  '/settings': typeof SettingsRoute
+  '/teachers': typeof TeachersRoute
   '/tools': typeof ToolsRoute
 }
 export interface FileRouteTypes {
@@ -161,15 +206,20 @@ export interface FileRouteTypes {
     | '/ai'
     | '/announcements'
     | '/books'
+    | '/calendar'
     | '/contact'
     | '/events'
     | '/exams'
+    | '/grades'
     | '/groups'
     | '/homework'
     | '/login'
     | '/news'
     | '/profile'
     | '/schedule'
+    | '/search'
+    | '/settings'
+    | '/teachers'
     | '/tools'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -178,15 +228,20 @@ export interface FileRouteTypes {
     | '/ai'
     | '/announcements'
     | '/books'
+    | '/calendar'
     | '/contact'
     | '/events'
     | '/exams'
+    | '/grades'
     | '/groups'
     | '/homework'
     | '/login'
     | '/news'
     | '/profile'
     | '/schedule'
+    | '/search'
+    | '/settings'
+    | '/teachers'
     | '/tools'
   id:
     | '__root__'
@@ -195,15 +250,20 @@ export interface FileRouteTypes {
     | '/ai'
     | '/announcements'
     | '/books'
+    | '/calendar'
     | '/contact'
     | '/events'
     | '/exams'
+    | '/grades'
     | '/groups'
     | '/homework'
     | '/login'
     | '/news'
     | '/profile'
     | '/schedule'
+    | '/search'
+    | '/settings'
+    | '/teachers'
     | '/tools'
   fileRoutesById: FileRoutesById
 }
@@ -213,15 +273,20 @@ export interface RootRouteChildren {
   AiRoute: typeof AiRoute
   AnnouncementsRoute: typeof AnnouncementsRoute
   BooksRoute: typeof BooksRoute
+  CalendarRoute: typeof CalendarRoute
   ContactRoute: typeof ContactRoute
   EventsRoute: typeof EventsRoute
   ExamsRoute: typeof ExamsRoute
+  GradesRoute: typeof GradesRoute
   GroupsRoute: typeof GroupsRoute
   HomeworkRoute: typeof HomeworkRoute
   LoginRoute: typeof LoginRoute
   NewsRoute: typeof NewsRoute
   ProfileRoute: typeof ProfileRoute
   ScheduleRoute: typeof ScheduleRoute
+  SearchRoute: typeof SearchRoute
+  SettingsRoute: typeof SettingsRoute
+  TeachersRoute: typeof TeachersRoute
   ToolsRoute: typeof ToolsRoute
 }
 
@@ -232,6 +297,27 @@ declare module '@tanstack/react-router' {
       path: '/tools'
       fullPath: '/tools'
       preLoaderRoute: typeof ToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teachers': {
+      id: '/teachers'
+      path: '/teachers'
+      fullPath: '/teachers'
+      preLoaderRoute: typeof TeachersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/schedule': {
@@ -276,6 +362,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GroupsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/grades': {
+      id: '/grades'
+      path: '/grades'
+      fullPath: '/grades'
+      preLoaderRoute: typeof GradesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/exams': {
       id: '/exams'
       path: '/exams'
@@ -295,6 +388,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calendar': {
+      id: '/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof CalendarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/books': {
@@ -341,15 +441,20 @@ const rootRouteChildren: RootRouteChildren = {
   AiRoute: AiRoute,
   AnnouncementsRoute: AnnouncementsRoute,
   BooksRoute: BooksRoute,
+  CalendarRoute: CalendarRoute,
   ContactRoute: ContactRoute,
   EventsRoute: EventsRoute,
   ExamsRoute: ExamsRoute,
+  GradesRoute: GradesRoute,
   GroupsRoute: GroupsRoute,
   HomeworkRoute: HomeworkRoute,
   LoginRoute: LoginRoute,
   NewsRoute: NewsRoute,
   ProfileRoute: ProfileRoute,
   ScheduleRoute: ScheduleRoute,
+  SearchRoute: SearchRoute,
+  SettingsRoute: SettingsRoute,
+  TeachersRoute: TeachersRoute,
   ToolsRoute: ToolsRoute,
 }
 export const routeTree = rootRouteImport
