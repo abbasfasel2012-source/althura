@@ -30,12 +30,13 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
             </div>
           </Link>
           <div className="flex items-center gap-2 shrink-0">
-            <button
+            <Link
+              to="/search"
               aria-label="بحث"
               className="size-9 grid place-items-center rounded-xl border border-border bg-surface-2/60"
             >
               <Search className="size-4" />
-            </button>
+            </Link>
             <Link
               to="/announcements"
               aria-label="الإشعارات"
