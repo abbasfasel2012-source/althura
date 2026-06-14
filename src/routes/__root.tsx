@@ -78,20 +78,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: "ثانوية الذرى الذكية للمتميزين | كربلاء المقدسة" },
-      { name: "description", content: "منصة طلابية متكاملة لثانوية الذرى الذكية للمتميزين — جداول، امتحانات، واجبات، تبليغات، ومساعد ذكي.
-
-تم اعدادها بواسطة عباس فاضل  وليس لادارة المدرسة علاقة بها" },
+      { name: "description", content: "منصة طلابية متكاملة لثانوية الذرى الذكية للمتميزين — جداول، امتحانات، واجبات، تبليغات، ومساعد ذكي. تم اعدادها بواسطة عباس فاضل وليس لادارة المدرسة علاقة بها" },
       { name: "author", content: "ثانوية الذرى الذكية" },
       { property: "og:title", content: "ثانوية الذرى الذكية للمتميزين | كربلاء المقدسة" },
-      { property: "og:description", content: "منصة طلابية متكاملة لثانوية الذرى الذكية للمتميزين — جداول، امتحانات، واجبات، تبليغات، ومساعد ذكي.
-
-تم اعدادها بواسطة عباس فاضل  وليس لادارة المدرسة علاقة بها" },
+      { property: "og:description", content: "منصة طلابية متكاملة لثانوية الذرى الذكية للمتميزين — جداول، امتحانات، واجبات، تبليغات، ومساعد ذكي. تم اعدادها بواسطة عباس فاضل وليس لادارة المدرسة علاقة بها" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "ثانوية الذرى الذكية للمتميزين | كربلاء المقدسة" },
-      { name: "twitter:description", content: "منصة طلابية متكاملة لثانوية الذرى الذكية للمتميزين — جداول، امتحانات، واجبات، تبليغات، ومساعد ذكي.
-
-تم اعدادها بواسطة عباس فاضل  وليس لادارة المدرسة علاقة بها" },
+      { name: "twitter:description", content: "منصة طلابية متكاملة لثانوية الذرى الذكية للمتميزين — جداول، امتحانات، واجبات، تبليغات، ومساعد ذكي. تم اعدادها بواسطة عباس فاضل وليس لادارة المدرسة علاقة بها" },
       { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/7jS9CamGVmNYX1rwZi7SC4S92ly2/social-images/social-1781327614662-1000270650.webp" },
       { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/7jS9CamGVmNYX1rwZi7SC4S92ly2/social-images/social-1781327614662-1000270650.webp" },
     ],
