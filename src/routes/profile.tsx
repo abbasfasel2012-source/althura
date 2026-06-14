@@ -1,7 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AppShell, Card, SectionTitle } from "@/components/AppShell";
-import { ACHIEVEMENTS, GRADE_NAMES, STUDENT_STATS, ar, setUser, useUser } from "@/lib/store";
+import { ACHIEVEMENTS, GRADE_NAMES, STUDENT_STATS, ar, useUser } from "@/lib/store";
+import { useAuth, signOut } from "@/lib/auth";
 import { ChevronLeft, GraduationCap, LogOut, Settings, Shield, Trophy } from "lucide-react";
+
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
