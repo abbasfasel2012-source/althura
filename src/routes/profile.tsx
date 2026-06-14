@@ -1,7 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AppShell, Card, SectionTitle } from "@/components/AppShell";
-import { ACHIEVEMENTS, GRADE_NAMES, STUDENT_STATS, ar, setUser, useUser } from "@/lib/store";
+import { ACHIEVEMENTS, GRADE_NAMES, STUDENT_STATS, ar, useUser } from "@/lib/store";
+import { useAuth, signOut } from "@/lib/auth";
 import { ChevronLeft, GraduationCap, LogOut, Settings, Shield, Trophy } from "lucide-react";
+
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -72,12 +74,13 @@ function ProfilePage() {
         )}
         <PL to="/settings" icon={<Settings className="size-4 text-primary" />} label="الإعدادات" />
         <button
-          onClick={() => { setUser(null); navigate({ to: "/login" }); }}
+          onClick={async () => { await signOut(); navigate({ to: "/login" }); }}
           className="w-full glass rounded-2xl px-4 py-3.5 flex items-center gap-3 text-right hover:bg-surface-2 transition"
         >
           <LogOut className="size-4 text-destructive" />
           <span className="font-bold text-sm text-destructive flex-1">تسجيل الخروج</span>
         </button>
+
       </div>
     </AppShell>
   );

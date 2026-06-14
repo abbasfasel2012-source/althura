@@ -1,7 +1,14 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { setUser, GRADE_NAMES, type Grade, type Section } from "@/lib/store";
-import { Shield } from "lucide-react";
+import {
+  OWNER_EMAIL,
+  signInOwner,
+  signInStudent,
+  signUpOwner,
+  signUpStudent,
+} from "@/lib/auth";
+import { Loader2, Shield } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -13,19 +20,68 @@ export const Route = createFileRoute("/login")({
   component: LoginPage,
 });
 
-type Tab = "login" | "guest" | "owner";
-
-// كلمة مرور المالك (محلية فقط، للعرض). عند ربط Lovable Cloud ستصبح مصادقة حقيقية.
-const OWNER_PASSWORD = "aldhura2026";
+type Tab = "student" | "guest" | "owner";
+type Mode = "in" | "up";
 
 function LoginPage() {
   const navigate = useNavigate();
-  const [tab, setTab] = useState<Tab>("login");
+  const [tab, setTab] = useState<Tab>("student");
+  const [mode, setMode] = useState<Mode>("in");
+
+  const [studentId, setStudentId] = useState("");
+  const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [grade, setGrade] = useState<Grade>("6");
   const [section, setSection] = useState<Section>("أ");
+
+  const [email, setEmail] = useState(OWNER_EMAIL);
   const [ownerPass, setOwnerPass] = useState("");
-  const [ownerErr, setOwnerErr] = useState("");
+
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  async function submitStudent(e: React.FormEvent) {
+    e.preventDefault();
+    setErr("");
+    setBusy(true);
+    try {
+      if (mode === "in") {
+        await signInStudent(studentId, password);
+      } else {
+        await signUpStudent({ studentId, password, fullName, grade, section });
+      }
+      navigate({ to: "/" });
+    } catch (e: any) {
+      setErr(translate(e?.message));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function submitOwner(e: React.FormEvent) {
+    e.preventDefault();
+    setErr("");
+    setBusy(true);
+    try {
+      try {
+        await signInOwner(email, ownerPass);
+      } catch (innerErr: any) {
+        // If credentials are wrong AND user doesn't exist yet, try signup
+        if (/invalid login|invalid credentials/i.test(innerErr?.message ?? "")) {
+          await signUpOwner(email, ownerPass);
+          // After sign up, sign in (autoConfirm is on)
+          await signInOwner(email, ownerPass);
+        } else {
+          throw innerErr;
+        }
+      }
+      navigate({ to: "/admin" });
+    } catch (e: any) {
+      setErr(translate(e?.message));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <div className="min-h-screen flex flex-col px-5 py-6">
@@ -45,22 +101,19 @@ function LoginPage() {
           <br />
           <span className="text-accent">للتميّز الدراسي</span>
         </h1>
-        <p className="text-sm text-muted-foreground mt-3 max-w-[28ch]">
-          ادخل إلى عالم متكامل من الجداول، الامتحانات، التبليغات، ومساعد الذكاء الاصطناعي.
-        </p>
       </div>
 
-      <div className="mt-8 glass-strong rounded-2xl p-1.5 grid grid-cols-3 gap-1 animate-reveal [animation-delay:140ms]">
+      <div className="mt-7 glass-strong rounded-2xl p-1.5 grid grid-cols-3 gap-1 animate-reveal [animation-delay:140ms]">
         {(
           [
-            ["login", "طالب"],
+            ["student", "طالب"],
             ["guest", "ضيف"],
             ["owner", "مالك"],
           ] as const
         ).map(([id, label]) => (
           <button
             key={id}
-            onClick={() => setTab(id)}
+            onClick={() => { setTab(id); setErr(""); }}
             className={`py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
               tab === id ? "bg-accent text-accent-foreground" : "text-muted-foreground"
             }`}
@@ -76,7 +129,7 @@ function LoginPage() {
           <div className="text-center py-2">
             <div className="text-base font-bold mb-1">دخول كزائر</div>
             <p className="text-xs text-muted-foreground mb-5">
-              تصفّح فقط المحتوى العام: التبليغات، الأخبار، الفعاليات، والكتب. لن تظهر بيانات شخصية.
+              تصفّح المحتوى العام فقط (تبليغات، أخبار، فعاليات). لن تظهر بيانات شخصية.
             </p>
             <button
               onClick={() => {
@@ -91,18 +144,7 @@ function LoginPage() {
         )}
 
         {tab === "owner" && (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (ownerPass !== OWNER_PASSWORD) {
-                setOwnerErr("كلمة المرور غير صحيحة");
-                return;
-              }
-              setUser({ fullName: "مالك المنصة", grade: "general", role: "owner" });
-              navigate({ to: "/admin" });
-            }}
-            className="space-y-3"
-          >
+          <form onSubmit={submitOwner} className="space-y-3">
             <div className="text-center mb-2">
               <Shield className="size-8 text-primary mx-auto mb-2" />
               <div className="text-base font-bold">دخول المالك</div>
@@ -110,97 +152,135 @@ function LoginPage() {
                 للإدارة فقط — الوصول إلى لوحة التحكم.
               </p>
             </div>
-            <input
-              type="password"
-              value={ownerPass}
-              onChange={(e) => { setOwnerPass(e.target.value); setOwnerErr(""); }}
-              required
-              placeholder="كلمة مرور المالك"
-              className="w-full px-4 py-3 rounded-xl bg-surface-2 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-ring text-center font-mono"
-            />
-            {ownerErr && (
-              <div className="text-[11px] text-destructive text-center font-bold">{ownerErr}</div>
-            )}
+            <Field label="البريد الإلكتروني">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full px-4 py-3 rounded-xl bg-surface-2 border border-border text-sm"
+              />
+            </Field>
+            <Field label="كلمة المرور">
+              <input
+                type="password"
+                value={ownerPass}
+                onChange={(e) => setOwnerPass(e.target.value)}
+                required
+                minLength={6}
+                placeholder="٦ أحرف على الأقل"
+                className="w-full px-4 py-3 rounded-xl bg-surface-2 border border-border text-sm"
+              />
+            </Field>
+            {err && <ErrBox>{err}</ErrBox>}
             <button
               type="submit"
-              className="w-full py-3 rounded-xl bg-accent text-accent-foreground font-bold text-sm"
+              disabled={busy}
+              className="w-full py-3 rounded-xl bg-accent text-accent-foreground font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60"
             >
+              {busy && <Loader2 className="size-4 animate-spin" />}
               دخول لوحة التحكم
             </button>
-            <p className="text-[10px] text-center text-muted-foreground">
-              كلمة المرور الافتراضية:{" "}
-              <span className="font-mono font-bold text-primary">aldhura2026</span>
-              <br />
-              (يمكن تغييرها لاحقاً عند تفعيل قاعدة البيانات)
+            <p className="text-[10px] text-center text-muted-foreground leading-relaxed">
+              عند أول دخول سيتم إنشاء حسابك تلقائياً، وستُمنح صلاحية المالك لأنّ بريدك مُسجَّل ضمن المالكين.
             </p>
           </form>
         )}
 
-        {tab === "login" && (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              setUser({
-                fullName: fullName || "طالب الذرى",
-                grade,
-                section,
-                role: "student",
-              });
-              navigate({ to: "/" });
-            }}
-            className="space-y-3"
-          >
-            <div>
-              <label className="text-[11px] font-bold text-muted-foreground mb-1.5 block">
-                الاسم الثلاثي
-              </label>
+        {tab === "student" && (
+          <form onSubmit={submitStudent} className="space-y-3">
+            <div className="grid grid-cols-2 gap-1 p-1 bg-surface-2 rounded-xl mb-2">
+              <button
+                type="button"
+                onClick={() => { setMode("in"); setErr(""); }}
+                className={`py-2 rounded-lg text-[11px] font-bold ${mode === "in" ? "bg-background shadow-soft" : "text-muted-foreground"}`}
+              >
+                لدي حساب
+              </button>
+              <button
+                type="button"
+                onClick={() => { setMode("up"); setErr(""); }}
+                className={`py-2 rounded-lg text-[11px] font-bold ${mode === "up" ? "bg-background shadow-soft" : "text-muted-foreground"}`}
+              >
+                تسجيل جديد
+              </button>
+            </div>
+
+            <Field label="رقم معرف الطالب">
               <input
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                value={studentId}
+                onChange={(e) => setStudentId(e.target.value)}
                 required
-                placeholder="مثال: علي حسين كاظم"
-                className="w-full px-4 py-3 rounded-xl bg-surface-2 border border-border text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                placeholder="مثال: 6A001"
+                className="w-full px-4 py-3 rounded-xl bg-surface-2 border border-border text-sm font-mono"
               />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-[11px] font-bold text-muted-foreground mb-1.5 block">
-                  الصف
-                </label>
-                <select
-                  value={grade}
-                  onChange={(e) => setGrade(e.target.value as Grade)}
-                  className="w-full px-3 py-3 rounded-xl bg-surface-2 border border-border text-sm"
-                >
-                  {(Object.keys(GRADE_NAMES) as Grade[]).map((g) => (
-                    <option key={g} value={g}>
-                      {GRADE_NAMES[g]}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="text-[11px] font-bold text-muted-foreground mb-1.5 block">
-                  الشعبة
-                </label>
-                <select
-                  value={section}
-                  onChange={(e) => setSection(e.target.value as Section)}
-                  className="w-full px-3 py-3 rounded-xl bg-surface-2 border border-border text-sm"
-                >
-                  {(["أ", "ب", "ج", "د"] as Section[]).map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            </Field>
+
+            {mode === "up" && (
+              <>
+                <Field label="الاسم الثلاثي">
+                  <input
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required
+                    placeholder="مثال: علي حسين كاظم"
+                    className="w-full px-4 py-3 rounded-xl bg-surface-2 border border-border text-sm"
+                  />
+                </Field>
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="الصف">
+                    <select
+                      value={grade}
+                      onChange={(e) => setGrade(e.target.value as Grade)}
+                      className="w-full px-3 py-3 rounded-xl bg-surface-2 border border-border text-sm"
+                    >
+                      {(Object.keys(GRADE_NAMES) as Grade[])
+                        .filter((g) => !["general", "parent"].includes(g))
+                        .map((g) => (
+                          <option key={g} value={g}>
+                            {GRADE_NAMES[g]}
+                          </option>
+                        ))}
+                    </select>
+                  </Field>
+                  <Field label="الشعبة">
+                    <select
+                      value={section}
+                      onChange={(e) => setSection(e.target.value as Section)}
+                      className="w-full px-3 py-3 rounded-xl bg-surface-2 border border-border text-sm"
+                    >
+                      {(["أ", "ب", "ج", "د"] as Section[]).map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                </div>
+              </>
+            )}
+
+            <Field label="كلمة المرور">
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+                placeholder="٦ أحرف على الأقل"
+                className="w-full px-4 py-3 rounded-xl bg-surface-2 border border-border text-sm"
+              />
+            </Field>
+
+            {err && <ErrBox>{err}</ErrBox>}
+
             <button
               type="submit"
-              className="w-full py-3 rounded-xl bg-accent text-accent-foreground font-bold text-sm mt-2"
+              disabled={busy}
+              className="w-full py-3 rounded-xl bg-accent text-accent-foreground font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60 mt-2"
             >
-              تسجيل الدخول
+              {busy && <Loader2 className="size-4 animate-spin" />}
+              {mode === "in" ? "تسجيل الدخول" : "إنشاء حساب طالب"}
             </button>
           </form>
         )}
@@ -211,4 +291,30 @@ function LoginPage() {
       </div>
     </div>
   );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="text-[11px] font-bold text-muted-foreground mb-1.5 block">{label}</label>
+      {children}
+    </div>
+  );
+}
+
+function ErrBox({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="text-[11px] text-destructive bg-destructive/10 rounded-xl px-3 py-2 text-center font-bold">
+      {children}
+    </div>
+  );
+}
+
+function translate(msg?: string): string {
+  if (!msg) return "حدث خطأ غير متوقع";
+  if (/Invalid login|Invalid credentials/i.test(msg)) return "رقم المعرف أو كلمة المرور غير صحيحة";
+  if (/already registered|already exists/i.test(msg)) return "هذا الحساب مسجّل مسبقاً — استخدم تسجيل الدخول";
+  if (/Password should be/i.test(msg)) return "كلمة المرور قصيرة جداً (٦ أحرف على الأقل)";
+  if (/rate limit/i.test(msg)) return "محاولات كثيرة — حاول بعد قليل";
+  return msg;
 }
