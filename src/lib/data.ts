@@ -38,6 +38,7 @@ export interface Group {
   name: string;
   description: string | null;
   image_url: string | null;
+  is_private: boolean;
   created_at: string;
   members_count?: number;
   last_message?: string;
@@ -271,17 +272,37 @@ export async function setAdminLabel(userId: string, label: string) {
 // ==================== GROUPS & CHAT ====================
 
 export async function fetchGroups(): Promise<Group[]> {
-  const { data, error } = await supabase.from("groups").select("*").order("created_at", { ascending: false });
+  const { data, error } = await supabase
+    .from("groups")
+    .select("*")
+    .order("created_at", { ascending: false });
   if (error) throw error;
-  
-  // Fetch members count for each group
-  const groupsWithCounts = await Promise.all((data ?? []).map(async (g) => {
-    const { count } = await supabase.from("group_members").select("id", { count: "exact", head: true }).eq("group_id", g.id);
-    const { data: lastMsg } = await supabase.from("messages").select("content").eq("group_id", g.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
-    return { ...g, members_count: count ?? 0, last_message: lastMsg?.content };
-  }));
-  
-  return groupsWithCounts;
+
+  // Fetch members count and last message for each group in parallel
+  const groupsWithMeta = await Promise.all(
+    (data ?? []).map(async (g) => {
+      const [{ count }, { data: lastMsg }] = await Promise.all([
+        supabase
+          .from("group_members")
+          .select("id", { count: "exact", head: true })
+          .eq("group_id", g.id),
+        supabase
+          .from("messages")
+          .select("content")
+          .eq("group_id", g.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ]);
+      return {
+        ...g,
+        members_count: count ?? 0,
+        last_message: lastMsg?.content ?? undefined,
+      };
+    })
+  );
+
+  return groupsWithMeta;
 }
 
 export async function fetchMessages(groupId: string): Promise<Message[]> {
@@ -291,24 +312,49 @@ export async function fetchMessages(groupId: string): Promise<Message[]> {
     .eq("group_id", groupId)
     .order("created_at", { ascending: true });
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []) as Message[];
 }
 
-export async function sendMessage(groupId: string, content: string) {
+export async function joinGroup(groupId: string): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("يجب تسجيل الدخول أولاً");
+
+  // Insert member (ignore if already exists)
+  const { error } = await supabase
+    .from("group_members")
+    .upsert({ group_id: groupId, user_id: user.id }, { onConflict: "group_id,user_id", ignoreDuplicates: true });
+  if (error && !error.message?.includes("duplicate")) throw error;
+}
+
+export async function sendMessage(groupId: string, content: string): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("يجب تسجيل الدخول للإرسال");
-  
-  // Ensure user is member
-  const { data: member } = await supabase.from("group_members").select("id").eq("group_id", groupId).eq("user_id", user.id).maybeSingle();
-  if (!member) {
-    await supabase.from("group_members").insert({ group_id: groupId, user_id: user.id });
-  }
+
+  // Auto-join group when sending first message
+  await joinGroup(groupId);
 
   const { error } = await supabase.from("messages").insert({
     group_id: groupId,
     user_id: user.id,
-    content,
+    content: content.trim(),
   });
+  if (error) throw error;
+}
+
+export async function createGroup(p: { name: string; description?: string; is_private?: boolean }): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("يجب تسجيل الدخول");
+  const { error } = await supabase.from("groups").insert({
+    name: p.name,
+    description: p.description ?? null,
+    is_private: p.is_private ?? false,
+    created_by: user.id,
+  });
+  if (error) throw error;
+}
+
+export async function deleteGroup(id: string): Promise<void> {
+  const { error } = await supabase.from("groups").delete().eq("id", id);
   if (error) throw error;
 }
 
