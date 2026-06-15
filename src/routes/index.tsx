@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { AppShell, Card, SectionTitle } from "@/components/AppShell";
 import { ANNOUNCEMENTS, EXAMS, HOMEWORK, TODAY_SCHEDULE, useUser } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
-import { fetchAdminStats, fetchAnnouncements, ar } from "@/lib/data";
+import { fetchAdminStats, fetchAnnouncements, fetchGroups, ar } from "@/lib/data";
 import {
   ArrowLeft, BookOpen, CalendarClock, ClipboardList, GraduationCap,
   Megaphone, MessagesSquare, Sparkles, Wrench,
@@ -44,6 +44,7 @@ function HomePage() {
 
   // إحصائيات حقيقية من Supabase
   const stats = useQuery({ queryKey: ["admin-stats"], queryFn: fetchAdminStats });
+  const groupsQ = useQuery({ queryKey: ["groups"], queryFn: fetchGroups });
   const annsQ = useQuery({ queryKey: ["announcements"], queryFn: fetchAnnouncements });
   const latestAnn = annsQ.data?.[0] ?? ANNOUNCEMENTS[0];
 
@@ -236,7 +237,7 @@ function HomePage() {
               <MessagesSquare className="size-5 text-primary" />
               <div>
                 <div className="font-bold text-sm">الكروبات</div>
-                <div className="text-[11px] text-muted-foreground mt-0.5">٣ كروبات نشطة</div>
+                <div className="text-[11px] text-muted-foreground mt-0.5">{groupsQ.isLoading ? "…" : ar(groupsQ.data?.length ?? 0)} كروبات نشطة</div>
               </div>
             </Link>
 
