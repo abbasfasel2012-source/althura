@@ -44,7 +44,7 @@ export function setUser(u: User | null) {
 }
 
 export function useUser(): User | null {
-  const [u, setU] = useState<User | null>(null);
+  const [u, setU] = useState<User | null>(getUser());
   useEffect(() => {
     setU(getUser());
     const onChange = () => setU(getUser());
@@ -210,3 +210,4 @@ export const STUDENT_STATS = {
   rank: 4,
   streak: 12,
 };
+
