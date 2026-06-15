@@ -33,6 +33,28 @@ export interface SchedulePeriod {
   subject: string; teacher: string | null; room: string | null;
 }
 
+export interface Group {
+  id: string;
+  name: string;
+  description: string | null;
+  image_url: string | null;
+  created_at: string;
+  members_count?: number;
+  last_message?: string;
+}
+
+export interface Message {
+  id: string;
+  group_id: string;
+  user_id: string;
+  content: string;
+  attachment_url: string | null;
+  created_at: string;
+  profiles?: {
+    full_name: string;
+  };
+}
+
 // ==================== ANNOUNCEMENTS ====================
 
 export async function fetchAnnouncements(): Promise<Announcement[]> {
@@ -243,6 +265,50 @@ export async function fetchAdmins() {
 }
 export async function setAdminLabel(userId: string, label: string) {
   const { error } = await supabase.from("profiles").update({ admin_label: label || null }).eq("id", userId);
+  if (error) throw error;
+}
+
+// ==================== GROUPS & CHAT ====================
+
+export async function fetchGroups(): Promise<Group[]> {
+  const { data, error } = await supabase.from("groups").select("*").order("created_at", { ascending: false });
+  if (error) throw error;
+  
+  // Fetch members count for each group
+  const groupsWithCounts = await Promise.all((data ?? []).map(async (g) => {
+    const { count } = await supabase.from("group_members").select("id", { count: "exact", head: true }).eq("group_id", g.id);
+    const { data: lastMsg } = await supabase.from("messages").select("content").eq("group_id", g.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
+    return { ...g, members_count: count ?? 0, last_message: lastMsg?.content };
+  }));
+  
+  return groupsWithCounts;
+}
+
+export async function fetchMessages(groupId: string): Promise<Message[]> {
+  const { data, error } = await supabase
+    .from("messages")
+    .select("*, profiles(full_name)")
+    .eq("group_id", groupId)
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function sendMessage(groupId: string, content: string) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("يجب تسجيل الدخول للإرسال");
+  
+  // Ensure user is member
+  const { data: member } = await supabase.from("group_members").select("id").eq("group_id", groupId).eq("user_id", user.id).maybeSingle();
+  if (!member) {
+    await supabase.from("group_members").insert({ group_id: groupId, user_id: user.id });
+  }
+
+  const { error } = await supabase.from("messages").insert({
+    group_id: groupId,
+    user_id: user.id,
+    content,
+  });
   if (error) throw error;
 }
 

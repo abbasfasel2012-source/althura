@@ -167,8 +167,26 @@ export async function checkRegistrationStatus(studentId: string) {
 }
 
 export async function signInOwner(email: string, password: string) {
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) throw error;
+  
+  // Ensure owner has profile and role
+  if (data.user) {
+    const { data: role } = await supabase.from("user_roles").select("role").eq("user_id", data.user.id).maybeSingle();
+    if (!role && email === OWNER_EMAIL) {
+      // Manual creation if trigger failed or for existing user
+      await supabase.from("profiles").upsert({
+        id: data.user.id,
+        full_name: "مالك المنصة",
+        email: email,
+        grade: "general"
+      });
+      await supabase.from("user_roles").insert({
+        user_id: data.user.id,
+        role: "admin"
+      });
+    }
+  }
 }
 
 export async function signUpOwner(email: string, password: string) {
