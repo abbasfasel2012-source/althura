@@ -1,68 +1,49 @@
 import { supabase } from "@/integrations/supabase/client";
 
+// ==================== TYPES ====================
+
 export interface Announcement {
-  id: string;
-  title: string;
-  body: string;
-  pinned: boolean;
-  created_at: string;
+  id: string; title: string; body: string; pinned: boolean; created_at: string;
 }
 export interface NewsItem {
-  id: string;
-  title: string;
-  body: string;
-  image_url: string | null;
-  created_at: string;
+  id: string; title: string; body: string; image_url: string | null; created_at: string;
 }
 export interface EventItem {
-  id: string;
-  title: string;
-  description: string;
-  location: string | null;
-  starts_at: string | null;
-  created_at: string;
+  id: string; title: string; description: string; location: string | null; starts_at: string | null; created_at: string;
 }
 export interface BookItem {
-  id: string;
-  title: string;
-  subject: string | null;
-  grade: string | null;
-  file_url: string;
-  cover_url: string | null;
-  created_at: string;
+  id: string; title: string; subject: string | null; grade: string | null; file_url: string; cover_url: string | null; created_at: string;
 }
 export interface GradeRecord {
-  id: string;
-  student_id: string;
-  subject: string;
-  score: number;
-  term: string;
-  created_at: string;
+  id: string; student_id: string; subject: string; score: number; term: string; created_at: string;
 }
 export interface StudentRow {
-  id: string;
-  full_name: string;
-  student_id: string | null;
-  grade: string;
-  section: string | null;
-  email: string | null;
+  id: string; full_name: string; student_id: string | null; grade: string; section: string | null; email: string | null;
+}
+export interface PendingRegistration {
+  id: string; full_name: string; student_id: string; grade: string; section: string | null;
+  password_hash: string; status: "pending" | "approved" | "rejected";
+  rejection_reason: string | null; created_at: string;
+}
+export interface ScheduleDay {
+  id: string; day_index: number; day_name: string; is_holiday: boolean; holiday_label: string | null;
+}
+export interface SchedulePeriod {
+  id: string; day_id: string; period_number: number; start_time: string;
+  subject: string; teacher: string | null; room: string | null;
 }
 
-// ---------- Announcements ----------
+// ==================== ANNOUNCEMENTS ====================
+
 export async function fetchAnnouncements(): Promise<Announcement[]> {
-  const { data, error } = await supabase
-    .from("announcements")
-    .select("*")
-    .order("pinned", { ascending: false })
-    .order("created_at", { ascending: false });
+  const { data, error } = await supabase.from("announcements").select("*")
+    .order("pinned", { ascending: false }).order("created_at", { ascending: false });
   if (error) throw error;
   return data ?? [];
 }
 export async function createAnnouncement(p: { title: string; body: string; pinned: boolean }) {
   const { data: { user } } = await supabase.auth.getUser();
-  const { error } = await supabase.from("announcements").insert({
-    title: p.title, body: p.body, pinned: p.pinned, created_by: user?.id,
-  });
+  const { error } = await supabase.from("announcements").insert({ title: p.title, body: p.body, pinned: p.pinned, created_by: user?.id });
   if (error) throw error;
 }
 export async function deleteAnnouncement(id: string) {
@@ -70,18 +51,16 @@ export async function deleteAnnouncement(id: string) {
   if (error) throw error;
 }
 
-// ---------- News ----------
+// ==================== NEWS ====================
+
 export async function fetchNews(): Promise<NewsItem[]> {
-  const { data, error } = await supabase
-    .from("news").select("*").order("created_at", { ascending: false });
+  const { data, error } = await supabase.from("news").select("*").order("created_at", { ascending: false });
   if (error) throw error;
   return data ?? [];
 }
 export async function createNews(p: { title: string; body: string }) {
   const { data: { user } } = await supabase.auth.getUser();
-  const { error } = await supabase.from("news").insert({
-    title: p.title, body: p.body, created_by: user?.id,
-  });
+  const { error } = await supabase.from("news").insert({ title: p.title, body: p.body, created_by: user?.id });
   if (error) throw error;
 }
 export async function deleteNews(id: string) {
@@ -89,10 +68,10 @@ export async function deleteNews(id: string) {
   if (error) throw error;
 }
 
-// ---------- Events ----------
+// ==================== EVENTS ====================
+
 export async function fetchEvents(): Promise<EventItem[]> {
-  const { data, error } = await supabase
-    .from("events").select("*").order("starts_at", { ascending: true, nullsFirst: false });
+  const { data, error } = await supabase.from("events").select("*").order("starts_at", { ascending: true, nullsFirst: false });
   if (error) throw error;
   return data ?? [];
 }
@@ -100,9 +79,7 @@ export async function createEvent(p: { title: string; description: string; locat
   const { data: { user } } = await supabase.auth.getUser();
   const { error } = await supabase.from("events").insert({
     title: p.title, description: p.description,
-    location: p.location ?? null,
-    starts_at: p.starts_at ?? null,
-    created_by: user?.id,
+    location: p.location ?? null, starts_at: p.starts_at ?? null, created_by: user?.id,
   });
   if (error) throw error;
 }
@@ -111,10 +88,10 @@ export async function deleteEvent(id: string) {
   if (error) throw error;
 }
 
-// ---------- Books ----------
+// ==================== BOOKS ====================
+
 export async function fetchBooks(): Promise<BookItem[]> {
-  const { data, error } = await supabase
-    .from("books").select("*").order("created_at", { ascending: false });
+  const { data, error } = await supabase.from("books").select("*").order("created_at", { ascending: false });
   if (error) throw error;
   return data ?? [];
 }
@@ -130,11 +107,8 @@ export async function uploadBook(p: { file: File; title: string; subject?: strin
   const up = await supabase.storage.from("books").upload(path, p.file);
   if (up.error) throw up.error;
   const { error } = await supabase.from("books").insert({
-    title: p.title,
-    subject: p.subject ?? null,
-    grade: p.grade ?? null,
-    file_url: path,
-    created_by: user?.id,
+    title: p.title, subject: p.subject ?? null, grade: p.grade ?? null,
+    file_url: path, created_by: user?.id,
   });
   if (error) throw error;
 }
@@ -144,42 +118,38 @@ export async function deleteBook(b: BookItem) {
   if (error) throw error;
 }
 
-// ---------- Students / Grades ----------
+// ==================== STUDENTS / GRADES ====================
+
 export async function fetchStudents(): Promise<StudentRow[]> {
-  const { data, error } = await supabase
-    .from("profiles")
+  const { data, error } = await supabase.from("profiles")
     .select("id, full_name, student_id, grade, section, email")
     .order("full_name", { ascending: true });
   if (error) throw error;
   return (data ?? []) as StudentRow[];
 }
-
 export async function fetchMyGrades(userId: string): Promise<GradeRecord[]> {
-  const { data, error } = await supabase
-    .from("grades_records")
-    .select("*")
-    .eq("student_id", userId)
-    .order("created_at", { ascending: false });
+  const { data, error } = await supabase.from("grades_records").select("*")
+    .eq("student_id", userId).order("created_at", { ascending: false });
   if (error) throw error;
   return data ?? [];
 }
-
 export async function addGrade(p: { student_id: string; subject: string; score: number; term?: string }) {
   const { error } = await supabase.from("grades_records").insert({
-    student_id: p.student_id,
-    subject: p.subject,
-    score: p.score,
-    term: p.term ?? "الفصل الحالي",
+    student_id: p.student_id, subject: p.subject, score: p.score, term: p.term ?? "الفصل الحالي",
   });
   if (error) throw error;
 }
-
 export async function deleteGrade(id: string) {
   const { error } = await supabase.from("grades_records").delete().eq("id", id);
   if (error) throw error;
 }
+export async function deleteUser(userId: string) {
+  const { error } = await supabase.from("profiles").delete().eq("id", userId);
+  if (error) throw error;
+}
 
-// ---------- Admin stats ----------
+// ==================== ADMIN STATS ====================
+
 export async function fetchAdminStats() {
   const [students, anns, news, events, books] = await Promise.all([
     supabase.from("profiles").select("id", { count: "exact", head: true }),
@@ -197,15 +167,91 @@ export async function fetchAdminStats() {
   };
 }
 
-// ---------- Formatting ----------
+// ==================== PENDING REGISTRATIONS ====================
+
+export async function fetchPendingRegistrations(): Promise<PendingRegistration[]> {
+  const { data, error } = await supabase.from("pending_registrations").select("*")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as PendingRegistration[];
+}
+export async function approveRegistration(reg: PendingRegistration) {
+  const email = `${reg.student_id.trim().toLowerCase().replace(/[^a-z0-9]/g, "")}@aladhra.school`;
+  const { error: signUpError } = await supabase.auth.signUp({
+    email,
+    password: reg.password_hash,
+    options: {
+      data: { full_name: reg.full_name, student_id: reg.student_id, grade: reg.grade, section: reg.section },
+    },
+  });
+  if (signUpError && !/already registered/i.test(signUpError.message ?? "")) throw signUpError;
+  const { error } = await supabase.from("pending_registrations")
+    .update({ status: "approved", reviewed_at: new Date().toISOString() })
+    .eq("id", reg.id);
+  if (error) throw error;
+}
+export async function rejectRegistration(id: string, reason: string) {
+  const { error } = await supabase.from("pending_registrations")
+    .update({ status: "rejected", rejection_reason: reason, reviewed_at: new Date().toISOString() })
+    .eq("id", id);
+  if (error) throw error;
+}
+export async function deleteRegistration(id: string) {
+  const { error } = await supabase.from("pending_registrations").delete().eq("id", id);
+  if (error) throw error;
+}
+
+// ==================== WEEKLY SCHEDULE ====================
+
+export async function fetchWeekSchedule(): Promise<ScheduleDay[]> {
+  const { data, error } = await supabase.from("weekly_schedule").select("*").order("day_index", { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as ScheduleDay[];
+}
+export async function fetchDayPeriods(dayId: string): Promise<SchedulePeriod[]> {
+  const { data, error } = await supabase.from("schedule_periods").select("*")
+    .eq("day_id", dayId).order("period_number", { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as SchedulePeriod[];
+}
+export async function upsertPeriod(p: Omit<SchedulePeriod, "id">) {
+  const { error } = await supabase.from("schedule_periods").upsert({ ...p }, { onConflict: "day_id,period_number" });
+  if (error) throw error;
+}
+export async function deletePeriod(id: string) {
+  const { error } = await supabase.from("schedule_periods").delete().eq("id", id);
+  if (error) throw error;
+}
+export async function setDayHoliday(dayId: string, is_holiday: boolean, holiday_label?: string) {
+  const { error } = await supabase.from("weekly_schedule")
+    .update({ is_holiday, holiday_label: holiday_label ?? null })
+    .eq("id", dayId);
+  if (error) throw error;
+}
+
+// ==================== ADMIN LABELS ====================
+
+export async function fetchAdmins() {
+  const rolesRes = await supabase.from("user_roles").select("user_id").eq("role", "admin");
+  const ids = (rolesRes.data ?? []).map((r) => r.user_id);
+  if (ids.length === 0) return [];
+  const { data, error } = await supabase.from("profiles")
+    .select("id, full_name, email, admin_label")
+    .in("id", ids);
+  if (error) throw error;
+  return data ?? [];
+}
+export async function setAdminLabel(userId: string, label: string) {
+  const { error } = await supabase.from("profiles").update({ admin_label: label || null }).eq("id", userId);
+  if (error) throw error;
+}
+
+// ==================== HELPERS ====================
+
 export function ar(n: number | string): string {
   return String(n).replace(/[0-9]/g, (d) => "٠١٢٣٤٥٦٧٨٩"[+d]);
 }
-
 export function formatDate(iso: string): string {
-  try {
-    return new Date(iso).toLocaleDateString("ar-IQ", { day: "numeric", month: "short" });
-  } catch {
-    return iso;
-  }
+  try { return new Date(iso).toLocaleDateString("ar-IQ", { day: "numeric", month: "short" }); }
+  catch { return iso; }
 }

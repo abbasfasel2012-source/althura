@@ -137,3 +137,110 @@
 }
 
 .font-mono { font-family: var(--font-mono); }
+
+/* ===== إصلاح تباين النصوص ===== */
+/* inputs وselects - النص يكون واضح دائماً */
+input, select, textarea {
+  color: var(--foreground) !important;
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--muted-foreground) !important;
+  opacity: 0.7;
+}
+
+/* إصلاح النصوص داخل glass cards */
+.glass .text-foreground,
+.glass-strong .text-foreground {
+  color: var(--foreground);
+}
+
+/* ضمان وضوح النصوص في light mode */
+:root {
+  --foreground: #1a1a18;
+}
+
+/* الخطوط الباهتة بجانب الخلفية - تقوية */
+.text-muted-foreground {
+  color: var(--muted-foreground);
+  opacity: 1 !important;
+}
+
+/* إصلاح border على glass في light mode */
+.glass {
+  border-color: rgba(26, 26, 24, 0.12) !important;
+}
+.glass-strong {
+  border-color: rgba(26, 26, 24, 0.14) !important;
+}
+
+.dark .glass {
+  border-color: rgba(255,255,255,0.1) !important;
+}
+.dark .glass-strong {
+  border-color: rgba(255,255,255,0.12) !important;
+}
+
+/* nav items non-active - أوضح */
+nav a.text-muted-foreground {
+  color: #5a5a52 !important;
+}
+.dark nav a.text-muted-foreground {
+  color: #b8b1a0 !important;
+}
+
+/* ===== إصلاح إشكاليات التباين ===== */
+
+/* inputs/selects: النص يجب أن يكون واضحاً */
+input, textarea, select {
+  color: var(--foreground) !important;
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--muted-foreground) !important;
+  opacity: 0.8;
+}
+
+/* الـ glass cards: النص الداخلي */
+.glass .text-foreground,
+.glass-strong .text-foreground {
+  color: var(--foreground) !important;
+}
+
+/* الـ border على inputs يكون أوضح */
+.border-border {
+  border-color: color-mix(in oklab, var(--foreground) 20%, transparent) !important;
+}
+
+/* النصوص في الـ cards تكون واضحة */
+.glass p, .glass span, .glass div {
+  --tw-text-opacity: 1;
+}
+
+/* إصلاح input في dark mode */
+.dark input, .dark textarea, .dark select {
+  background-color: var(--surface-2);
+  color: var(--foreground);
+}
+
+/* تحسين وضوح النص في surface-2 */
+.bg-surface-2 {
+  color: var(--foreground);
+}
+
+/* الـ option في select */
+option {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+/* الـ datetime-local input */
+input[type="datetime-local"],
+input[type="time"] {
+  color-scheme: light;
+}
+
+.dark input[type="datetime-local"],
+.dark input[type="time"] {
+  color-scheme: dark;
+}

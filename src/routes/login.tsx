@@ -6,9 +6,10 @@ import {
   signInOwner,
   signInStudent,
   signUpOwner,
-  signUpStudent,
+  requestStudentRegistration,
+  checkRegistrationStatus,
 } from "@/lib/auth";
-import { Loader2, Shield } from "lucide-react";
+import { CheckCircle, Clock, Loader2, Shield, XCircle } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -21,7 +22,7 @@ export const Route = createFileRoute("/login")({
 });
 
 type Tab = "student" | "guest" | "owner";
-type Mode = "in" | "up";
+type Mode = "in" | "up" | "status";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -39,18 +40,38 @@ function LoginPage() {
 
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [success, setSuccess] = useState("");
+  const [statusResult, setStatusResult] = useState<{ status: string; rejection_reason?: string | null; created_at?: string } | null>(null);
 
   async function submitStudent(e: React.FormEvent) {
     e.preventDefault();
-    setErr("");
+    setErr(""); setSuccess("");
     setBusy(true);
     try {
       if (mode === "in") {
         await signInStudent(studentId, password);
-      } else {
-        await signUpStudent({ studentId, password, fullName, grade, section });
+        navigate({ to: "/" });
+      } else if (mode === "up") {
+        await requestStudentRegistration({ studentId, password, fullName, grade, section });
+        setSuccess("✅ تم إرسال طلبك! انتظر موافقة الإدارة قبل تسجيل الدخول.");
+        setMode("in");
+        setStudentId(""); setPassword(""); setFullName("");
       }
-      navigate({ to: "/" });
+    } catch (e: any) {
+      setErr(translate(e?.message));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function checkStatus(e: React.FormEvent) {
+    e.preventDefault();
+    setErr(""); setStatusResult(null);
+    setBusy(true);
+    try {
+      const result = await checkRegistrationStatus(studentId);
+      if (!result) { setErr("لم يتم العثور على طلب بهذا الرقم"); }
+      else setStatusResult(result);
     } catch (e: any) {
       setErr(translate(e?.message));
     } finally {
@@ -60,16 +81,14 @@ function LoginPage() {
 
   async function submitOwner(e: React.FormEvent) {
     e.preventDefault();
-    setErr("");
+    setErr(""); setSuccess("");
     setBusy(true);
     try {
       try {
         await signInOwner(email, ownerPass);
       } catch (innerErr: any) {
-        // If credentials are wrong AND user doesn't exist yet, try signup
         if (/invalid login|invalid credentials/i.test(innerErr?.message ?? "")) {
           await signUpOwner(email, ownerPass);
-          // After sign up, sign in (autoConfirm is on)
           await signInOwner(email, ownerPass);
         } else {
           throw innerErr;
@@ -103,6 +122,7 @@ function LoginPage() {
         </h1>
       </div>
 
+      {/* Tabs */}
       <div className="mt-7 glass-strong rounded-2xl p-1.5 grid grid-cols-3 gap-1 animate-reveal [animation-delay:140ms]">
         {(
           [
@@ -113,7 +133,7 @@ function LoginPage() {
         ).map(([id, label]) => (
           <button
             key={id}
-            onClick={() => { setTab(id); setErr(""); }}
+            onClick={() => { setTab(id); setErr(""); setSuccess(""); setStatusResult(null); }}
             className={`py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
               tab === id ? "bg-accent text-accent-foreground" : "text-muted-foreground"
             }`}
@@ -125,6 +145,8 @@ function LoginPage() {
       </div>
 
       <div className="mt-5 glass-strong rounded-3xl p-5 shadow-soft animate-reveal [animation-delay:200ms]">
+
+        {/* ===== GUEST ===== */}
         {tab === "guest" && (
           <div className="text-center py-2">
             <div className="text-base font-bold mb-1">دخول كزائر</div>
@@ -143,11 +165,12 @@ function LoginPage() {
           </div>
         )}
 
+        {/* ===== OWNER ===== */}
         {tab === "owner" && (
           <form onSubmit={submitOwner} className="space-y-3">
             <div className="text-center mb-2">
               <Shield className="size-8 text-primary mx-auto mb-2" />
-              <div className="text-base font-bold">دخول المالك</div>
+              <div className="text-base font-bold">دخول المالك / الإداريين</div>
               <p className="text-[11px] text-muted-foreground mt-1">
                 للإدارة فقط — الوصول إلى لوحة التحكم.
               </p>
@@ -158,7 +181,7 @@ function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 rounded-xl bg-surface-2 border border-border text-sm"
+                className="w-full px-4 py-3 rounded-xl bg-surface-2 border border-border text-sm text-foreground"
               />
             </Field>
             <Field label="كلمة المرور">
@@ -169,7 +192,7 @@ function LoginPage() {
                 required
                 minLength={6}
                 placeholder="٦ أحرف على الأقل"
-                className="w-full px-4 py-3 rounded-xl bg-surface-2 border border-border text-sm"
+                className="w-full px-4 py-3 rounded-xl bg-surface-2 border border-border text-sm text-foreground"
               />
             </Field>
             {err && <ErrBox>{err}</ErrBox>}
@@ -181,50 +204,91 @@ function LoginPage() {
               {busy && <Loader2 className="size-4 animate-spin" />}
               دخول لوحة التحكم
             </button>
-            <p className="text-[10px] text-center text-muted-foreground leading-relaxed">
-              عند أول دخول سيتم إنشاء حسابك تلقائياً، وستُمنح صلاحية المالك لأنّ بريدك مُسجَّل ضمن المالكين.
-            </p>
           </form>
         )}
 
+        {/* ===== STUDENT ===== */}
         {tab === "student" && (
-          <form onSubmit={submitStudent} className="space-y-3">
-            <div className="grid grid-cols-2 gap-1 p-1 bg-surface-2 rounded-xl mb-2">
-              <button
-                type="button"
-                onClick={() => { setMode("in"); setErr(""); }}
-                className={`py-2 rounded-lg text-[11px] font-bold ${mode === "in" ? "bg-background shadow-soft" : "text-muted-foreground"}`}
-              >
-                لدي حساب
-              </button>
-              <button
-                type="button"
-                onClick={() => { setMode("up"); setErr(""); }}
-                className={`py-2 rounded-lg text-[11px] font-bold ${mode === "up" ? "bg-background shadow-soft" : "text-muted-foreground"}`}
-              >
-                تسجيل جديد
-              </button>
+          <>
+            {/* Mode pills */}
+            <div className="grid grid-cols-3 gap-1 p-1 bg-surface-2 rounded-xl mb-4">
+              {(["in", "up", "status"] as Mode[]).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => { setMode(m); setErr(""); setSuccess(""); setStatusResult(null); }}
+                  className={`py-2 rounded-lg text-[11px] font-bold transition ${mode === m ? "bg-background shadow-soft text-foreground" : "text-muted-foreground"}`}
+                >
+                  {m === "in" ? "دخول" : m === "up" ? "تسجيل جديد" : "حالة طلبي"}
+                </button>
+              ))}
             </div>
 
-            <Field label="رقم معرف الطالب">
-              <input
-                value={studentId}
-                onChange={(e) => setStudentId(e.target.value)}
-                required
-                placeholder="مثال: 6A001"
-                className="w-full px-4 py-3 rounded-xl bg-surface-2 border border-border text-sm font-mono"
-              />
-            </Field>
+            {/* SUCCESS */}
+            {success && (
+              <div className="flex items-start gap-2 text-[11px] bg-primary/10 text-primary rounded-xl px-3 py-3 mb-3 font-bold">
+                <CheckCircle className="size-4 shrink-0 mt-0.5" />
+                {success}
+              </div>
+            )}
 
+            {/* LOGIN */}
+            {mode === "in" && (
+              <form onSubmit={submitStudent} className="space-y-3">
+                <Field label="رقم معرف الطالب">
+                  <input
+                    value={studentId}
+                    onChange={(e) => setStudentId(e.target.value)}
+                    required
+                    placeholder="مثال: 6A001"
+                    className="w-full px-4 py-3 rounded-xl bg-surface-2 border border-border text-sm font-mono text-foreground"
+                  />
+                </Field>
+                <Field label="كلمة المرور">
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    placeholder="٦ أحرف على الأقل"
+                    className="w-full px-4 py-3 rounded-xl bg-surface-2 border border-border text-sm text-foreground"
+                  />
+                </Field>
+                {err && <ErrBox>{err}</ErrBox>}
+                <button
+                  type="submit"
+                  disabled={busy}
+                  className="w-full py-3 rounded-xl bg-accent text-accent-foreground font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60 mt-2"
+                >
+                  {busy && <Loader2 className="size-4 animate-spin" />}
+                  تسجيل الدخول
+                </button>
+              </form>
+            )}
+
+            {/* REGISTER REQUEST */}
             {mode === "up" && (
-              <>
+              <form onSubmit={submitStudent} className="space-y-3">
+                <div className="text-[11px] text-muted-foreground bg-surface-2 rounded-xl px-3 py-2.5 leading-relaxed">
+                  📋 سيُرسل طلبك للمراجعة — يمكن للإدارة الموافقة أو الرفض. ستتمكن من الدخول بعد الموافقة.
+                </div>
+                <Field label="رقم معرف الطالب">
+                  <input
+                    value={studentId}
+                    onChange={(e) => setStudentId(e.target.value)}
+                    required
+                    placeholder="مثال: 6A001"
+                    className="w-full px-4 py-3 rounded-xl bg-surface-2 border border-border text-sm font-mono text-foreground"
+                  />
+                </Field>
                 <Field label="الاسم الثلاثي">
                   <input
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     required
                     placeholder="مثال: علي حسين كاظم"
-                    className="w-full px-4 py-3 rounded-xl bg-surface-2 border border-border text-sm"
+                    className="w-full px-4 py-3 rounded-xl bg-surface-2 border border-border text-sm text-foreground"
                   />
                 </Field>
                 <div className="grid grid-cols-2 gap-3">
@@ -232,14 +296,12 @@ function LoginPage() {
                     <select
                       value={grade}
                       onChange={(e) => setGrade(e.target.value as Grade)}
-                      className="w-full px-3 py-3 rounded-xl bg-surface-2 border border-border text-sm"
+                      className="w-full px-3 py-3 rounded-xl bg-surface-2 border border-border text-sm text-foreground"
                     >
                       {(Object.keys(GRADE_NAMES) as Grade[])
                         .filter((g) => !["general", "parent"].includes(g))
                         .map((g) => (
-                          <option key={g} value={g}>
-                            {GRADE_NAMES[g]}
-                          </option>
+                          <option key={g} value={g}>{GRADE_NAMES[g]}</option>
                         ))}
                     </select>
                   </Field>
@@ -247,42 +309,85 @@ function LoginPage() {
                     <select
                       value={section}
                       onChange={(e) => setSection(e.target.value as Section)}
-                      className="w-full px-3 py-3 rounded-xl bg-surface-2 border border-border text-sm"
+                      className="w-full px-3 py-3 rounded-xl bg-surface-2 border border-border text-sm text-foreground"
                     >
                       {(["أ", "ب", "ج", "د"] as Section[]).map((s) => (
-                        <option key={s} value={s}>
-                          {s}
-                        </option>
+                        <option key={s} value={s}>{s}</option>
                       ))}
                     </select>
                   </Field>
                 </div>
-              </>
+                <Field label="كلمة المرور (ستُستخدم بعد الموافقة)">
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    placeholder="٦ أحرف على الأقل"
+                    className="w-full px-4 py-3 rounded-xl bg-surface-2 border border-border text-sm text-foreground"
+                  />
+                </Field>
+                {err && <ErrBox>{err}</ErrBox>}
+                <button
+                  type="submit"
+                  disabled={busy}
+                  className="w-full py-3 rounded-xl bg-accent text-accent-foreground font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60 mt-2"
+                >
+                  {busy && <Loader2 className="size-4 animate-spin" />}
+                  إرسال طلب التسجيل
+                </button>
+              </form>
             )}
 
-            <Field label="كلمة المرور">
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-                placeholder="٦ أحرف على الأقل"
-                className="w-full px-4 py-3 rounded-xl bg-surface-2 border border-border text-sm"
-              />
-            </Field>
+            {/* CHECK STATUS */}
+            {mode === "status" && (
+              <div className="space-y-3">
+                <form onSubmit={checkStatus} className="space-y-3">
+                  <Field label="رقم معرف الطالب">
+                    <input
+                      value={studentId}
+                      onChange={(e) => setStudentId(e.target.value)}
+                      required
+                      placeholder="مثال: 6A001"
+                      className="w-full px-4 py-3 rounded-xl bg-surface-2 border border-border text-sm font-mono text-foreground"
+                    />
+                  </Field>
+                  {err && <ErrBox>{err}</ErrBox>}
+                  <button
+                    type="submit"
+                    disabled={busy}
+                    className="w-full py-3 rounded-xl bg-accent text-accent-foreground font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60"
+                  >
+                    {busy && <Loader2 className="size-4 animate-spin" />}
+                    تحقق من الحالة
+                  </button>
+                </form>
 
-            {err && <ErrBox>{err}</ErrBox>}
-
-            <button
-              type="submit"
-              disabled={busy}
-              className="w-full py-3 rounded-xl bg-accent text-accent-foreground font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60 mt-2"
-            >
-              {busy && <Loader2 className="size-4 animate-spin" />}
-              {mode === "in" ? "تسجيل الدخول" : "إنشاء حساب طالب"}
-            </button>
-          </form>
+                {statusResult && (
+                  <div className={`rounded-2xl p-4 flex items-start gap-3 ${
+                    statusResult.status === "approved" ? "bg-primary/10 text-primary" :
+                    statusResult.status === "rejected" ? "bg-destructive/10 text-destructive" :
+                    "bg-surface-2 text-foreground"
+                  }`}>
+                    {statusResult.status === "approved" && <CheckCircle className="size-5 shrink-0 mt-0.5" />}
+                    {statusResult.status === "rejected" && <XCircle className="size-5 shrink-0 mt-0.5" />}
+                    {statusResult.status === "pending" && <Clock className="size-5 shrink-0 mt-0.5" />}
+                    <div>
+                      <div className="font-bold text-sm mb-1">
+                        {statusResult.status === "approved" && "✅ تمت الموافقة — يمكنك الدخول الآن"}
+                        {statusResult.status === "rejected" && "❌ تم الرفض"}
+                        {statusResult.status === "pending" && "⏳ طلبك قيد المراجعة"}
+                      </div>
+                      {statusResult.rejection_reason && (
+                        <div className="text-[11px] opacity-80">السبب: {statusResult.rejection_reason}</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
 

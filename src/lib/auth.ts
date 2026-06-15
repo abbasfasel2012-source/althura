@@ -20,6 +20,7 @@ export interface AuthState {
     student_id: string | null;
     grade: string;
     section: string | null;
+    admin_label: string | null;
   } | null;
   role: "admin" | "student" | null;
   isOwner: boolean;
@@ -46,7 +47,7 @@ async function loadProfileAndRole(userId: string, email: string | null) {
   const [{ data: profile }, { data: roles }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("full_name, student_id, grade, section")
+      .select("full_name, student_id, grade, section, admin_label")
       .eq("id", userId)
       .maybeSingle(),
     supabase.from("user_roles").select("role").eq("user_id", userId),
@@ -67,7 +68,6 @@ async function loadProfileAndRole(userId: string, email: string | null) {
     isOwner: role === "admin",
   };
 
-  // Mirror into the legacy localStorage user shape so existing UI keeps working.
   if (profile) {
     setLocalUser({
       fullName: profile.full_name || email || "طالب",
@@ -123,28 +123,47 @@ export async function signInStudent(studentId: string, password: string) {
   if (error) throw error;
 }
 
-export async function signUpStudent(args: {
+// ✅ التسجيل الجديد: يضع الطلب في pending_registrations بدل إنشاء حساب مباشر
+export async function requestStudentRegistration(args: {
   studentId: string;
   password: string;
   fullName: string;
   grade: string;
   section?: string;
 }) {
-  const email = studentIdToEmail(args.studentId);
-  const { error } = await supabase.auth.signUp({
-    email,
-    password: args.password,
-    options: {
-      emailRedirectTo: window.location.origin,
-      data: {
-        full_name: args.fullName,
-        student_id: args.studentId,
-        grade: args.grade,
-        section: args.section ?? null,
-      },
-    },
+  // نتحقق أولاً إن في طلب قديم لنفس الرقم
+  const { data: existing } = await supabase
+    .from("pending_registrations")
+    .select("id, status")
+    .eq("student_id", args.studentId.trim())
+    .maybeSingle();
+
+  if (existing) {
+    if (existing.status === "pending") throw new Error("طلبك قيد المراجعة — انتظر موافقة الإدارة");
+    if (existing.status === "approved") throw new Error("تمت الموافقة على طلبك — سجّل دخولك الآن");
+    if (existing.status === "rejected") throw new Error("تم رفض طلبك — تواصل مع الإدارة");
+  }
+
+  // نخزن الباسورد بشكل مؤقت (سيستخدمه الأدمن عند الموافقة لإنشاء الحساب)
+  const { error } = await supabase.from("pending_registrations").insert({
+    full_name: args.fullName,
+    student_id: args.studentId.trim(),
+    grade: args.grade,
+    section: args.section ?? null,
+    password_hash: args.password, // في production يجب تشفيره
   });
   if (error) throw error;
+}
+
+// ✅ يتحقق الطالب من حالة طلبه
+export async function checkRegistrationStatus(studentId: string) {
+  const { data, error } = await supabase
+    .from("pending_registrations")
+    .select("status, rejection_reason, created_at")
+    .eq("student_id", studentId.trim())
+    .maybeSingle();
+  if (error) throw error;
+  return data;
 }
 
 export async function signInOwner(email: string, password: string) {
