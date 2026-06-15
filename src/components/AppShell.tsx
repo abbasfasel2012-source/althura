@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { Bell, Home, CalendarDays, BookOpen, User2, Search, LogOut, Sparkles } from "lucide-react";
-import { useUser, setUser } from "@/lib/store";
+import { useUser } from "@/lib/store";
+import { signOut } from "@/lib/auth";
 import type { ReactNode } from "react";
 
 const NAV = [
@@ -47,8 +48,8 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
             </Link>
             {user && user.role !== "guest" ? (
               <button
-                onClick={() => {
-                  setUser(null);
+                onClick={async () => {
+                  await signOut();
                   navigate({ to: "/login" });
                 }}
                 aria-label="خروج"
