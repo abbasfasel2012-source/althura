@@ -50,6 +50,8 @@ function LoginPage() {
     try {
       if (mode === "in") {
         await signInStudent(studentId, password);
+        // Wait for Supabase auth state to update store before navigating
+        await new Promise(r => setTimeout(r, 300));
         navigate({ to: "/" });
       } else if (mode === "up") {
         await requestStudentRegistration({ studentId, password, fullName, grade, section });
@@ -94,6 +96,8 @@ function LoginPage() {
           throw innerErr;
         }
       }
+      // Wait for auth state to propagate
+      await new Promise(r => setTimeout(r, 300));
       navigate({ to: "/admin" });
     } catch (e: any) {
       setErr(translate(e?.message));
