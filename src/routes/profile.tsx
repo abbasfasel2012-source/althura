@@ -1,25 +1,42 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { AppShell, Card, SectionTitle } from "@/components/AppShell";
-import { ACHIEVEMENTS, GRADE_NAMES, STUDENT_STATS, ar, useUser } from "@/lib/store";
+import { GRADE_NAMES, useUser, type Grade } from "@/lib/store";
 import { useAuth, signOut } from "@/lib/auth";
-import { ChevronLeft, GraduationCap, LogOut, Settings, Shield, Trophy } from "lucide-react";
-
+import { ar, fetchMyGrades } from "@/lib/data";
+import { ChevronLeft, GraduationCap, LogOut, Settings, Shield, BookOpen } from "lucide-react";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
     meta: [
       { title: "الذرى الذكية | حسابي" },
-      { name: "description", content: "بياناتك الشخصية، إنجازاتك، وإعداداتك." },
+      { name: "description", content: "بياناتك الشخصية الحقيقية ودرجاتك." },
     ],
   }),
   component: ProfilePage,
 });
 
 function ProfilePage() {
-  const user = useUser();
+  const localUser = useUser();
+  const { userId, profile, isOwner, loading } = useAuth();
   const navigate = useNavigate();
 
-  if (!user) {
+  const grades = useQuery({
+    queryKey: ["my-grades", userId],
+    queryFn: () => fetchMyGrades(userId!),
+    enabled: !!userId && !isOwner,
+  });
+
+  const avg =
+    grades.data && grades.data.length > 0
+      ? grades.data.reduce((s, g) => s + Number(g.score), 0) / grades.data.length
+      : null;
+
+  if (loading) {
+    return <AppShell title="حسابي"><Card className="text-center py-10 text-xs text-muted-foreground">جاري التحميل…</Card></AppShell>;
+  }
+
+  if (!localUser && !userId) {
     return (
       <AppShell title="حسابي">
         <Card className="text-center py-10">
@@ -32,7 +49,12 @@ function ProfilePage() {
     );
   }
 
-  const initial = user.fullName?.[0] ?? "ط";
+  const fullName = profile?.full_name || localUser?.fullName || "حساب";
+  const gradeKey = (profile?.grade as Grade) || localUser?.grade || "general";
+  const section = profile?.section || localUser?.section;
+  const role: "owner" | "student" | "guest" =
+    isOwner ? "owner" : userId ? "student" : "guest";
+  const initial = fullName?.[0] ?? "ط";
 
   return (
     <AppShell title="حسابي">
@@ -40,36 +62,41 @@ function ProfilePage() {
         <div className="size-20 rounded-3xl bg-accent text-accent-foreground grid place-items-center text-3xl font-bold mx-auto mb-3 shadow-glass">
           {initial}
         </div>
-        <div className="font-bold text-lg">{user.fullName}</div>
+        <div className="font-bold text-lg">{fullName}</div>
         <div className="text-[11px] tracking-[0.2em] text-primary font-bold uppercase mt-1">
-          {GRADE_NAMES[user.grade]} {user.section ? `• شعبة ${user.section}` : ""}
+          {GRADE_NAMES[gradeKey]} {section ? `• شعبة ${section}` : ""}
         </div>
+        {profile?.student_id && (
+          <div className="font-mono text-[11px] text-muted-foreground mt-1">
+            معرف الطالب: {profile.student_id}
+          </div>
+        )}
         <div className="mt-2 inline-block text-[10px] px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold">
-          {user.role === "owner" ? "المالك" : user.role === "guest" ? "زائر" : "طالب"}
+          {role === "owner" ? "المالك" : role === "guest" ? "زائر" : "طالب"}
         </div>
 
-        <div className="grid grid-cols-3 gap-3 mt-5 pt-5 border-t border-border">
-          <S label="المعدل" value={ar(STUDENT_STATS.average.toFixed(0)) + "٪"} />
-          <S label="الترتيب" value={`#${ar(STUDENT_STATS.rank)}`} />
-          <S label="حضور" value={`${ar(STUDENT_STATS.attendance)}٪`} />
-        </div>
+        {role === "student" && (
+          <div className="grid grid-cols-3 gap-3 mt-5 pt-5 border-t border-border">
+            <S label="المعدل" value={avg !== null ? ar(avg.toFixed(0)) + "٪" : "—"} />
+            <S label="المواد" value={ar(grades.data?.length ?? 0)} />
+            <S label="الحالة" value={avg !== null && avg >= 50 ? "ناجح" : avg !== null ? "متعثر" : "—"} />
+          </div>
+        )}
       </Card>
 
-      <SectionTitle eyebrow="الإنجازات" title="شارات وأوسمة" />
-      <div className="grid grid-cols-2 gap-2.5 mb-5">
-        {ACHIEVEMENTS.map((a, i) => (
-          <Card key={i} className={`!p-3 text-center ${a.unlocked ? "" : "opacity-40"}`}>
-            <div className="text-3xl mb-1">{a.icon}</div>
-            <div className="font-bold text-xs">{a.title}</div>
-            <div className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{a.desc}</div>
-          </Card>
-        ))}
-      </div>
+      {role === "student" && grades.data && grades.data.length === 0 && (
+        <Card className="mt-4 text-center text-xs text-muted-foreground py-5">
+          لا توجد درجات مسجّلة بعد — ستظهر هنا فور إضافتها من قبل المالك.
+        </Card>
+      )}
 
+      <SectionTitle eyebrow="الحساب" title="إدارة حسابك" />
       <div className="space-y-2">
-        <PL to="/grades" icon={<GraduationCap className="size-4 text-primary" />} label="درجاتي" />
-        <PL to="/calendar" icon={<Trophy className="size-4 text-primary" />} label="التقويم" />
-        {user.role === "owner" && (
+        {role === "student" && (
+          <PL to="/grades" icon={<GraduationCap className="size-4 text-primary" />} label="درجاتي" />
+        )}
+        <PL to="/books" icon={<BookOpen className="size-4 text-primary" />} label="المكتبة" />
+        {isOwner && (
           <PL to="/admin" icon={<Shield className="size-4 text-primary" />} label="لوحة التحكم" />
         )}
         <PL to="/settings" icon={<Settings className="size-4 text-primary" />} label="الإعدادات" />
@@ -80,7 +107,6 @@ function ProfilePage() {
           <LogOut className="size-4 text-destructive" />
           <span className="font-bold text-sm text-destructive flex-1">تسجيل الخروج</span>
         </button>
-
       </div>
     </AppShell>
   );
