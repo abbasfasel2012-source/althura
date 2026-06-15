@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, Card, SectionTitle } from "@/components/AppShell";
 import { ANNOUNCEMENTS, EXAMS, HOMEWORK, TODAY_SCHEDULE, useUser } from "@/lib/store";
+import { useAuth } from "@/lib/auth";
 import { fetchAdminStats, fetchAnnouncements, ar } from "@/lib/data";
 import {
   ArrowLeft, BookOpen, CalendarClock, ClipboardList, GraduationCap,
@@ -21,14 +22,25 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
   const user = useUser();
+  const { loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Wait for Supabase auth to finish loading before deciding to redirect
+    if (authLoading) return;
     if (user === null) {
-      const t = setTimeout(() => { if (!user) navigate({ to: "/login" }); }, 200);
-      return () => clearTimeout(t);
+      navigate({ to: "/login" });
     }
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
+
+  // Show spinner while auth is loading
+  if (authLoading && user === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="size-8 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+      </div>
+    );
+  }
 
   // إحصائيات حقيقية من Supabase
   const stats = useQuery({ queryKey: ["admin-stats"], queryFn: fetchAdminStats });
