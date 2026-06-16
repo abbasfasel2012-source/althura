@@ -104,6 +104,36 @@ export type Database = {
         }
         Relationships: []
       }
+      exams: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          exam_date: string
+          id: string
+          subject: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          exam_date: string
+          id?: string
+          subject: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          exam_date?: string
+          id?: string
+          subject?: string
+          title?: string
+        }
+        Relationships: []
+      }
       grades_records: {
         Row: {
           created_at: string
@@ -440,6 +470,39 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
           url?: string
+        }
+        Relationships: []
+      }
+      teachers: {
+        Row: {
+          bio: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          subject: string
+          years_experience: number | null
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          subject: string
+          years_experience?: number | null
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          subject?: string
+          years_experience?: number | null
         }
         Relationships: []
       }
