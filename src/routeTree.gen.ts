@@ -29,6 +29,7 @@ import { Route as AnnouncementsRouteImport } from './routes/announcements'
 import { Route as AiRouteImport } from './routes/ai'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as GroupsGroupIdRouteImport } from './routes/groups.$groupId'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 
 const ToolsRoute = ToolsRouteImport.update({
@@ -131,6 +132,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GroupsGroupIdRoute = GroupsGroupIdRouteImport.update({
+  id: '/$groupId',
+  path: '/$groupId',
+  getParentRoute: () => GroupsRoute,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -148,7 +154,7 @@ export interface FileRoutesByFullPath {
   '/events': typeof EventsRoute
   '/exams': typeof ExamsRoute
   '/grades': typeof GradesRoute
-  '/groups': typeof GroupsRoute
+  '/groups': typeof GroupsRouteWithChildren
   '/homework': typeof HomeworkRoute
   '/login': typeof LoginRoute
   '/news': typeof NewsRoute
@@ -159,6 +165,7 @@ export interface FileRoutesByFullPath {
   '/teachers': typeof TeachersRoute
   '/tools': typeof ToolsRoute
   '/api/chat': typeof ApiChatRoute
+  '/groups/$groupId': typeof GroupsGroupIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -171,7 +178,7 @@ export interface FileRoutesByTo {
   '/events': typeof EventsRoute
   '/exams': typeof ExamsRoute
   '/grades': typeof GradesRoute
-  '/groups': typeof GroupsRoute
+  '/groups': typeof GroupsRouteWithChildren
   '/homework': typeof HomeworkRoute
   '/login': typeof LoginRoute
   '/news': typeof NewsRoute
@@ -182,6 +189,7 @@ export interface FileRoutesByTo {
   '/teachers': typeof TeachersRoute
   '/tools': typeof ToolsRoute
   '/api/chat': typeof ApiChatRoute
+  '/groups/$groupId': typeof GroupsGroupIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -195,7 +203,7 @@ export interface FileRoutesById {
   '/events': typeof EventsRoute
   '/exams': typeof ExamsRoute
   '/grades': typeof GradesRoute
-  '/groups': typeof GroupsRoute
+  '/groups': typeof GroupsRouteWithChildren
   '/homework': typeof HomeworkRoute
   '/login': typeof LoginRoute
   '/news': typeof NewsRoute
@@ -206,6 +214,7 @@ export interface FileRoutesById {
   '/teachers': typeof TeachersRoute
   '/tools': typeof ToolsRoute
   '/api/chat': typeof ApiChatRoute
+  '/groups/$groupId': typeof GroupsGroupIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -231,6 +240,7 @@ export interface FileRouteTypes {
     | '/teachers'
     | '/tools'
     | '/api/chat'
+    | '/groups/$groupId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -254,6 +264,7 @@ export interface FileRouteTypes {
     | '/teachers'
     | '/tools'
     | '/api/chat'
+    | '/groups/$groupId'
   id:
     | '__root__'
     | '/'
@@ -277,6 +288,7 @@ export interface FileRouteTypes {
     | '/teachers'
     | '/tools'
     | '/api/chat'
+    | '/groups/$groupId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -290,7 +302,7 @@ export interface RootRouteChildren {
   EventsRoute: typeof EventsRoute
   ExamsRoute: typeof ExamsRoute
   GradesRoute: typeof GradesRoute
-  GroupsRoute: typeof GroupsRoute
+  GroupsRoute: typeof GroupsRouteWithChildren
   HomeworkRoute: typeof HomeworkRoute
   LoginRoute: typeof LoginRoute
   NewsRoute: typeof NewsRoute
@@ -445,6 +457,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/groups/$groupId': {
+      id: '/groups/$groupId'
+      path: '/$groupId'
+      fullPath: '/groups/$groupId'
+      preLoaderRoute: typeof GroupsGroupIdRouteImport
+      parentRoute: typeof GroupsRoute
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -454,6 +473,17 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface GroupsRouteChildren {
+  GroupsGroupIdRoute: typeof GroupsGroupIdRoute
+}
+
+const GroupsRouteChildren: GroupsRouteChildren = {
+  GroupsGroupIdRoute: GroupsGroupIdRoute,
+}
+
+const GroupsRouteWithChildren =
+  GroupsRoute._addFileChildren(GroupsRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -466,7 +496,7 @@ const rootRouteChildren: RootRouteChildren = {
   EventsRoute: EventsRoute,
   ExamsRoute: ExamsRoute,
   GradesRoute: GradesRoute,
-  GroupsRoute: GroupsRoute,
+  GroupsRoute: GroupsRouteWithChildren,
   HomeworkRoute: HomeworkRoute,
   LoginRoute: LoginRoute,
   NewsRoute: NewsRoute,
