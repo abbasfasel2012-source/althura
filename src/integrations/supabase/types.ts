@@ -177,6 +177,7 @@ export type Database = {
           created_by: string | null
           description: string | null
           id: string
+          image_url: string | null
           is_private: boolean
           name: string
           updated_at: string
@@ -186,6 +187,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           id?: string
+          image_url?: string | null
           is_private?: boolean
           name: string
           updated_at?: string
@@ -195,6 +197,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           id?: string
+          image_url?: string | null
           is_private?: boolean
           name?: string
           updated_at?: string
@@ -203,6 +206,7 @@ export type Database = {
       }
       messages: {
         Row: {
+          attachment_url: string | null
           content: string
           created_at: string
           group_id: string
@@ -210,6 +214,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          attachment_url?: string | null
           content: string
           created_at?: string
           group_id: string
@@ -217,6 +222,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          attachment_url?: string | null
           content?: string
           created_at?: string
           group_id?: string
@@ -260,8 +266,48 @@ export type Database = {
         }
         Relationships: []
       }
+      pending_registrations: {
+        Row: {
+          created_at: string
+          full_name: string
+          grade: string
+          id: string
+          password_hash: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          section: string | null
+          status: string
+          student_id: string
+        }
+        Insert: {
+          created_at?: string
+          full_name: string
+          grade: string
+          id?: string
+          password_hash: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          section?: string | null
+          status?: string
+          student_id: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string
+          grade?: string
+          id?: string
+          password_hash?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          section?: string | null
+          status?: string
+          student_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
+          admin_label: string | null
           created_at: string
           email: string | null
           full_name: string
@@ -272,6 +318,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          admin_label?: string | null
           created_at?: string
           email?: string | null
           full_name?: string
@@ -282,6 +329,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          admin_label?: string | null
           created_at?: string
           email?: string | null
           full_name?: string
@@ -292,6 +340,47 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      schedule_periods: {
+        Row: {
+          created_at: string
+          day_id: string
+          id: string
+          period_number: number
+          room: string | null
+          start_time: string
+          subject: string
+          teacher: string | null
+        }
+        Insert: {
+          created_at?: string
+          day_id: string
+          id?: string
+          period_number: number
+          room?: string | null
+          start_time: string
+          subject: string
+          teacher?: string | null
+        }
+        Update: {
+          created_at?: string
+          day_id?: string
+          id?: string
+          period_number?: number
+          room?: string | null
+          start_time?: string
+          subject?: string
+          teacher?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedule_periods_day_id_fkey"
+            columns: ["day_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_schedule"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       site_images: {
         Row: {
@@ -335,6 +424,33 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      weekly_schedule: {
+        Row: {
+          created_at: string
+          day_index: number
+          day_name: string
+          holiday_label: string | null
+          id: string
+          is_holiday: boolean
+        }
+        Insert: {
+          created_at?: string
+          day_index: number
+          day_name: string
+          holiday_label?: string | null
+          id?: string
+          is_holiday?: boolean
+        }
+        Update: {
+          created_at?: string
+          day_index?: number
+          day_name?: string
+          holiday_label?: string | null
+          id?: string
+          is_holiday?: boolean
         }
         Relationships: []
       }
