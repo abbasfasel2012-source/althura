@@ -204,6 +204,36 @@ export type Database = {
         }
         Relationships: []
       }
+      homework: {
+        Row: {
+          created_at: string
+          done: boolean
+          due_date: string | null
+          id: string
+          subject: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          done?: boolean
+          due_date?: string | null
+          id?: string
+          subject: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          done?: boolean
+          due_date?: string | null
+          id?: string
+          subject?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           attachment_url: string | null
@@ -235,6 +265,13 @@ export type Database = {
             columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_user_id_profiles_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
