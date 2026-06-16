@@ -139,6 +139,143 @@ export type Database = {
           },
         ]
       }
+      group_members: {
+        Row: {
+          group_id: string
+          id: string
+          joined_at: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      groups: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          is_private: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_private?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_private?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      homework: {
+        Row: {
+          created_at: string
+          done: boolean
+          due_date: string | null
+          id: string
+          subject: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          done?: boolean
+          due_date?: string | null
+          id?: string
+          subject: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          done?: boolean
+          due_date?: string | null
+          id?: string
+          subject?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          attachment_url: string | null
+          content: string
+          created_at: string
+          group_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          attachment_url?: string | null
+          content: string
+          created_at?: string
+          group_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          attachment_url?: string | null
+          content?: string
+          created_at?: string
+          group_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_user_id_profiles_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       news: {
         Row: {
           body: string
@@ -168,43 +305,40 @@ export type Database = {
       }
       pending_registrations: {
         Row: {
-          id: string
-          full_name: string
-          student_id: string
-          grade: string
-          section: string | null
-          password_hash: string
-          status: string
-          rejection_reason: string | null
           created_at: string
+          full_name: string
+          grade: string
+          id: string
+          password_hash: string
+          rejection_reason: string | null
           reviewed_at: string | null
-          reviewed_by: string | null
+          section: string | null
+          status: string
+          student_id: string
         }
         Insert: {
-          id?: string
-          full_name: string
-          student_id: string
-          grade: string
-          section?: string | null
-          password_hash: string
-          status?: string
-          rejection_reason?: string | null
           created_at?: string
+          full_name: string
+          grade: string
+          id?: string
+          password_hash: string
+          rejection_reason?: string | null
           reviewed_at?: string | null
-          reviewed_by?: string | null
+          section?: string | null
+          status?: string
+          student_id: string
         }
         Update: {
-          id?: string
-          full_name?: string
-          student_id?: string
-          grade?: string
-          section?: string | null
-          password_hash?: string
-          status?: string
-          rejection_reason?: string | null
           created_at?: string
+          full_name?: string
+          grade?: string
+          id?: string
+          password_hash?: string
+          rejection_reason?: string | null
           reviewed_at?: string | null
-          reviewed_by?: string | null
+          section?: string | null
+          status?: string
+          student_id?: string
         }
         Relationships: []
       }
@@ -244,68 +378,46 @@ export type Database = {
         }
         Relationships: []
       }
-      weekly_schedule: {
-        Row: {
-          id: string
-          day_index: number
-          day_name: string
-          is_holiday: boolean
-          holiday_label: string | null
-          updated_by: string | null
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          day_index: number
-          day_name: string
-          is_holiday?: boolean
-          holiday_label?: string | null
-          updated_by?: string | null
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          day_index?: number
-          day_name?: string
-          is_holiday?: boolean
-          holiday_label?: string | null
-          updated_by?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
       schedule_periods: {
         Row: {
-          id: string
+          created_at: string
           day_id: string
+          id: string
           period_number: number
+          room: string | null
           start_time: string
           subject: string
           teacher: string | null
-          room: string | null
-          created_at: string
         }
         Insert: {
-          id?: string
+          created_at?: string
           day_id: string
+          id?: string
           period_number: number
+          room?: string | null
           start_time: string
           subject: string
           teacher?: string | null
-          room?: string | null
-          created_at?: string
         }
         Update: {
-          id?: string
+          created_at?: string
           day_id?: string
+          id?: string
           period_number?: number
+          room?: string | null
           start_time?: string
           subject?: string
           teacher?: string | null
-          room?: string | null
-          created_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "schedule_periods_day_id_fkey"
+            columns: ["day_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_schedule"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       site_images: {
         Row: {
@@ -331,107 +443,6 @@ export type Database = {
         }
         Relationships: []
       }
-
-      groups: {
-        Row: {
-          id: string
-          name: string
-          description: string | null
-          image_url: string | null
-          is_private: boolean
-          created_by: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          description?: string | null
-          image_url?: string | null
-          is_private?: boolean
-          created_by?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          description?: string | null
-          image_url?: string | null
-          is_private?: boolean
-          created_by?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      group_members: {
-        Row: {
-          id: string
-          group_id: string
-          user_id: string
-          role: string
-          joined_at: string
-        }
-        Insert: {
-          id?: string
-          group_id: string
-          user_id: string
-          role?: string
-          joined_at?: string
-        }
-        Update: {
-          id?: string
-          group_id?: string
-          user_id?: string
-          role?: string
-          joined_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "group_members_group_id_fkey"
-            columns: ["group_id"]
-            isOneToOne: false
-            referencedRelation: "groups"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      messages: {
-        Row: {
-          id: string
-          group_id: string
-          user_id: string
-          content: string
-          attachment_url: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          group_id: string
-          user_id: string
-          content: string
-          attachment_url?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          group_id?: string
-          user_id?: string
-          content?: string
-          attachment_url?: string | null
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "messages_group_id_fkey"
-            columns: ["group_id"]
-            isOneToOne: false
-            referencedRelation: "groups"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       user_roles: {
         Row: {
           created_at: string
@@ -450,6 +461,33 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      weekly_schedule: {
+        Row: {
+          created_at: string
+          day_index: number
+          day_name: string
+          holiday_label: string | null
+          id: string
+          is_holiday: boolean
+        }
+        Insert: {
+          created_at?: string
+          day_index: number
+          day_name: string
+          holiday_label?: string | null
+          id?: string
+          is_holiday?: boolean
+        }
+        Update: {
+          created_at?: string
+          day_index?: number
+          day_name?: string
+          holiday_label?: string | null
+          id?: string
+          is_holiday?: boolean
         }
         Relationships: []
       }
@@ -599,4 +637,3 @@ export const Constants = {
     },
   },
 } as const
-

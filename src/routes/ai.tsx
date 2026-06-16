@@ -4,6 +4,9 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { AppShell } from "@/components/AppShell";
 import { Send, Sparkles, Loader2 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
 
 export const Route = createFileRoute("/ai")({
   head: () => ({
@@ -43,8 +46,8 @@ function AIPage() {
     inputRef.current?.focus();
   };
 
-  const renderText = (m: (typeof messages)[number]) =>
-    m.parts.map((p, i) => (p.type === "text" ? <span key={i}>{p.text}</span> : null));
+  const getText = (m: (typeof messages)[number]) =>
+    m.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
 
   return (
     <AppShell title="مساعد عبوسي">
@@ -69,13 +72,31 @@ function AIPage() {
         {messages.map((m) => (
           <div
             key={m.id}
-            className={`max-w-[85%] p-3.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap animate-reveal ${
+            className={`max-w-[85%] p-3.5 rounded-2xl text-sm leading-relaxed animate-reveal ${
               m.role === "assistant"
                 ? "glass mr-0 ml-auto rounded-tr-md"
                 : "bg-accent text-accent-foreground ml-0 mr-auto rounded-tl-md"
             }`}
           >
-            {renderText(m)}
+            {m.role === "assistant" ? (
+              <div className="prose prose-sm prose-invert max-w-none
+                [&_p]:my-1.5 [&_p]:leading-relaxed
+                [&_strong]:font-bold [&_strong]:text-accent
+                [&_em]:italic
+                [&_ul]:list-disc [&_ul]:pr-5 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:pr-5 [&_ol]:my-2
+                [&_li]:my-0.5
+                [&_h1]:text-base [&_h1]:font-bold [&_h1]:mt-3 [&_h1]:mb-1.5
+                [&_h2]:text-sm [&_h2]:font-bold [&_h2]:mt-2.5 [&_h2]:mb-1
+                [&_h3]:text-sm [&_h3]:font-bold [&_h3]:mt-2 [&_h3]:mb-1
+                [&_code]:bg-surface-2 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_code]:font-mono
+                [&_pre]:bg-surface-2 [&_pre]:p-3 [&_pre]:rounded-xl [&_pre]:my-2 [&_pre]:overflow-x-auto [&_pre]:text-xs
+                [&_blockquote]:border-r-2 [&_blockquote]:border-accent [&_blockquote]:pr-3 [&_blockquote]:opacity-80
+                [&_a]:text-accent [&_a]:underline">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{getText(m)}</ReactMarkdown>
+              </div>
+            ) : (
+              <span className="whitespace-pre-wrap">{getText(m)}</span>
+            )}
           </div>
         ))}
         {status === "submitted" && (
