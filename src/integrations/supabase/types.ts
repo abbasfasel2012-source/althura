@@ -166,51 +166,8 @@ export type Database = {
         }
         Relationships: []
       }
-      pending_registrations: {
-        Row: {
-          id: string
-          full_name: string
-          student_id: string
-          grade: string
-          section: string | null
-          password_hash: string
-          status: string
-          rejection_reason: string | null
-          created_at: string
-          reviewed_at: string | null
-          reviewed_by: string | null
-        }
-        Insert: {
-          id?: string
-          full_name: string
-          student_id: string
-          grade: string
-          section?: string | null
-          password_hash: string
-          status?: string
-          rejection_reason?: string | null
-          created_at?: string
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-        }
-        Update: {
-          id?: string
-          full_name?: string
-          student_id?: string
-          grade?: string
-          section?: string | null
-          password_hash?: string
-          status?: string
-          rejection_reason?: string | null
-          created_at?: string
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
-          admin_label: string | null
           created_at: string
           email: string | null
           full_name: string
@@ -221,7 +178,6 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          admin_label?: string | null
           created_at?: string
           email?: string | null
           full_name?: string
@@ -232,7 +188,6 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          admin_label?: string | null
           created_at?: string
           email?: string | null
           full_name?: string
@@ -241,69 +196,6 @@ export type Database = {
           section?: string | null
           student_id?: string | null
           updated_at?: string
-        }
-        Relationships: []
-      }
-      weekly_schedule: {
-        Row: {
-          id: string
-          day_index: number
-          day_name: string
-          is_holiday: boolean
-          holiday_label: string | null
-          updated_by: string | null
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          day_index: number
-          day_name: string
-          is_holiday?: boolean
-          holiday_label?: string | null
-          updated_by?: string | null
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          day_index?: number
-          day_name?: string
-          is_holiday?: boolean
-          holiday_label?: string | null
-          updated_by?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      schedule_periods: {
-        Row: {
-          id: string
-          day_id: string
-          period_number: number
-          start_time: string
-          subject: string
-          teacher: string | null
-          room: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          day_id: string
-          period_number: number
-          start_time: string
-          subject: string
-          teacher?: string | null
-          room?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          day_id?: string
-          period_number?: number
-          start_time?: string
-          subject?: string
-          teacher?: string | null
-          room?: string | null
-          created_at?: string
         }
         Relationships: []
       }
@@ -330,107 +222,6 @@ export type Database = {
           url?: string
         }
         Relationships: []
-      }
-
-      groups: {
-        Row: {
-          id: string
-          name: string
-          description: string | null
-          image_url: string | null
-          is_private: boolean
-          created_by: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          description?: string | null
-          image_url?: string | null
-          is_private?: boolean
-          created_by?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          description?: string | null
-          image_url?: string | null
-          is_private?: boolean
-          created_by?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      group_members: {
-        Row: {
-          id: string
-          group_id: string
-          user_id: string
-          role: string
-          joined_at: string
-        }
-        Insert: {
-          id?: string
-          group_id: string
-          user_id: string
-          role?: string
-          joined_at?: string
-        }
-        Update: {
-          id?: string
-          group_id?: string
-          user_id?: string
-          role?: string
-          joined_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "group_members_group_id_fkey"
-            columns: ["group_id"]
-            isOneToOne: false
-            referencedRelation: "groups"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      messages: {
-        Row: {
-          id: string
-          group_id: string
-          user_id: string
-          content: string
-          attachment_url: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          group_id: string
-          user_id: string
-          content: string
-          attachment_url?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          group_id?: string
-          user_id?: string
-          content?: string
-          attachment_url?: string | null
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "messages_group_id_fkey"
-            columns: ["group_id"]
-            isOneToOne: false
-            referencedRelation: "groups"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       user_roles: {
         Row: {
@@ -599,4 +390,3 @@ export const Constants = {
     },
   },
 } as const
-
