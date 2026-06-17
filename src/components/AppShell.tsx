@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { Bell, Home, CalendarDays, BookOpen, User2, Search, LogOut, Sparkles } from "lucide-react";
 import { useUser } from "@/lib/store";
 import { signOut } from "@/lib/auth";
+import { useHasUnreadNotifications, markNotificationsSeen } from "@/lib/notifications";
 import type { ReactNode } from "react";
 
 const NAV = [
@@ -16,6 +17,8 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
   const user = useUser();
   const navigate = useNavigate();
   const location = useLocation();
+  const hasUnread = useHasUnreadNotifications();
+
 
   return (
     <div className="min-h-screen pb-28">
@@ -41,10 +44,13 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
             <Link
               to="/announcements"
               aria-label="الإشعارات"
+              onClick={() => markNotificationsSeen()}
               className="size-9 grid place-items-center rounded-xl border border-border bg-surface-2/60 relative"
             >
               <Bell className="size-4" />
-              <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-primary" />
+              {hasUnread && (
+                <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-primary" />
+              )}
             </Link>
             {user && user.role !== "guest" ? (
               <button
