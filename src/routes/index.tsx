@@ -1,10 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { AppShell, Card, SectionTitle } from "@/components/AppShell";
-import { ANNOUNCEMENTS, EXAMS, HOMEWORK, TODAY_SCHEDULE, useUser } from "@/lib/store";
+import { AppShell, SectionTitle } from "@/components/AppShell";
+import { useUser } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
-import { fetchAdminStats, fetchAnnouncements, fetchGroups, ar } from "@/lib/data";
+import {
+  fetchAdminStats, fetchAnnouncements, fetchGroups, ar,
+  fetchTodayPeriods, fetchUpcomingExamsCount, fetchMyHomework,
+} from "@/lib/data";
 import {
   ArrowLeft, BookOpen, CalendarClock, ClipboardList, GraduationCap,
   Megaphone, MessagesSquare, Sparkles, Wrench,
@@ -22,18 +25,26 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
   const user = useUser();
-  const { loading: authLoading } = useAuth();
+  const { userId, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
+  // Hooks: declare all before any early return.
+  const stats = useQuery({ queryKey: ["admin-stats"], queryFn: fetchAdminStats });
+  const groupsQ = useQuery({ queryKey: ["groups"], queryFn: fetchGroups });
+  const annsQ = useQuery({ queryKey: ["announcements"], queryFn: fetchAnnouncements });
+  const periodsQ = useQuery({ queryKey: ["today-periods"], queryFn: fetchTodayPeriods });
+  const examsCountQ = useQuery({ queryKey: ["exams-upcoming"], queryFn: fetchUpcomingExamsCount });
+  const homeworkQ = useQuery({
+    queryKey: ["my-homework", userId],
+    queryFn: () => fetchMyHomework(userId!),
+    enabled: !!userId,
+  });
+
   useEffect(() => {
-    // Wait for Supabase auth to finish loading before deciding to redirect
     if (authLoading) return;
-    if (user === null) {
-      navigate({ to: "/login" });
-    }
+    if (user === null) navigate({ to: "/login" });
   }, [user, authLoading, navigate]);
 
-  // Show spinner while auth is loading
   if (authLoading && user === null) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -42,25 +53,23 @@ function HomePage() {
     );
   }
 
-  // إحصائيات حقيقية من Supabase
-  const stats = useQuery({ queryKey: ["admin-stats"], queryFn: fetchAdminStats });
-  const groupsQ = useQuery({ queryKey: ["groups"], queryFn: fetchGroups });
-  const annsQ = useQuery({ queryKey: ["announcements"], queryFn: fetchAnnouncements });
-  const latestAnn = annsQ.data?.[0] ?? ANNOUNCEMENTS[0];
-
+  const latestAnn = annsQ.data?.[0];
   const name = user?.fullName?.split(" ")[0] ?? "زائر";
-  const nowClass = TODAY_SCHEDULE.find((c) => c.status === "now");
   const isGuest = user?.role === "guest";
   const isOwner = user?.role === "owner";
 
-  const booksCount = stats.data?.books ?? 12;
-  const examsCount = EXAMS.length;
+  const periods = periodsQ.data ?? [];
+  const nowClass = periods[0];
+  const openHomework = (homeworkQ.data ?? []).filter((h) => !h.done);
+  const booksCount = stats.data?.books ?? 0;
+  const examsCount = examsCountQ.data ?? 0;
+  const groupsCount = groupsQ.data?.length ?? 0;
 
   return (
     <AppShell title="الرئيسية">
       <section className="mb-5 animate-reveal">
         <div className="text-[11px] tracking-[0.2em] text-primary font-bold uppercase mb-1">
-          الاثنين • ١٤ تشرين الأول
+          {new Date().toLocaleDateString("ar-IQ", { weekday: "long", day: "numeric", month: "long" })}
         </div>
         <h1 className="text-3xl font-bold leading-tight">
           {isGuest ? (
@@ -80,10 +89,7 @@ function HomePage() {
         </p>
 
         {isOwner && (
-          <Link
-            to="/admin"
-            className="mt-4 rounded-2xl p-4 bg-accent text-accent-foreground shadow-glass flex items-center justify-between"
-          >
+          <Link to="/admin" className="mt-4 rounded-2xl p-4 bg-accent text-accent-foreground shadow-glass flex items-center justify-between">
             <div>
               <div className="text-[10px] tracking-[0.2em] opacity-70 font-bold uppercase">إدارة</div>
               <div className="font-bold text-base mt-0.5">فتح لوحة التحكم</div>
@@ -97,7 +103,7 @@ function HomePage() {
             <div className="rounded-2xl p-4 bg-accent text-accent-foreground relative overflow-hidden">
               <div className="text-[11px] opacity-70 font-medium">الواجبات</div>
               <div className="text-3xl font-mono font-bold mt-1">
-                {ar(String(HOMEWORK.filter((h) => !h.done).length).padStart(2, "0"))}
+                {ar(String(openHomework.length).padStart(2, "0"))}
               </div>
               <ClipboardList className="absolute -bottom-2 -left-2 size-16 opacity-10" />
             </div>
@@ -118,7 +124,7 @@ function HomePage() {
             <Megaphone className="size-5 text-primary shrink-0" />
             <div className="min-w-0">
               <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">آخر تبليغ</div>
-              <div className="text-sm font-bold truncate">{latestAnn?.title ?? "—"}</div>
+              <div className="text-sm font-bold truncate">{latestAnn?.title ?? "لا توجد تبليغات"}</div>
             </div>
           </Link>
           <Link to="/books" className="glass rounded-2xl p-4 flex flex-col gap-1">
@@ -150,25 +156,29 @@ function HomePage() {
       {!isGuest && (
         <>
           <section className="grid grid-cols-6 gap-3 auto-rows-[110px]">
-
             {/* Today schedule */}
             <Link to="/schedule" className="col-span-6 row-span-2 glass rounded-3xl p-5 shadow-soft relative overflow-hidden animate-reveal [animation-delay:80ms]">
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <div className="text-[10px] tracking-[0.2em] text-primary font-bold uppercase mb-1">جدول اليوم</div>
-                  <h3 className="text-lg font-bold">{nowClass?.subject ?? "—"}</h3>
-                  <p className="text-xs text-muted-foreground mt-1">{nowClass?.room ?? ""} • الآن</p>
+                  <h3 className="text-lg font-bold">{nowClass?.subject ?? "لا يوجد جدول اليوم"}</h3>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {nowClass ? `${nowClass.room ?? ""}${nowClass.room ? " • " : ""}${nowClass.start_time}` : "تواصل مع الإدارة لإضافة الجدول"}
+                  </p>
                 </div>
-                <span className="px-2.5 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold">مباشر</span>
+                {nowClass && <span className="px-2.5 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold">اليوم</span>}
               </div>
               <div className="space-y-2.5">
-                {TODAY_SCHEDULE.slice(0, 3).map((c, i) => (
-                  <div key={i} className={`flex items-center gap-3 ${c.status === "done" ? "opacity-40" : ""}`}>
-                    <div className="font-mono text-xs text-muted-foreground w-10">{c.time}</div>
+                {periods.slice(0, 3).map((c) => (
+                  <div key={c.id} className="flex items-center gap-3">
+                    <div className="font-mono text-xs text-muted-foreground w-10">{c.start_time}</div>
                     <div className="h-px flex-1 bg-border" />
                     <div className="text-sm font-medium">{c.subject}</div>
                   </div>
                 ))}
+                {periods.length === 0 && !periodsQ.isLoading && (
+                  <div className="text-xs text-muted-foreground">— لم يُضف بعد —</div>
+                )}
               </div>
               <div className="ink-watermark">٠١</div>
             </Link>
@@ -187,18 +197,17 @@ function HomePage() {
               </div>
             </Link>
 
-            {/* Latest announcement - حقيقي */}
+            {/* Latest announcement */}
             <Link to="/announcements" className="col-span-2 row-span-2 glass rounded-3xl p-3 flex flex-col items-center text-center justify-center animate-reveal [animation-delay:200ms]">
               <div className="size-8 rounded-full bg-amber-50 grid place-items-center mb-2">
                 <Megaphone className="size-4 text-amber-700" />
               </div>
               <div className="text-[9px] font-bold uppercase tracking-[0.18em] mb-1">تنبيه</div>
               <div className="text-[11px] font-medium leading-tight px-1 line-clamp-3">
-                {latestAnn?.title ?? "—"}
+                {latestAnn?.title ?? "لا تبليغات"}
               </div>
             </Link>
 
-            {/* Books count - حقيقي */}
             <Link to="/books" className="col-span-3 glass rounded-2xl p-4 flex items-center justify-between animate-reveal [animation-delay:240ms]">
               <span className="text-sm font-medium flex items-center gap-2">
                 <BookOpen className="size-4 text-primary" /> الكتب
@@ -212,7 +221,7 @@ function HomePage() {
               <span className="text-sm font-medium flex items-center gap-2">
                 <CalendarClock className="size-4 text-primary" /> امتحانات
               </span>
-              <span className="font-mono font-bold text-lg text-accent">{ar(String(examsCount).padStart(2,"0"))}</span>
+              <span className="font-mono font-bold text-lg text-accent">{ar(String(examsCount).padStart(2, "0"))}</span>
             </Link>
 
             {/* Homework */}
@@ -222,13 +231,18 @@ function HomePage() {
                 <span className="text-[11px] text-primary">عرض الكل</span>
               </div>
               <div className="space-y-2.5 mt-3">
-                {HOMEWORK.slice(0, 3).map((h, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <div className={`size-2 rounded-full ${h.done ? "bg-border" : "bg-accent"}`} />
-                    <div className={`text-sm ${h.done ? "text-muted-foreground line-through" : ""}`}>{h.title}</div>
-                    <div className="text-[10px] text-muted-foreground mr-auto">{h.due}</div>
+                {openHomework.slice(0, 3).map((h) => (
+                  <div key={h.id} className="flex items-center gap-3">
+                    <div className="size-2 rounded-full bg-accent" />
+                    <div className="text-sm">{h.title}</div>
+                    <div className="text-[10px] text-muted-foreground mr-auto">
+                      {h.due_date ? new Date(h.due_date).toLocaleDateString("ar-IQ", { month: "short", day: "numeric" }) : ""}
+                    </div>
                   </div>
                 ))}
+                {openHomework.length === 0 && !homeworkQ.isLoading && (
+                  <div className="text-xs text-muted-foreground">لا توجد واجبات مفتوحة 🎉</div>
+                )}
               </div>
             </Link>
 
@@ -237,7 +251,7 @@ function HomePage() {
               <MessagesSquare className="size-5 text-primary" />
               <div>
                 <div className="font-bold text-sm">الكروبات</div>
-                <div className="text-[11px] text-muted-foreground mt-0.5">{groupsQ.isLoading ? "…" : ar(groupsQ.data?.length ?? 0)} كروبات نشطة</div>
+                <div className="text-[11px] text-muted-foreground mt-0.5">{groupsQ.isLoading ? "…" : ar(groupsCount)} كروبات نشطة</div>
               </div>
             </Link>
 
