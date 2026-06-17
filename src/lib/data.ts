@@ -367,3 +367,46 @@ export function formatDate(iso: string): string {
   try { return new Date(iso).toLocaleDateString("ar-IQ", { day: "numeric", month: "short" }); }
   catch { return iso; }
 }
+
+// ==================== TODAY / EXAMS / HOMEWORK ====================
+
+export interface ExamItem {
+  id: string; title: string; subject: string; exam_date: string; description: string | null; created_at: string;
+}
+export interface HomeworkItem {
+  id: string; user_id: string; title: string; subject: string; due_date: string | null; done: boolean; created_at: string;
+}
+
+export async function fetchExams(): Promise<ExamItem[]> {
+  const { data, error } = await supabase.from("exams").select("*").order("exam_date", { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as ExamItem[];
+}
+
+export async function fetchUpcomingExamsCount(): Promise<number> {
+  const { count, error } = await supabase
+    .from("exams").select("id", { count: "exact", head: true })
+    .gte("exam_date", new Date().toISOString());
+  if (error) return 0;
+  return count ?? 0;
+}
+
+export async function fetchMyHomework(userId: string): Promise<HomeworkItem[]> {
+  const { data, error } = await supabase.from("homework").select("*")
+    .eq("user_id", userId).order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as HomeworkItem[];
+}
+
+export async function fetchTodayPeriods(): Promise<SchedulePeriod[]> {
+  const dayIndex = new Date().getDay(); // 0..6 sun..sat
+  const { data: day, error: dayErr } = await supabase
+    .from("weekly_schedule").select("id, is_holiday")
+    .eq("day_index", dayIndex).maybeSingle();
+  if (dayErr || !day || day.is_holiday) return [];
+  const { data, error } = await supabase.from("schedule_periods").select("*")
+    .eq("day_id", day.id).order("period_number", { ascending: true });
+  if (error) return [];
+  return (data ?? []) as SchedulePeriod[];
+}
+
