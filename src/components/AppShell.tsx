@@ -1,8 +1,9 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { Bell, Home, CalendarDays, BookOpen, User2, Search, LogOut, Sparkles } from "lucide-react";
+import { Bell, Home, CalendarDays, BookOpen, User2, Search, LogOut, Sparkles, Sun, Moon } from "lucide-react";
 import { useUser } from "@/lib/store";
 import { signOut } from "@/lib/auth";
 import { useHasUnreadNotifications, markNotificationsSeen } from "@/lib/notifications";
+import { useTheme } from "@/lib/theme";
 import type { ReactNode } from "react";
 
 const NAV = [
@@ -18,6 +19,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
   const navigate = useNavigate();
   const location = useLocation();
   const hasUnread = useHasUnreadNotifications();
+  const { resolved, toggle } = useTheme();
 
 
   return (
@@ -34,6 +36,15 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
             </div>
           </Link>
           <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={toggle}
+              aria-label={resolved === "dark" ? "تفعيل الوضع الفاتح" : "تفعيل الوضع الداكن"}
+              className="size-9 grid place-items-center rounded-xl border border-border bg-surface-2/60 overflow-hidden"
+            >
+              <Sun className={`size-4 absolute transition-all duration-500 ${resolved === "dark" ? "opacity-0 rotate-90 scale-50" : "opacity-100 rotate-0 scale-100"}`} />
+              <Moon className={`size-4 absolute transition-all duration-500 ${resolved === "dark" ? "opacity-100 rotate-0 scale-100" : "opacity-0 -rotate-90 scale-50"}`} />
+            </button>
             <Link
               to="/search"
               aria-label="بحث"
