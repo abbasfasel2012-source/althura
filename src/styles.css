@@ -59,18 +59,18 @@
 }
 
 .dark {
-  --background: #14130f;
+  --background: #0f0e0b;
   --foreground: #f3efe6;
-  --surface: #1f1d18cc;
-  --surface-2: #25221c;
-  --primary: #c2a577;
+  --surface: #1c1a15cc;
+  --surface-2: #232019;
+  --primary: #d4b97f;
   --primary-foreground: #14130f;
-  --accent: #d4b97f;
+  --accent: #c2a577;
   --accent-foreground: #14130f;
   --muted: #ffffff14;
   --muted-foreground: #b8b1a0;
   --border: #ffffff1f;
-  --ring: #c2a57766;
+  --ring: #d4b97f66;
   --destructive: #d97561;
 }
 
@@ -85,11 +85,25 @@
     font-family: var(--font-display);
     -webkit-font-smoothing: antialiased;
   }
+  /* Smooth color/background transitions when theme switches.
+     Scoped to common chrome props so it doesn't fight layout animations. */
+  html.theme-ready, html.theme-ready * {
+    transition: background-color 360ms var(--ease-out-expo),
+                border-color 360ms var(--ease-out-expo),
+                color 240ms var(--ease-out-expo),
+                fill 240ms var(--ease-out-expo),
+                stroke 240ms var(--ease-out-expo);
+  }
   body {
     background-image:
       radial-gradient(ellipse 80% 60% at 100% 0%, color-mix(in oklab, var(--primary) 16%, transparent), transparent 60%),
       radial-gradient(ellipse 60% 40% at 0% 100%, color-mix(in oklab, var(--accent) 12%, transparent), transparent 60%);
     background-attachment: fixed;
+  }
+  .dark body {
+    background-image:
+      radial-gradient(ellipse 80% 60% at 100% 0%, color-mix(in oklab, var(--primary) 10%, transparent), transparent 65%),
+      radial-gradient(ellipse 70% 50% at 0% 100%, color-mix(in oklab, var(--accent) 8%, transparent), transparent 65%);
   }
   html {
     direction: rtl;
