@@ -91,5 +91,7 @@ export const themeBootstrapScript = `
   var el = document.documentElement;
   if(r === 'dark') el.classList.add('dark'); else el.classList.remove('dark');
   el.style.colorScheme = r;
+  // Enable smooth transitions only after first paint to avoid flicker on load.
+  requestAnimationFrame(function(){ requestAnimationFrame(function(){ el.classList.add('theme-ready'); }); });
 }catch(e){}})();
 `;
