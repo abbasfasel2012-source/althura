@@ -152,109 +152,71 @@
 
 .font-mono { font-family: var(--font-mono); }
 
-/* ===== إصلاح تباين النصوص ===== */
-/* inputs وselects - النص يكون واضح دائماً */
+/* ===== إصلاح تباين النصوص — موحّد ===== */
+
+/* inputs/textarea/select: نص واضح وplaceholder خفيف */
 input, select, textarea {
   color: var(--foreground) !important;
 }
-
 input::placeholder, textarea::placeholder {
   color: var(--muted-foreground) !important;
-  opacity: 0.7;
+  opacity: 0.75;
 }
 
-/* إصلاح النصوص داخل glass cards */
-.glass .text-foreground,
-.glass-strong .text-foreground {
-  color: var(--foreground);
-}
-
-/* ضمان وضوح النصوص في light mode */
-:root {
-  --foreground: #1a1a18;
-}
-
-/* الخطوط الباهتة بجانب الخلفية - تقوية */
+/* النصوص الباهتة تبقى مقروءة */
 .text-muted-foreground {
-  color: var(--muted-foreground);
+  color: var(--muted-foreground) !important;
   opacity: 1 !important;
 }
 
-/* إصلاح border على glass في light mode */
+/* حدود الكروت — مشتقّة من الـ foreground الحالي لكي تنقلب مع الثيم */
 .glass {
-  border-color: rgba(26, 26, 24, 0.12) !important;
+  border-color: color-mix(in oklab, var(--foreground) 12%, transparent) !important;
 }
 .glass-strong {
-  border-color: rgba(26, 26, 24, 0.14) !important;
+  border-color: color-mix(in oklab, var(--foreground) 14%, transparent) !important;
 }
 
-.dark .glass {
-  border-color: rgba(255,255,255,0.1) !important;
-}
-.dark .glass-strong {
-  border-color: rgba(255,255,255,0.12) !important;
-}
-
-/* nav items non-active - أوضح */
+/* عناصر الشريط السفلي غير النشطة */
 nav a.text-muted-foreground {
-  color: #5a5a52 !important;
-}
-.dark nav a.text-muted-foreground {
-  color: #b8b1a0 !important;
-}
-
-/* ===== إصلاح إشكاليات التباين ===== */
-
-/* inputs/selects: النص يجب أن يكون واضحاً */
-input, textarea, select {
-  color: var(--foreground) !important;
-}
-
-input::placeholder, textarea::placeholder {
   color: var(--muted-foreground) !important;
-  opacity: 0.8;
 }
 
-/* الـ glass cards: النص الداخلي */
+/* النصوص داخل البطاقات */
 .glass .text-foreground,
 .glass-strong .text-foreground {
   color: var(--foreground) !important;
 }
 
-/* الـ border على inputs يكون أوضح */
+/* حدود الـ inputs أوضح قليلاً */
 .border-border {
-  border-color: color-mix(in oklab, var(--foreground) 20%, transparent) !important;
+  border-color: color-mix(in oklab, var(--foreground) 18%, transparent) !important;
 }
 
-/* النصوص في الـ cards تكون واضحة */
-.glass p, .glass span, .glass div {
-  --tw-text-opacity: 1;
-}
-
-/* إصلاح input في dark mode */
+/* خلفية الـ inputs في الوضع الداكن */
 .dark input, .dark textarea, .dark select {
   background-color: var(--surface-2);
   color: var(--foreground);
 }
 
-/* تحسين وضوح النص في surface-2 */
+/* surface-2 يضمن نص واضح */
 .bg-surface-2 {
   color: var(--foreground);
 }
 
-/* الـ option في select */
+/* option داخل select يأخذ ألوان الثيم */
 option {
   background-color: var(--background);
   color: var(--foreground);
 }
 
-/* الـ datetime-local input */
+/* color-scheme لـ datetime/time inputs */
 input[type="datetime-local"],
 input[type="time"] {
   color-scheme: light;
 }
-
 .dark input[type="datetime-local"],
 .dark input[type="time"] {
   color-scheme: dark;
 }
+
