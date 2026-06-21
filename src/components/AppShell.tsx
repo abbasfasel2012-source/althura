@@ -40,7 +40,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
               type="button"
               onClick={toggle}
               aria-label={resolved === "dark" ? "تفعيل الوضع الفاتح" : "تفعيل الوضع الداكن"}
-              className="size-9 grid place-items-center rounded-xl border border-border bg-surface-2/60 overflow-hidden"
+              className="relative size-9 grid place-items-center rounded-xl border border-border bg-surface-2/60 overflow-hidden"
             >
               <Sun className={`size-4 absolute transition-all duration-500 ${resolved === "dark" ? "opacity-0 rotate-90 scale-50" : "opacity-100 rotate-0 scale-100"}`} />
               <Moon className={`size-4 absolute transition-all duration-500 ${resolved === "dark" ? "opacity-100 rotate-0 scale-100" : "opacity-0 -rotate-90 scale-50"}`} />
