@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect } from "react";
 import { AppShell, Card, SectionTitle } from "@/components/AppShell";
 import { useLocalStorage } from "@/lib/store";
-import { Bell, Globe, Moon, Sun, Vibrate, Volume2 } from "lucide-react";
+import { useTheme, type Theme } from "@/lib/theme";
+import { Bell, Globe, Monitor, Moon, Sun, Vibrate, Volume2 } from "lucide-react";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -15,16 +15,16 @@ export const Route = createFileRoute("/settings")({
 });
 
 function SettingsPage() {
-  const [theme, setTheme] = useLocalStorage<"light" | "dark">("aladhra.theme", "light");
+  const { theme, setTheme } = useTheme();
   const [notif, setNotif] = useLocalStorage("aladhra.notif", true);
   const [sound, setSound] = useLocalStorage("aladhra.sound", true);
   const [vibrate, setVibrate] = useLocalStorage("aladhra.vibrate", false);
 
-  useEffect(() => {
-    const root = document.documentElement;
-    if (theme === "dark") root.classList.add("dark");
-    else root.classList.remove("dark");
-  }, [theme]);
+  const options: { value: Theme; label: string; icon: typeof Sun }[] = [
+    { value: "light", label: "فاتح", icon: Sun },
+    { value: "dark", label: "داكن", icon: Moon },
+    { value: "system", label: "النظام", icon: Monitor },
+  ];
 
   return (
     <AppShell title="الإعدادات">
@@ -37,25 +37,23 @@ function SettingsPage() {
 
       <SectionTitle eyebrow="المظهر" title="السمة" />
       <Card className="!p-2 mb-5">
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            onClick={() => setTheme("light")}
-            className={`rounded-xl p-3 flex flex-col items-center gap-2 transition ${
-              theme === "light" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
-            }`}
-          >
-            <Sun className="size-5" />
-            <span className="text-xs font-bold">فاتح</span>
-          </button>
-          <button
-            onClick={() => setTheme("dark")}
-            className={`rounded-xl p-3 flex flex-col items-center gap-2 transition ${
-              theme === "dark" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
-            }`}
-          >
-            <Moon className="size-5" />
-            <span className="text-xs font-bold">داكن</span>
-          </button>
+        <div className="grid grid-cols-3 gap-2">
+          {options.map((opt) => {
+            const Icon = opt.icon;
+            const active = theme === opt.value;
+            return (
+              <button
+                key={opt.value}
+                onClick={() => setTheme(opt.value)}
+                className={`rounded-xl p-3 flex flex-col items-center gap-2 transition ${
+                  active ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Icon className="size-5" />
+                <span className="text-xs font-bold">{opt.label}</span>
+              </button>
+            );
+          })}
         </div>
       </Card>
 
