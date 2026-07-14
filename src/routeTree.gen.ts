@@ -30,6 +30,7 @@ import { Route as AiRouteImport } from './routes/ai'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GroupsGroupIdRouteImport } from './routes/groups.$groupId'
+import { Route as ApiGradeTextRouteImport } from './routes/api/grade-text'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 
 const ToolsRoute = ToolsRouteImport.update({
@@ -137,6 +138,11 @@ const GroupsGroupIdRoute = GroupsGroupIdRouteImport.update({
   path: '/$groupId',
   getParentRoute: () => GroupsRoute,
 } as any)
+const ApiGradeTextRoute = ApiGradeTextRouteImport.update({
+  id: '/api/grade-text',
+  path: '/api/grade-text',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -165,6 +171,7 @@ export interface FileRoutesByFullPath {
   '/teachers': typeof TeachersRoute
   '/tools': typeof ToolsRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/grade-text': typeof ApiGradeTextRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
 }
 export interface FileRoutesByTo {
@@ -189,6 +196,7 @@ export interface FileRoutesByTo {
   '/teachers': typeof TeachersRoute
   '/tools': typeof ToolsRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/grade-text': typeof ApiGradeTextRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
 }
 export interface FileRoutesById {
@@ -214,6 +222,7 @@ export interface FileRoutesById {
   '/teachers': typeof TeachersRoute
   '/tools': typeof ToolsRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/grade-text': typeof ApiGradeTextRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
 }
 export interface FileRouteTypes {
@@ -240,6 +249,7 @@ export interface FileRouteTypes {
     | '/teachers'
     | '/tools'
     | '/api/chat'
+    | '/api/grade-text'
     | '/groups/$groupId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -264,6 +274,7 @@ export interface FileRouteTypes {
     | '/teachers'
     | '/tools'
     | '/api/chat'
+    | '/api/grade-text'
     | '/groups/$groupId'
   id:
     | '__root__'
@@ -288,6 +299,7 @@ export interface FileRouteTypes {
     | '/teachers'
     | '/tools'
     | '/api/chat'
+    | '/api/grade-text'
     | '/groups/$groupId'
   fileRoutesById: FileRoutesById
 }
@@ -313,6 +325,7 @@ export interface RootRouteChildren {
   TeachersRoute: typeof TeachersRoute
   ToolsRoute: typeof ToolsRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiGradeTextRoute: typeof ApiGradeTextRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -464,6 +477,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GroupsGroupIdRouteImport
       parentRoute: typeof GroupsRoute
     }
+    '/api/grade-text': {
+      id: '/api/grade-text'
+      path: '/api/grade-text'
+      fullPath: '/api/grade-text'
+      preLoaderRoute: typeof ApiGradeTextRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -507,6 +527,7 @@ const rootRouteChildren: RootRouteChildren = {
   TeachersRoute: TeachersRoute,
   ToolsRoute: ToolsRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiGradeTextRoute: ApiGradeTextRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
