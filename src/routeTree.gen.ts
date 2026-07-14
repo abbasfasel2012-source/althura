@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VideosRouteImport } from './routes/videos'
 import { Route as ToolsRouteImport } from './routes/tools'
 import { Route as TeachersRouteImport } from './routes/teachers'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -34,6 +35,11 @@ import { Route as ExamsQuizIdRouteImport } from './routes/exams.$quizId'
 import { Route as ApiGradeTextRouteImport } from './routes/api/grade-text'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 
+const VideosRoute = VideosRouteImport.update({
+  id: '/videos',
+  path: '/videos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ToolsRoute = ToolsRouteImport.update({
   id: '/tools',
   path: '/tools',
@@ -176,6 +182,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/teachers': typeof TeachersRoute
   '/tools': typeof ToolsRoute
+  '/videos': typeof VideosRoute
   '/api/chat': typeof ApiChatRoute
   '/api/grade-text': typeof ApiGradeTextRoute
   '/exams/$quizId': typeof ExamsQuizIdRoute
@@ -202,6 +209,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/teachers': typeof TeachersRoute
   '/tools': typeof ToolsRoute
+  '/videos': typeof VideosRoute
   '/api/chat': typeof ApiChatRoute
   '/api/grade-text': typeof ApiGradeTextRoute
   '/exams/$quizId': typeof ExamsQuizIdRoute
@@ -229,6 +237,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/teachers': typeof TeachersRoute
   '/tools': typeof ToolsRoute
+  '/videos': typeof VideosRoute
   '/api/chat': typeof ApiChatRoute
   '/api/grade-text': typeof ApiGradeTextRoute
   '/exams/$quizId': typeof ExamsQuizIdRoute
@@ -257,6 +266,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/teachers'
     | '/tools'
+    | '/videos'
     | '/api/chat'
     | '/api/grade-text'
     | '/exams/$quizId'
@@ -283,6 +293,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/teachers'
     | '/tools'
+    | '/videos'
     | '/api/chat'
     | '/api/grade-text'
     | '/exams/$quizId'
@@ -309,6 +320,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/teachers'
     | '/tools'
+    | '/videos'
     | '/api/chat'
     | '/api/grade-text'
     | '/exams/$quizId'
@@ -336,12 +348,20 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   TeachersRoute: typeof TeachersRoute
   ToolsRoute: typeof ToolsRoute
+  VideosRoute: typeof VideosRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiGradeTextRoute: typeof ApiGradeTextRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/videos': {
+      id: '/videos'
+      path: '/videos'
+      fullPath: '/videos'
+      preLoaderRoute: typeof VideosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tools': {
       id: '/tools'
       path: '/tools'
@@ -555,6 +575,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   TeachersRoute: TeachersRoute,
   ToolsRoute: ToolsRoute,
+  VideosRoute: VideosRoute,
   ApiChatRoute: ApiChatRoute,
   ApiGradeTextRoute: ApiGradeTextRoute,
 }
