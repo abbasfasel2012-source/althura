@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Card } from "@/components/AppShell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchMessages, sendMessage, fetchGroups, ar } from "@/lib/data";
+import { fetchMessages, sendMessage, fetchGroups, joinGroup, ar } from "@/lib/data";
 import { useState, useEffect, useRef } from "react";
 import { Send, Loader2, User } from "lucide-react";
 import { useAuth } from "@/lib/auth";
@@ -20,10 +20,18 @@ function GroupChatPage() {
   const { data: groups } = useQuery({ queryKey: ["groups"], queryFn: fetchGroups });
   const group = groups?.find((g) => g.id === groupId);
 
-  const { data: messages, isLoading } = useQuery({
+  // Auto-join on entering (so RLS lets us read messages of private groups too)
+  useEffect(() => {
+    if (userId && groupId) {
+      joinGroup(groupId).catch(() => {});
+    }
+  }, [userId, groupId]);
+
+  const { data: messages, isLoading, error } = useQuery({
     queryKey: ["messages", groupId],
     queryFn: () => fetchMessages(groupId),
-    refetchInterval: 3000, // Real-time feel
+    refetchInterval: 3000,
+    enabled: !!userId,
   });
 
   const mutation = useMutation({
@@ -54,8 +62,12 @@ function GroupChatPage() {
           ref={scrollRef}
           className="flex-1 overflow-y-auto space-y-4 pb-4 px-1 scrollbar-hide"
         >
-          {isLoading ? (
+          {!userId ? (
+            <div className="text-center py-10 text-sm text-muted-foreground">يجب تسجيل الدخول لعرض المحادثة</div>
+          ) : isLoading ? (
             <div className="flex justify-center py-10"><Loader2 className="animate-spin text-primary" /></div>
+          ) : error ? (
+            <div className="p-4 bg-destructive/10 text-destructive rounded-2xl text-sm text-center">تعذّر تحميل الرسائل</div>
           ) : messages?.length === 0 ? (
             <div className="text-center py-10 text-muted-foreground text-sm">ابدأ المحادثة الآن...</div>
           ) : (
