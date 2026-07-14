@@ -30,6 +30,7 @@ import { Route as AiRouteImport } from './routes/ai'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GroupsGroupIdRouteImport } from './routes/groups.$groupId'
+import { Route as ExamsQuizIdRouteImport } from './routes/exams.$quizId'
 import { Route as ApiGradeTextRouteImport } from './routes/api/grade-text'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 
@@ -138,6 +139,11 @@ const GroupsGroupIdRoute = GroupsGroupIdRouteImport.update({
   path: '/$groupId',
   getParentRoute: () => GroupsRoute,
 } as any)
+const ExamsQuizIdRoute = ExamsQuizIdRouteImport.update({
+  id: '/$quizId',
+  path: '/$quizId',
+  getParentRoute: () => ExamsRoute,
+} as any)
 const ApiGradeTextRoute = ApiGradeTextRouteImport.update({
   id: '/api/grade-text',
   path: '/api/grade-text',
@@ -158,7 +164,7 @@ export interface FileRoutesByFullPath {
   '/calendar': typeof CalendarRoute
   '/contact': typeof ContactRoute
   '/events': typeof EventsRoute
-  '/exams': typeof ExamsRoute
+  '/exams': typeof ExamsRouteWithChildren
   '/grades': typeof GradesRoute
   '/groups': typeof GroupsRouteWithChildren
   '/homework': typeof HomeworkRoute
@@ -172,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/tools': typeof ToolsRoute
   '/api/chat': typeof ApiChatRoute
   '/api/grade-text': typeof ApiGradeTextRoute
+  '/exams/$quizId': typeof ExamsQuizIdRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
 }
 export interface FileRoutesByTo {
@@ -183,7 +190,7 @@ export interface FileRoutesByTo {
   '/calendar': typeof CalendarRoute
   '/contact': typeof ContactRoute
   '/events': typeof EventsRoute
-  '/exams': typeof ExamsRoute
+  '/exams': typeof ExamsRouteWithChildren
   '/grades': typeof GradesRoute
   '/groups': typeof GroupsRouteWithChildren
   '/homework': typeof HomeworkRoute
@@ -197,6 +204,7 @@ export interface FileRoutesByTo {
   '/tools': typeof ToolsRoute
   '/api/chat': typeof ApiChatRoute
   '/api/grade-text': typeof ApiGradeTextRoute
+  '/exams/$quizId': typeof ExamsQuizIdRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
 }
 export interface FileRoutesById {
@@ -209,7 +217,7 @@ export interface FileRoutesById {
   '/calendar': typeof CalendarRoute
   '/contact': typeof ContactRoute
   '/events': typeof EventsRoute
-  '/exams': typeof ExamsRoute
+  '/exams': typeof ExamsRouteWithChildren
   '/grades': typeof GradesRoute
   '/groups': typeof GroupsRouteWithChildren
   '/homework': typeof HomeworkRoute
@@ -223,6 +231,7 @@ export interface FileRoutesById {
   '/tools': typeof ToolsRoute
   '/api/chat': typeof ApiChatRoute
   '/api/grade-text': typeof ApiGradeTextRoute
+  '/exams/$quizId': typeof ExamsQuizIdRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
 }
 export interface FileRouteTypes {
@@ -250,6 +259,7 @@ export interface FileRouteTypes {
     | '/tools'
     | '/api/chat'
     | '/api/grade-text'
+    | '/exams/$quizId'
     | '/groups/$groupId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -275,6 +285,7 @@ export interface FileRouteTypes {
     | '/tools'
     | '/api/chat'
     | '/api/grade-text'
+    | '/exams/$quizId'
     | '/groups/$groupId'
   id:
     | '__root__'
@@ -300,6 +311,7 @@ export interface FileRouteTypes {
     | '/tools'
     | '/api/chat'
     | '/api/grade-text'
+    | '/exams/$quizId'
     | '/groups/$groupId'
   fileRoutesById: FileRoutesById
 }
@@ -312,7 +324,7 @@ export interface RootRouteChildren {
   CalendarRoute: typeof CalendarRoute
   ContactRoute: typeof ContactRoute
   EventsRoute: typeof EventsRoute
-  ExamsRoute: typeof ExamsRoute
+  ExamsRoute: typeof ExamsRouteWithChildren
   GradesRoute: typeof GradesRoute
   GroupsRoute: typeof GroupsRouteWithChildren
   HomeworkRoute: typeof HomeworkRoute
@@ -477,6 +489,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GroupsGroupIdRouteImport
       parentRoute: typeof GroupsRoute
     }
+    '/exams/$quizId': {
+      id: '/exams/$quizId'
+      path: '/$quizId'
+      fullPath: '/exams/$quizId'
+      preLoaderRoute: typeof ExamsQuizIdRouteImport
+      parentRoute: typeof ExamsRoute
+    }
     '/api/grade-text': {
       id: '/api/grade-text'
       path: '/api/grade-text'
@@ -493,6 +512,16 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface ExamsRouteChildren {
+  ExamsQuizIdRoute: typeof ExamsQuizIdRoute
+}
+
+const ExamsRouteChildren: ExamsRouteChildren = {
+  ExamsQuizIdRoute: ExamsQuizIdRoute,
+}
+
+const ExamsRouteWithChildren = ExamsRoute._addFileChildren(ExamsRouteChildren)
 
 interface GroupsRouteChildren {
   GroupsGroupIdRoute: typeof GroupsGroupIdRoute
@@ -514,7 +543,7 @@ const rootRouteChildren: RootRouteChildren = {
   CalendarRoute: CalendarRoute,
   ContactRoute: ContactRoute,
   EventsRoute: EventsRoute,
-  ExamsRoute: ExamsRoute,
+  ExamsRoute: ExamsRouteWithChildren,
   GradesRoute: GradesRoute,
   GroupsRoute: GroupsRouteWithChildren,
   HomeworkRoute: HomeworkRoute,
