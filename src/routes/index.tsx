@@ -219,9 +219,16 @@ function HomePage() {
 
             <Link to="/exams" className="col-span-3 glass rounded-2xl p-4 flex items-center justify-between animate-reveal [animation-delay:280ms]">
               <span className="text-sm font-medium flex items-center gap-2">
-                <CalendarClock className="size-4 text-primary" /> امتحانات
+                <CalendarClock className="size-4 text-primary" /> اختبارات
               </span>
               <span className="font-mono font-bold text-lg text-accent">{ar(String(examsCount).padStart(2, "0"))}</span>
+            </Link>
+
+            <Link to="/videos" className="col-span-6 glass rounded-2xl p-4 flex items-center justify-between animate-reveal [animation-delay:300ms]">
+              <span className="text-sm font-medium flex items-center gap-2">
+                🎬 مكتبة الفيديوهات
+              </span>
+              <span className="text-[11px] text-primary font-bold">فتح</span>
             </Link>
 
             {/* Homework */}

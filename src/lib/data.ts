@@ -410,3 +410,261 @@ export async function fetchTodayPeriods(): Promise<SchedulePeriod[]> {
   return (data ?? []) as SchedulePeriod[];
 }
 
+
+// ==================== QUIZZES ====================
+
+export type QuestionType = "mcq" | "true_false" | "text";
+
+export interface Quiz {
+  id: string;
+  title: string;
+  subject: string;
+  description: string | null;
+  grade: string | null;
+  section: string | null;
+  duration_minutes: number | null;
+  is_published: boolean;
+  created_at: string;
+}
+
+export interface QuizQuestion {
+  id: string;
+  quiz_id: string;
+  position: number;
+  type: QuestionType;
+  question: string;
+  options: string[] | null;
+  correct_answer: string | null;
+  points: number;
+}
+
+export interface QuizAttempt {
+  id: string;
+  quiz_id: string;
+  user_id: string;
+  started_at: string;
+  submitted_at: string | null;
+  score: number | null;
+  max_score: number | null;
+  status: "in_progress" | "submitted" | "graded";
+}
+
+export interface QuizAnswer {
+  id: string;
+  attempt_id: string;
+  question_id: string;
+  answer: string | null;
+  is_correct: boolean | null;
+  points_awarded: number | null;
+  ai_feedback: string | null;
+}
+
+export async function fetchQuizzes(): Promise<Quiz[]> {
+  const { data, error } = await supabase.from("quizzes").select("*").order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as Quiz[];
+}
+
+export async function fetchQuizWithQuestions(quizId: string): Promise<{ quiz: Quiz; questions: QuizQuestion[] }> {
+  const [{ data: quiz, error: qErr }, { data: questions, error: qsErr }] = await Promise.all([
+    supabase.from("quizzes").select("*").eq("id", quizId).maybeSingle(),
+    supabase.from("quiz_questions").select("*").eq("quiz_id", quizId).order("position", { ascending: true }),
+  ]);
+  if (qErr) throw qErr;
+  if (qsErr) throw qsErr;
+  if (!quiz) throw new Error("الاختبار غير موجود");
+  return { quiz: quiz as Quiz, questions: (questions ?? []) as QuizQuestion[] };
+}
+
+export async function createQuiz(p: {
+  title: string; subject: string; description?: string;
+  grade?: string | null; section?: string | null; duration_minutes?: number;
+  questions: Array<{ type: QuestionType; question: string; options?: string[]; correct_answer?: string; points?: number }>;
+}) {
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data: quiz, error } = await supabase.from("quizzes").insert({
+    title: p.title, subject: p.subject, description: p.description ?? null,
+    grade: p.grade ?? null, section: p.section ?? null,
+    duration_minutes: p.duration_minutes ?? 30,
+    created_by: user?.id,
+  }).select().single();
+  if (error) throw error;
+  if (p.questions.length > 0) {
+    const rows = p.questions.map((q, i) => ({
+      quiz_id: quiz.id,
+      position: i,
+      type: q.type,
+      question: q.question,
+      options: q.options ?? null,
+      correct_answer: q.correct_answer ?? null,
+      points: q.points ?? 1,
+    }));
+    const { error: qErr } = await supabase.from("quiz_questions").insert(rows);
+    if (qErr) throw qErr;
+  }
+  return quiz.id as string;
+}
+
+export async function deleteQuiz(id: string) {
+  const { error } = await supabase.from("quizzes").delete().eq("id", id);
+  if (error) throw error;
+}
+
+export async function startOrGetAttempt(quizId: string): Promise<QuizAttempt> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("سجّل الدخول أولاً");
+  const { data: existing } = await supabase.from("quiz_attempts").select("*")
+    .eq("quiz_id", quizId).eq("user_id", user.id).order("started_at", { ascending: false }).limit(1);
+  if (existing && existing.length > 0) return existing[0] as QuizAttempt;
+  const { data, error } = await supabase.from("quiz_attempts").insert({
+    quiz_id: quizId, user_id: user.id,
+  }).select().single();
+  if (error) throw error;
+  return data as QuizAttempt;
+}
+
+export async function fetchAttemptAnswers(attemptId: string): Promise<QuizAnswer[]> {
+  const { data, error } = await supabase.from("quiz_answers").select("*").eq("attempt_id", attemptId);
+  if (error) throw error;
+  return (data ?? []) as QuizAnswer[];
+}
+
+// Submit + grade: auto-grade mcq/tf; call AI for text
+export async function submitQuiz(args: {
+  attemptId: string;
+  quizId: string;
+  answers: Record<string, string>; // question_id -> answer
+}): Promise<QuizAttempt> {
+  const { questions } = await fetchQuizWithQuestions(args.quizId);
+  let totalScore = 0;
+  let maxScore = 0;
+
+  // First pass: auto-grade mcq / true_false
+  const rows: Array<{ attempt_id: string; question_id: string; answer: string | null; is_correct: boolean | null; points_awarded: number; ai_feedback: string | null }> = [];
+  const textQs: QuizQuestion[] = [];
+  const textAnswers: string[] = [];
+
+  for (const q of questions) {
+    maxScore += q.points;
+    const raw = args.answers[q.id] ?? "";
+    if (q.type === "mcq" || q.type === "true_false") {
+      const correct = (raw || "").trim() === (q.correct_answer || "").trim() && raw !== "";
+      const pts = correct ? q.points : 0;
+      totalScore += pts;
+      rows.push({
+        attempt_id: args.attemptId, question_id: q.id, answer: raw,
+        is_correct: correct, points_awarded: pts, ai_feedback: null,
+      });
+    } else {
+      textQs.push(q);
+      textAnswers.push(raw);
+      rows.push({
+        attempt_id: args.attemptId, question_id: q.id, answer: raw,
+        is_correct: null, points_awarded: 0, ai_feedback: null,
+      });
+    }
+  }
+
+  // AI grade text questions
+  if (textQs.length > 0) {
+    try {
+      const res = await fetch("/api/grade-text", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: textQs.map((q, i) => ({
+            question: q.question,
+            reference: q.correct_answer ?? "",
+            student_answer: textAnswers[i],
+            max_points: q.points,
+          })),
+        }),
+      });
+      if (res.ok) {
+        const graded = (await res.json()) as Array<{ score: number; feedback: string }>;
+        for (let i = 0; i < textQs.length; i++) {
+          const g = graded[i];
+          const q = textQs[i];
+          const row = rows.find((r) => r.question_id === q.id)!;
+          const pts = Math.max(0, Math.min(q.points, Number(g?.score ?? 0)));
+          row.points_awarded = pts;
+          row.ai_feedback = g?.feedback ?? null;
+          row.is_correct = pts >= q.points * 0.8;
+          totalScore += pts;
+        }
+      }
+    } catch {
+      // AI failed — leave text ungraded (0 pts, no feedback)
+    }
+  }
+
+  // Upsert answers
+  const { error: aErr } = await supabase.from("quiz_answers").upsert(rows, { onConflict: "attempt_id,question_id" });
+  if (aErr) throw aErr;
+
+  const { data: updated, error: uErr } = await supabase.from("quiz_attempts").update({
+    submitted_at: new Date().toISOString(),
+    score: totalScore,
+    max_score: maxScore,
+    status: "graded",
+  }).eq("id", args.attemptId).select().single();
+  if (uErr) throw uErr;
+  return updated as QuizAttempt;
+}
+
+// ==================== VIDEOS ====================
+
+export interface VideoItem {
+  id: string;
+  title: string;
+  description: string | null;
+  video_url: string;
+  thumbnail_url: string | null;
+  subject: string | null;
+  grade: string | null;
+  section: string | null;
+  created_at: string;
+}
+
+export async function fetchVideos(): Promise<VideoItem[]> {
+  const { data, error } = await supabase.from("videos").select("*").order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as VideoItem[];
+}
+
+export async function createVideo(p: {
+  title: string; description?: string; video_url: string; thumbnail_url?: string;
+  subject?: string; grade?: string | null; section?: string | null;
+}) {
+  const { data: { user } } = await supabase.auth.getUser();
+  const { error } = await supabase.from("videos").insert({
+    title: p.title,
+    description: p.description ?? null,
+    video_url: p.video_url,
+    thumbnail_url: p.thumbnail_url ?? null,
+    subject: p.subject ?? null,
+    grade: p.grade ?? null,
+    section: p.section ?? null,
+    created_by: user?.id,
+  });
+  if (error) throw error;
+}
+
+export async function deleteVideo(id: string) {
+  const { error } = await supabase.from("videos").delete().eq("id", id);
+  if (error) throw error;
+}
+
+// YouTube helper: extract ID from various URL shapes
+export function youtubeEmbedUrl(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes("youtu.be")) return `https://www.youtube.com/embed/${u.pathname.slice(1)}`;
+    if (u.hostname.includes("youtube.com")) {
+      const v = u.searchParams.get("v");
+      if (v) return `https://www.youtube.com/embed/${v}`;
+      if (u.pathname.startsWith("/embed/")) return url;
+    }
+  } catch { /* not a url */ }
+  return null;
+}

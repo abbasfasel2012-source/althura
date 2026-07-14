@@ -408,6 +408,181 @@ export type Database = {
         }
         Relationships: []
       }
+      quiz_answers: {
+        Row: {
+          ai_feedback: string | null
+          answer: string | null
+          attempt_id: string
+          created_at: string
+          id: string
+          is_correct: boolean | null
+          points_awarded: number | null
+          question_id: string
+        }
+        Insert: {
+          ai_feedback?: string | null
+          answer?: string | null
+          attempt_id: string
+          created_at?: string
+          id?: string
+          is_correct?: boolean | null
+          points_awarded?: number | null
+          question_id: string
+        }
+        Update: {
+          ai_feedback?: string | null
+          answer?: string | null
+          attempt_id?: string
+          created_at?: string
+          id?: string
+          is_correct?: boolean | null
+          points_awarded?: number | null
+          question_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_answers_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_attempts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_attempts: {
+        Row: {
+          id: string
+          max_score: number | null
+          quiz_id: string
+          score: number | null
+          started_at: string
+          status: string
+          submitted_at: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          max_score?: number | null
+          quiz_id: string
+          score?: number | null
+          started_at?: string
+          status?: string
+          submitted_at?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          max_score?: number | null
+          quiz_id?: string
+          score?: number | null
+          started_at?: string
+          status?: string
+          submitted_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_attempts_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_questions: {
+        Row: {
+          correct_answer: string | null
+          created_at: string
+          id: string
+          options: Json | null
+          points: number
+          position: number
+          question: string
+          quiz_id: string
+          type: string
+        }
+        Insert: {
+          correct_answer?: string | null
+          created_at?: string
+          id?: string
+          options?: Json | null
+          points?: number
+          position?: number
+          question: string
+          quiz_id: string
+          type: string
+        }
+        Update: {
+          correct_answer?: string | null
+          created_at?: string
+          id?: string
+          options?: Json | null
+          points?: number
+          position?: number
+          question?: string
+          quiz_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_questions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quizzes: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          duration_minutes: number | null
+          grade: string | null
+          id: string
+          is_published: boolean
+          section: string | null
+          subject: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          grade?: string | null
+          id?: string
+          is_published?: boolean
+          section?: string | null
+          subject: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          grade?: string | null
+          id?: string
+          is_published?: boolean
+          section?: string | null
+          subject?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       schedule_periods: {
         Row: {
           created_at: string
@@ -527,6 +702,48 @@ export type Database = {
         }
         Relationships: []
       }
+      videos: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          grade: string | null
+          id: string
+          section: string | null
+          subject: string | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          video_url: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          grade?: string | null
+          id?: string
+          section?: string | null
+          subject?: string | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          video_url: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          grade?: string | null
+          id?: string
+          section?: string | null
+          subject?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          video_url?: string
+        }
+        Relationships: []
+      }
       weekly_schedule: {
         Row: {
           created_at: string
@@ -559,6 +776,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_access_grade_section: {
+        Args: { _grade: string; _section: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
