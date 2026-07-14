@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-router";
 import { AppShell, Card } from "@/components/AppShell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchGroups, createGroup, deleteGroup, ar } from "@/lib/data";
@@ -17,12 +17,17 @@ export const Route = createFileRoute("/groups")({
 });
 
 function GroupsPage() {
+  const location = useLocation();
   const { isOwner } = useAuth();
   const queryClient = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [newPrivate, setNewPrivate] = useState(false);
+
+  if (location.pathname !== "/groups") {
+    return <Outlet />;
+  }
 
   const { data: groups, isLoading, error } = useQuery({
     queryKey: ["groups"],
