@@ -55,7 +55,7 @@ function LoginPage() {
         navigate({ to: "/" });
       } else if (mode === "up") {
         await requestStudentRegistration({ studentId, password, fullName, grade, section });
-        setSuccess("✅ تم إرسال طلبك! انتظر موافقة الإدارة قبل تسجيل الدخول.");
+        setSuccess("تم إرسال طلبك! انتظر موافقة الإدارة قبل تسجيل الدخول.");
         setMode("in");
         setStudentId(""); setPassword(""); setFullName("");
       }
