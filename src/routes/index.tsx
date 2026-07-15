@@ -226,7 +226,7 @@ function HomePage() {
 
             <Link to="/videos" className="col-span-6 glass rounded-2xl p-4 flex items-center justify-between animate-reveal [animation-delay:300ms]">
               <span className="text-sm font-medium flex items-center gap-2">
-                🎬 مكتبة الفيديوهات
+                مكتبة الفيديوهات
               </span>
               <span className="text-[11px] text-primary font-bold">فتح</span>
             </Link>
