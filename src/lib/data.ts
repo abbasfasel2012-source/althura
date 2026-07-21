@@ -19,6 +19,7 @@ export interface GradeRecord {
 }
 export interface StudentRow {
   id: string; full_name: string; student_id: string | null; grade: string; section: string | null; email: string | null;
+  is_teacher?: boolean; teaching_subject?: string | null; teaching_grade?: string | null; teaching_section?: string | null;
 }
 export interface PendingRegistration {
   id: string; full_name: string; student_id: string; grade: string; section: string | null;
@@ -145,7 +146,7 @@ export async function deleteBook(b: BookItem) {
 
 export async function fetchStudents(): Promise<StudentRow[]> {
   const { data, error } = await supabase.from("profiles")
-    .select("id, full_name, student_id, grade, section, email")
+    .select("id, full_name, student_id, grade, section, email, is_teacher, teaching_subject, teaching_grade, teaching_section")
     .order("full_name", { ascending: true });
   if (error) throw error;
   return (data ?? []) as StudentRow[];
@@ -668,3 +669,98 @@ export function youtubeEmbedUrl(url: string): string | null {
   } catch { /* not a url */ }
   return null;
 }
+
+// ==================== PROFILE (extended) ====================
+
+export interface FullProfile {
+  id: string;
+  full_name: string;
+  student_id: string | null;
+  grade: string | null;
+  section: string | null;
+  email: string | null;
+  admin_label: string | null;
+  is_teacher: boolean;
+  teaching_grade: string | null;
+  teaching_section: string | null;
+  teaching_subject: string | null;
+  phone: string | null;
+  bio: string | null;
+}
+
+export async function fetchProfileById(id: string): Promise<FullProfile | null> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, full_name, student_id, grade, section, email, admin_label, is_teacher, teaching_grade, teaching_section, teaching_subject, phone, bio")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw error;
+  return (data as FullProfile) ?? null;
+}
+
+// ==================== TEACHERS (from profiles) ====================
+
+export interface TeacherProfile {
+  id: string;
+  full_name: string;
+  teaching_subject: string | null;
+  teaching_grade: string | null;
+  teaching_section: string | null;
+  phone: string | null;
+  email: string | null;
+  bio: string | null;
+  admin_label: string | null;
+}
+
+export async function fetchTeacherProfiles(filter?: { grade?: string | null; section?: string | null }): Promise<TeacherProfile[]> {
+  let q = supabase
+    .from("profiles")
+    .select("id, full_name, teaching_subject, teaching_grade, teaching_section, phone, email, bio, admin_label")
+    .eq("is_teacher", true)
+    .order("full_name", { ascending: true });
+  if (filter?.grade) {
+    q = q.or(`teaching_grade.is.null,teaching_grade.eq.${filter.grade}`);
+  }
+  const { data, error } = await q;
+  if (error) throw error;
+  let list = (data ?? []) as TeacherProfile[];
+  if (filter?.section) {
+    list = list.filter((t) => !t.teaching_section || t.teaching_section === filter.section);
+  }
+  return list;
+}
+
+// ==================== DIRECT MESSAGES ====================
+
+export interface DirectMessage {
+  id: string;
+  sender_id: string;
+  receiver_id: string;
+  content: string;
+  read_at: string | null;
+  created_at: string;
+}
+
+export async function fetchDirectMessages(otherUserId: string): Promise<DirectMessage[]> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("سجّل الدخول أولاً");
+  const { data, error } = await supabase
+    .from("direct_messages")
+    .select("*")
+    .or(`and(sender_id.eq.${user.id},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${user.id})`)
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as DirectMessage[];
+}
+
+export async function sendDirectMessage(receiverId: string, content: string): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("سجّل الدخول أولاً");
+  const { error } = await supabase.from("direct_messages").insert({
+    sender_id: user.id,
+    receiver_id: receiverId,
+    content: content.trim(),
+  });
+  if (error) throw error;
+}
+

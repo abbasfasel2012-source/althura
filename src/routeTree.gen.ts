@@ -32,6 +32,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GroupsGroupIdRouteImport } from './routes/groups.$groupId'
 import { Route as ExamsQuizIdRouteImport } from './routes/exams.$quizId'
+import { Route as DmUserIdRouteImport } from './routes/dm.$userId'
 import { Route as ApiGradeTextRouteImport } from './routes/api/grade-text'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 
@@ -150,6 +151,11 @@ const ExamsQuizIdRoute = ExamsQuizIdRouteImport.update({
   path: '/$quizId',
   getParentRoute: () => ExamsRoute,
 } as any)
+const DmUserIdRoute = DmUserIdRouteImport.update({
+  id: '/dm/$userId',
+  path: '/dm/$userId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiGradeTextRoute = ApiGradeTextRouteImport.update({
   id: '/api/grade-text',
   path: '/api/grade-text',
@@ -185,6 +191,7 @@ export interface FileRoutesByFullPath {
   '/videos': typeof VideosRoute
   '/api/chat': typeof ApiChatRoute
   '/api/grade-text': typeof ApiGradeTextRoute
+  '/dm/$userId': typeof DmUserIdRoute
   '/exams/$quizId': typeof ExamsQuizIdRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
 }
@@ -212,6 +219,7 @@ export interface FileRoutesByTo {
   '/videos': typeof VideosRoute
   '/api/chat': typeof ApiChatRoute
   '/api/grade-text': typeof ApiGradeTextRoute
+  '/dm/$userId': typeof DmUserIdRoute
   '/exams/$quizId': typeof ExamsQuizIdRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
 }
@@ -240,6 +248,7 @@ export interface FileRoutesById {
   '/videos': typeof VideosRoute
   '/api/chat': typeof ApiChatRoute
   '/api/grade-text': typeof ApiGradeTextRoute
+  '/dm/$userId': typeof DmUserIdRoute
   '/exams/$quizId': typeof ExamsQuizIdRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
 }
@@ -269,6 +278,7 @@ export interface FileRouteTypes {
     | '/videos'
     | '/api/chat'
     | '/api/grade-text'
+    | '/dm/$userId'
     | '/exams/$quizId'
     | '/groups/$groupId'
   fileRoutesByTo: FileRoutesByTo
@@ -296,6 +306,7 @@ export interface FileRouteTypes {
     | '/videos'
     | '/api/chat'
     | '/api/grade-text'
+    | '/dm/$userId'
     | '/exams/$quizId'
     | '/groups/$groupId'
   id:
@@ -323,6 +334,7 @@ export interface FileRouteTypes {
     | '/videos'
     | '/api/chat'
     | '/api/grade-text'
+    | '/dm/$userId'
     | '/exams/$quizId'
     | '/groups/$groupId'
   fileRoutesById: FileRoutesById
@@ -351,6 +363,7 @@ export interface RootRouteChildren {
   VideosRoute: typeof VideosRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiGradeTextRoute: typeof ApiGradeTextRoute
+  DmUserIdRoute: typeof DmUserIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -516,6 +529,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExamsQuizIdRouteImport
       parentRoute: typeof ExamsRoute
     }
+    '/dm/$userId': {
+      id: '/dm/$userId'
+      path: '/dm/$userId'
+      fullPath: '/dm/$userId'
+      preLoaderRoute: typeof DmUserIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/grade-text': {
       id: '/api/grade-text'
       path: '/api/grade-text'
@@ -578,6 +598,7 @@ const rootRouteChildren: RootRouteChildren = {
   VideosRoute: VideosRoute,
   ApiChatRoute: ApiChatRoute,
   ApiGradeTextRoute: ApiGradeTextRoute,
+  DmUserIdRoute: DmUserIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

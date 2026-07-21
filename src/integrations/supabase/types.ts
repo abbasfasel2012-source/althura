@@ -74,6 +74,33 @@ export type Database = {
         }
         Relationships: []
       }
+      direct_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          read_at: string | null
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           created_at: string
@@ -375,35 +402,53 @@ export type Database = {
       profiles: {
         Row: {
           admin_label: string | null
+          bio: string | null
           created_at: string
           email: string | null
           full_name: string
           grade: string
           id: string
+          is_teacher: boolean
+          phone: string | null
           section: string | null
           student_id: string | null
+          teaching_grade: string | null
+          teaching_section: string | null
+          teaching_subject: string | null
           updated_at: string
         }
         Insert: {
           admin_label?: string | null
+          bio?: string | null
           created_at?: string
           email?: string | null
           full_name?: string
           grade?: string
           id: string
+          is_teacher?: boolean
+          phone?: string | null
           section?: string | null
           student_id?: string | null
+          teaching_grade?: string | null
+          teaching_section?: string | null
+          teaching_subject?: string | null
           updated_at?: string
         }
         Update: {
           admin_label?: string | null
+          bio?: string | null
           created_at?: string
           email?: string | null
           full_name?: string
           grade?: string
           id?: string
+          is_teacher?: boolean
+          phone?: string | null
           section?: string | null
           student_id?: string | null
+          teaching_grade?: string | null
+          teaching_section?: string | null
+          teaching_subject?: string | null
           updated_at?: string
         }
         Relationships: []

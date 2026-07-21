@@ -517,6 +517,7 @@ function TabStudents() {
   const students = useQuery({ queryKey: ["students"], queryFn: fetchStudents });
   const list = students.data ?? [];
   const [busy, setBusy] = useState<string | null>(null);
+  const [managing, setManaging] = useState<string | null>(null);
 
   async function remove(id: string, name: string) {
     if (!confirm(`حذف ${name}؟ لا يمكن التراجع.`)) return;
@@ -532,30 +533,50 @@ function TabStudents() {
 
   return (
     <>
-      <SectionTitle eyebrow={`${ar(list.length)} طالب`} title="الطلاب المسجّلون" />
+      <SectionTitle eyebrow={`${ar(list.length)} حساب`} title="الحسابات المسجّلة" />
       {list.length === 0 && (
-        <Card className="text-center text-xs text-muted-foreground py-8">لا يوجد طلاب مسجّلون بعد.</Card>
+        <Card className="text-center text-xs text-muted-foreground py-8">لا يوجد حسابات مسجّلة بعد.</Card>
       )}
       <div className="space-y-2">
-        {list.map((s) => (
-          <Card key={s.id} className="!p-3 flex items-center gap-3">
-            <div className="size-9 rounded-xl bg-primary/10 text-primary grid place-items-center font-bold text-sm shrink-0">
-              {s.full_name?.[0] ?? "ط"}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="font-bold text-sm text-foreground truncate">{s.full_name || "—"}</div>
-              <div className="text-[10px] text-muted-foreground font-mono truncate">
-                {s.student_id ?? "—"} · {s.grade}{s.section ? `/${s.section}` : ""}
+        {list.map((s: any) => (
+          <div key={s.id}>
+            <Card className="!p-3 flex items-center gap-3">
+              <div className={`size-9 rounded-xl grid place-items-center font-bold text-sm shrink-0 ${
+                s.is_teacher ? "bg-accent/20 text-accent" : "bg-primary/10 text-primary"
+              }`}>
+                {s.full_name?.[0] ?? "؟"}
               </div>
-            </div>
-            <button
-              onClick={() => remove(s.id, s.full_name)}
-              disabled={!!busy}
-              className="size-8 grid place-items-center rounded-lg text-muted-foreground hover:text-destructive"
-            >
-              {busy === s.id ? <Loader2 className="size-3.5 animate-spin" /> : <Trash2 className="size-3.5" />}
-            </button>
-          </Card>
+              <div className="flex-1 min-w-0">
+                <div className="font-bold text-sm text-foreground truncate">
+                  {s.full_name || "—"}
+                  {s.is_teacher && <span className="mr-1 text-[9px] font-bold text-accent">· مدرّس</span>}
+                </div>
+                <div className="text-[10px] text-muted-foreground font-mono truncate">
+                  {s.student_id ?? "—"} · {s.grade}{s.section ? `/${s.section}` : ""}
+                </div>
+              </div>
+              <button
+                onClick={() => setManaging(managing === s.id ? null : s.id)}
+                className="size-8 grid place-items-center rounded-lg text-primary hover:bg-primary/10"
+                aria-label="إدارة"
+              >
+                <Tag className="size-3.5" />
+              </button>
+              <button
+                onClick={() => remove(s.id, s.full_name)}
+                disabled={!!busy}
+                className="size-8 grid place-items-center rounded-lg text-muted-foreground hover:text-destructive"
+              >
+                {busy === s.id ? <Loader2 className="size-3.5 animate-spin" /> : <Trash2 className="size-3.5" />}
+              </button>
+            </Card>
+            {managing === s.id && (
+              <ManageUserPanel user={s} onDone={() => {
+                setManaging(null);
+                qc.invalidateQueries({ queryKey: ["students"] });
+              }} />
+            )}
+          </div>
         ))}
       </div>
 
@@ -572,6 +593,107 @@ function TabStudents() {
     </>
   );
 }
+
+function ManageUserPanel({ user, onDone }: { user: any; onDone: () => void }) {
+  const [pw, setPw] = useState("");
+  const [pwBusy, setPwBusy] = useState(false);
+  const [pwMsg, setPwMsg] = useState<string | null>(null);
+  const [tBusy, setTBusy] = useState(false);
+  const [teacher, setTeacher] = useState<boolean>(!!user.is_teacher);
+  const [subject, setSubject] = useState<string>(user.teaching_subject ?? "");
+  const [tGrade, setTGrade] = useState<string>(user.teaching_grade ?? "");
+  const [tSection, setTSection] = useState<string>(user.teaching_section ?? "");
+
+  async function resetPw(e: React.FormEvent) {
+    e.preventDefault();
+    if (pw.length < 6) { setPwMsg("الحد الأدنى 6 محارف"); return; }
+    setPwBusy(true); setPwMsg(null);
+    try {
+      const { resetUserPassword } = await import("@/lib/api/admin-users.functions");
+      await resetUserPassword({ data: { userId: user.id, newPassword: pw } });
+      setPwMsg(`تم — كلمة المرور الجديدة: ${pw}`);
+      setPw("");
+    } catch (e: any) {
+      setPwMsg(e?.message ?? "تعذّر التغيير");
+    } finally { setPwBusy(false); }
+  }
+
+  async function saveTeacher() {
+    setTBusy(true);
+    try {
+      const { setTeacher: setTeacherFn } = await import("@/lib/api/admin-users.functions");
+      await setTeacherFn({ data: {
+        userId: user.id,
+        isTeacher: teacher,
+        teachingSubject: subject || null,
+        teachingGrade: tGrade || null,
+        teachingSection: tSection || null,
+      }});
+      onDone();
+    } finally { setTBusy(false); }
+  }
+
+  return (
+    <div className="mt-2 mb-3 glass rounded-2xl p-4 space-y-4 animate-in fade-in">
+      <div>
+        <div className="text-[11px] font-bold text-muted-foreground mb-2">إعادة تعيين كلمة المرور</div>
+        <form onSubmit={resetPw} className="flex gap-2">
+          <input
+            value={pw} onChange={(e) => setPw(e.target.value)}
+            placeholder="كلمة مرور جديدة"
+            className="flex-1 px-3 py-2 rounded-xl bg-surface-2 border border-border text-sm text-foreground"
+          />
+          <button
+            type="submit" disabled={pwBusy || !pw}
+            className="px-3 py-2 rounded-xl bg-accent text-accent-foreground text-xs font-bold disabled:opacity-50"
+          >
+            {pwBusy ? <Loader2 className="size-3 animate-spin" /> : "تغيير"}
+          </button>
+        </form>
+        {pwMsg && (
+          <div className="mt-2 text-[11px] text-foreground bg-accent/10 rounded-lg px-3 py-2 leading-relaxed">
+            {pwMsg}
+          </div>
+        )}
+      </div>
+
+      <div className="border-t border-border pt-3">
+        <label className="flex items-center gap-2 text-xs font-bold text-foreground mb-2">
+          <input type="checkbox" checked={teacher} onChange={(e) => setTeacher(e.target.checked)} />
+          تعيين هذا الحساب كمدرّس
+        </label>
+        {teacher && (
+          <div className="space-y-2">
+            <input
+              value={subject} onChange={(e) => setSubject(e.target.value)}
+              placeholder="المادة (مثال: الرياضيات)"
+              className="w-full px-3 py-2 rounded-xl bg-surface-2 border border-border text-sm text-foreground"
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                value={tGrade} onChange={(e) => setTGrade(e.target.value)}
+                placeholder="الصف (اختياري)"
+                className="px-3 py-2 rounded-xl bg-surface-2 border border-border text-sm text-foreground"
+              />
+              <input
+                value={tSection} onChange={(e) => setTSection(e.target.value)}
+                placeholder="الشعبة (اختياري)"
+                className="px-3 py-2 rounded-xl bg-surface-2 border border-border text-sm text-foreground"
+              />
+            </div>
+          </div>
+        )}
+        <button
+          onClick={saveTeacher} disabled={tBusy}
+          className="mt-2 w-full py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold disabled:opacity-50"
+        >
+          {tBusy ? <Loader2 className="size-3 animate-spin mx-auto" /> : "حفظ إعدادات المدرّس"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 
 // ===== TAB: CONTENT =====
 function TabContent() {

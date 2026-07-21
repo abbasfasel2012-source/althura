@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AppShell, Card } from "@/components/AppShell";
+import { AppShell } from "@/components/AppShell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchMessages, sendMessage, fetchGroups, joinGroup, ar } from "@/lib/data";
+import { fetchMessages, sendMessage, fetchGroups, joinGroup } from "@/lib/data";
 import { useState, useEffect, useRef } from "react";
-import { Send, Loader2, User } from "lucide-react";
+import { Send, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { ProfileModal } from "@/components/ProfileModal";
 
 export const Route = createFileRoute("/groups/$groupId")({
   component: GroupChatPage,
@@ -14,6 +15,7 @@ function GroupChatPage() {
   const { groupId } = Route.useParams();
   const { userId } = useAuth();
   const [content, setContent] = useState("");
+  const [openProfile, setOpenProfile] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -76,20 +78,31 @@ function GroupChatPage() {
               return (
                 <div key={m.id} className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
                   <div className="flex items-center gap-1.5 mb-1 px-1">
-                    {!isMe && <span className="text-[10px] font-bold text-primary">{m.profiles?.full_name}</span>}
+                    {!isMe && (
+                      <button
+                        onClick={() => setOpenProfile(m.user_id)}
+                        className="text-[10px] font-bold text-primary hover:underline"
+                      >
+                        {m.profiles?.full_name ?? "عضو"}
+                      </button>
+                    )}
                     <span className="text-[9px] text-muted-foreground">
                       {new Date(m.created_at).toLocaleTimeString("ar-IQ", { hour: "2-digit", minute: "2-digit" })}
                     </span>
                   </div>
-                  <div className={`max-w-[85%] px-4 py-2.5 rounded-2xl text-sm ${
-                    isMe ? "bg-accent text-accent-foreground rounded-tr-none" : "glass rounded-tl-none"
-                  }`}>
+                  <button
+                    onClick={() => !isMe && setOpenProfile(m.user_id)}
+                    className={`text-right max-w-[85%] px-4 py-2.5 rounded-2xl text-sm ${
+                      isMe ? "bg-accent text-accent-foreground rounded-tr-none" : "glass rounded-tl-none"
+                    }`}
+                  >
                     {m.content}
-                  </div>
+                  </button>
                 </div>
               );
             })
           )}
+          {openProfile && <ProfileModal userId={openProfile} onClose={() => setOpenProfile(null)} />}
         </div>
 
         {/* Input Area */}
