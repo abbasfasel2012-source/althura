@@ -19,6 +19,7 @@ export interface GradeRecord {
 }
 export interface StudentRow {
   id: string; full_name: string; student_id: string | null; grade: string; section: string | null; email: string | null;
+  is_teacher?: boolean; teaching_subject?: string | null; teaching_grade?: string | null; teaching_section?: string | null;
 }
 export interface PendingRegistration {
   id: string; full_name: string; student_id: string; grade: string; section: string | null;
@@ -145,7 +146,7 @@ export async function deleteBook(b: BookItem) {
 
 export async function fetchStudents(): Promise<StudentRow[]> {
   const { data, error } = await supabase.from("profiles")
-    .select("id, full_name, student_id, grade, section, email")
+    .select("id, full_name, student_id, grade, section, email, is_teacher, teaching_subject, teaching_grade, teaching_section")
     .order("full_name", { ascending: true });
   if (error) throw error;
   return (data ?? []) as StudentRow[];
