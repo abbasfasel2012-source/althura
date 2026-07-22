@@ -757,8 +757,15 @@ export interface DirectMessage {
   sender_id: string;
   receiver_id: string;
   content: string;
+  attachment_url: string | null;
+  attachment_type: AttachmentType | null;
+  attachment_name: string | null;
+  attachment_size: number | null;
+  edited_at: string | null;
+  deleted_at: string | null;
   read_at: string | null;
   created_at: string;
+  reactions?: Reaction[];
 }
 
 export async function fetchDirectMessages(otherUserId: string): Promise<DirectMessage[]> {
@@ -773,14 +780,189 @@ export async function fetchDirectMessages(otherUserId: string): Promise<DirectMe
   return (data ?? []) as DirectMessage[];
 }
 
-export async function sendDirectMessage(receiverId: string, content: string): Promise<void> {
+export async function sendDirectMessage(
+  receiverId: string,
+  content: string,
+  att?: { url: string; type: AttachmentType; name: string; size: number } | null,
+): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("سجّل الدخول أولاً");
   const { error } = await supabase.from("direct_messages").insert({
     sender_id: user.id,
     receiver_id: receiverId,
     content: content.trim(),
+    attachment_url: att?.url ?? null,
+    attachment_type: att?.type ?? null,
+    attachment_name: att?.name ?? null,
+    attachment_size: att?.size ?? null,
   });
+  if (error) {
+    if (/blocked/i.test(error.message)) throw new Error("لا يمكن إرسال الرسالة — تم حظرك أو المستخدم غير متاح.");
+    throw error;
+  }
+}
+
+// ==================== CHAT MEDIA / EDIT / DELETE / REACTIONS / BLOCK ====================
+
+async function compressImage(file: File, quality: "high" | "medium" | "low"): Promise<Blob> {
+  if (quality === "high") return file;
+  const maxSide = quality === "medium" ? 1600 : 900;
+  const q = quality === "medium" ? 0.85 : 0.65;
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((res, rej) => {
+      const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = url;
+    });
+    const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+    const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+    const c = document.createElement("canvas"); c.width = w; c.height = h;
+    c.getContext("2d")!.drawImage(img, 0, 0, w, h);
+    return await new Promise<Blob>((res) => c.toBlob((b) => res(b || file), "image/jpeg", q));
+  } finally { URL.revokeObjectURL(url); }
+}
+
+export function detectAttachmentType(file: File): AttachmentType {
+  if (file.type.startsWith("image/")) return "image";
+  if (file.type.startsWith("video/")) return "video";
+  if (file.type.startsWith("audio/")) return "audio";
+  return "file";
+}
+
+export async function uploadChatMedia(
+  file: File | Blob,
+  opts?: { filename?: string; quality?: "high" | "medium" | "low" },
+): Promise<{ url: string; path: string; size: number; name: string; type: AttachmentType }> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("سجّل الدخول أولاً");
+  let payload: Blob = file;
+  const originalName = opts?.filename ?? (file instanceof File ? file.name : "media");
+  const mime = file instanceof Blob ? file.type : "application/octet-stream";
+  const type: AttachmentType = mime.startsWith("image/") ? "image"
+    : mime.startsWith("video/") ? "video"
+    : mime.startsWith("audio/") ? "audio" : "file";
+  if (type === "image" && file instanceof File && opts?.quality && opts.quality !== "high") {
+    payload = await compressImage(file, opts.quality);
+  }
+  const safe = originalName.replace(/[^a-zA-Z0-9._-]/g, "_");
+  const path = `${user.id}/${Date.now()}_${safe}`;
+  const up = await supabase.storage.from("chat-media").upload(path, payload, {
+    contentType: mime || undefined,
+    upsert: false,
+  });
+  if (up.error) throw up.error;
+  const { data: signed, error: sErr } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 7);
+  if (sErr) throw sErr;
+  return { url: signed.signedUrl, path, size: payload.size, name: originalName, type };
+}
+
+export async function refreshChatMediaUrl(publicOrSigned: string): Promise<string> {
+  // extract path after /chat-media/
+  const m = publicOrSigned.match(/chat-media\/([^?]+)/);
+  if (!m) return publicOrSigned;
+  const { data } = await supabase.storage.from("chat-media").createSignedUrl(m[1], 60 * 60);
+  return data?.signedUrl ?? publicOrSigned;
+}
+
+export async function editMessage(id: string, content: string) {
+  const { error } = await supabase.from("messages")
+    .update({ content, edited_at: new Date().toISOString() }).eq("id", id);
   if (error) throw error;
+}
+export async function softDeleteMessage(id: string) {
+  const { error } = await supabase.from("messages")
+    .update({ content: "", attachment_url: null, deleted_at: new Date().toISOString() }).eq("id", id);
+  if (error) throw error;
+}
+export async function editDirectMessage(id: string, content: string) {
+  const { error } = await supabase.from("direct_messages")
+    .update({ content, edited_at: new Date().toISOString() }).eq("id", id);
+  if (error) throw error;
+}
+export async function softDeleteDirectMessage(id: string) {
+  const { error } = await supabase.from("direct_messages")
+    .update({ content: "", attachment_url: null, deleted_at: new Date().toISOString() }).eq("id", id);
+  if (error) throw error;
+}
+
+export async function fetchReactions(messageIds: string[], scope: "group" | "dm"): Promise<Reaction[]> {
+  if (messageIds.length === 0) return [];
+  const table = scope === "group" ? "message_reactions" : "dm_reactions";
+  const { data, error } = await supabase.from(table).select("*").in("message_id", messageIds);
+  if (error) throw error;
+  return (data ?? []) as Reaction[];
+}
+export async function toggleReaction(scope: "group" | "dm", messageId: string, emoji: string) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("سجّل الدخول");
+  const table = scope === "group" ? "message_reactions" : "dm_reactions";
+  const { data: existing } = await supabase.from(table).select("id")
+    .eq("message_id", messageId).eq("user_id", user.id).eq("emoji", emoji).maybeSingle();
+  if (existing) {
+    await supabase.from(table).delete().eq("id", existing.id);
+  } else {
+    await supabase.from(table).insert({ message_id: messageId, user_id: user.id, emoji });
+  }
+}
+
+export async function blockUser(otherId: string) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("سجّل الدخول");
+  const { error } = await supabase.from("blocked_users").insert({ blocker_id: user.id, blocked_id: otherId });
+  if (error && !/duplicate/i.test(error.message)) throw error;
+}
+export async function unblockUser(otherId: string) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("سجّل الدخول");
+  const { error } = await supabase.from("blocked_users").delete()
+    .eq("blocker_id", user.id).eq("blocked_id", otherId);
+  if (error) throw error;
+}
+export async function isBlocked(otherId: string): Promise<boolean> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return false;
+  const { data } = await supabase.from("blocked_users").select("blocker_id")
+    .eq("blocker_id", user.id).eq("blocked_id", otherId).maybeSingle();
+  return !!data;
+}
+
+// ==================== CONVERSATIONS INBOX ====================
+
+export interface ConversationSummary {
+  other_id: string;
+  other_name: string;
+  last_content: string;
+  last_at: string;
+  unread: number;
+}
+
+export async function fetchConversations(): Promise<ConversationSummary[]> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+  const { data, error } = await supabase.from("direct_messages")
+    .select("id, sender_id, receiver_id, content, created_at, read_at, deleted_at")
+    .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+    .order("created_at", { ascending: false })
+    .limit(200);
+  if (error) throw error;
+  const map = new Map<string, ConversationSummary>();
+  for (const m of data ?? []) {
+    const other = m.sender_id === user.id ? m.receiver_id : m.sender_id;
+    const existing = map.get(other);
+    const preview = m.deleted_at ? "رسالة محذوفة" : (m.content || "📎 مرفق");
+    if (!existing) {
+      map.set(other, { other_id: other, other_name: "", last_content: preview, last_at: m.created_at, unread: 0 });
+    }
+    if (m.receiver_id === user.id && !m.read_at) {
+      const cur = map.get(other)!; cur.unread += 1;
+    }
+  }
+  const ids = [...map.keys()];
+  if (ids.length > 0) {
+    const { data: profs } = await supabase.from("profiles").select("id, full_name").in("id", ids);
+    for (const p of profs ?? []) {
+      const c = map.get(p.id); if (c) c.other_name = p.full_name;
+    }
+  }
+  return [...map.values()];
 }
 
