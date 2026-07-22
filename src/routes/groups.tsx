@@ -24,6 +24,7 @@ function GroupsPage() {
   const [newName, setNewName] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [newPrivate, setNewPrivate] = useState(false);
+  const [newAllowMedia, setNewAllowMedia] = useState(true);
 
   if (location.pathname !== "/groups") {
     return <Outlet />;
@@ -35,13 +36,14 @@ function GroupsPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: () => createGroup({ name: newName, description: newDesc || undefined, is_private: newPrivate }),
+    mutationFn: () => createGroup({ name: newName, description: newDesc || undefined, is_private: newPrivate, allow_media: newAllowMedia }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["groups"] });
       setShowCreate(false);
       setNewName("");
       setNewDesc("");
       setNewPrivate(false);
+      setNewAllowMedia(true);
     },
   });
 
@@ -94,6 +96,15 @@ function GroupsPage() {
               className="rounded"
             />
             كروب خاص (دعوة فقط)
+          </label>
+          <label className="flex items-center gap-2 text-xs font-medium cursor-pointer">
+            <input
+              type="checkbox"
+              checked={newAllowMedia}
+              onChange={(e) => setNewAllowMedia(e.target.checked)}
+              className="rounded"
+            />
+            السماح بالوسائط (صور، فيديو، ملفات، صوت)
           </label>
           <div className="flex gap-2">
             <button
