@@ -134,7 +134,7 @@ function DMPage() {
         <button onClick={() => navigate({ to: "/messages" })} className="size-9 grid place-items-center rounded-xl bg-surface-2">
           <ArrowRight className="size-4" />
         </button>
-        <Link to="/teachers" className="hidden">back</Link>
+        
         <div className="size-11 rounded-2xl bg-primary/10 text-primary grid place-items-center font-bold">
           {name[0] ?? "؟"}
         </div>
