@@ -40,9 +40,19 @@ export interface Group {
   description: string | null;
   image_url: string | null;
   is_private: boolean;
+  allow_media?: boolean;
   created_at: string;
   members_count?: number;
   last_message?: string;
+}
+
+export type AttachmentType = "image" | "video" | "audio" | "file";
+
+export interface Reaction {
+  id: string;
+  message_id: string;
+  user_id: string;
+  emoji: string;
 }
 
 export interface Message {
@@ -51,10 +61,14 @@ export interface Message {
   user_id: string;
   content: string;
   attachment_url: string | null;
+  attachment_type: AttachmentType | null;
+  attachment_name: string | null;
+  attachment_size: number | null;
+  edited_at: string | null;
+  deleted_at: string | null;
   created_at: string;
-  profiles?: {
-    full_name: string;
-  };
+  profiles?: { full_name: string };
+  reactions?: Reaction[];
 }
 
 // ==================== ANNOUNCEMENTS ====================
