@@ -341,28 +341,34 @@ export async function joinGroup(groupId: string): Promise<void> {
   if (error && !error.message?.includes("duplicate")) throw error;
 }
 
-export async function sendMessage(groupId: string, content: string): Promise<void> {
+export async function sendMessage(
+  groupId: string,
+  content: string,
+  att?: { url: string; type: AttachmentType; name: string; size: number } | null,
+): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("يجب تسجيل الدخول للإرسال");
-
-  // Auto-join group when sending first message
   await joinGroup(groupId);
-
   const { error } = await supabase.from("messages").insert({
     group_id: groupId,
     user_id: user.id,
     content: content.trim(),
+    attachment_url: att?.url ?? null,
+    attachment_type: att?.type ?? null,
+    attachment_name: att?.name ?? null,
+    attachment_size: att?.size ?? null,
   });
   if (error) throw error;
 }
 
-export async function createGroup(p: { name: string; description?: string; is_private?: boolean }): Promise<void> {
+export async function createGroup(p: { name: string; description?: string; is_private?: boolean; allow_media?: boolean }): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("يجب تسجيل الدخول");
   const { error } = await supabase.from("groups").insert({
     name: p.name,
     description: p.description ?? null,
     is_private: p.is_private ?? false,
+    allow_media: p.allow_media ?? true,
     created_by: user.id,
   });
   if (error) throw error;
