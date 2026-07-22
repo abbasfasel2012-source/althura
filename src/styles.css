@@ -220,3 +220,11 @@ input[type="time"] {
   color-scheme: dark;
 }
 
+
+/* Chat + native-app polish */
+html, body {
+  overscroll-behavior: none;
+  overflow-x: hidden;
+}
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { scrollbar-width: none; }

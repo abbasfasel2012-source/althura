@@ -17,6 +17,7 @@ import { Route as SearchRouteImport } from './routes/search'
 import { Route as ScheduleRouteImport } from './routes/schedule'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as NewsRouteImport } from './routes/news'
+import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HomeworkRouteImport } from './routes/homework'
 import { Route as GroupsRouteImport } from './routes/groups'
@@ -74,6 +75,11 @@ const ProfileRoute = ProfileRouteImport.update({
 const NewsRoute = NewsRouteImport.update({
   id: '/news',
   path: '/news',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MessagesRoute = MessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -181,6 +187,7 @@ export interface FileRoutesByFullPath {
   '/groups': typeof GroupsRouteWithChildren
   '/homework': typeof HomeworkRoute
   '/login': typeof LoginRoute
+  '/messages': typeof MessagesRoute
   '/news': typeof NewsRoute
   '/profile': typeof ProfileRoute
   '/schedule': typeof ScheduleRoute
@@ -209,6 +216,7 @@ export interface FileRoutesByTo {
   '/groups': typeof GroupsRouteWithChildren
   '/homework': typeof HomeworkRoute
   '/login': typeof LoginRoute
+  '/messages': typeof MessagesRoute
   '/news': typeof NewsRoute
   '/profile': typeof ProfileRoute
   '/schedule': typeof ScheduleRoute
@@ -238,6 +246,7 @@ export interface FileRoutesById {
   '/groups': typeof GroupsRouteWithChildren
   '/homework': typeof HomeworkRoute
   '/login': typeof LoginRoute
+  '/messages': typeof MessagesRoute
   '/news': typeof NewsRoute
   '/profile': typeof ProfileRoute
   '/schedule': typeof ScheduleRoute
@@ -268,6 +277,7 @@ export interface FileRouteTypes {
     | '/groups'
     | '/homework'
     | '/login'
+    | '/messages'
     | '/news'
     | '/profile'
     | '/schedule'
@@ -296,6 +306,7 @@ export interface FileRouteTypes {
     | '/groups'
     | '/homework'
     | '/login'
+    | '/messages'
     | '/news'
     | '/profile'
     | '/schedule'
@@ -324,6 +335,7 @@ export interface FileRouteTypes {
     | '/groups'
     | '/homework'
     | '/login'
+    | '/messages'
     | '/news'
     | '/profile'
     | '/schedule'
@@ -353,6 +365,7 @@ export interface RootRouteChildren {
   GroupsRoute: typeof GroupsRouteWithChildren
   HomeworkRoute: typeof HomeworkRoute
   LoginRoute: typeof LoginRoute
+  MessagesRoute: typeof MessagesRoute
   NewsRoute: typeof NewsRoute
   ProfileRoute: typeof ProfileRoute
   ScheduleRoute: typeof ScheduleRoute
@@ -422,6 +435,13 @@ declare module '@tanstack/react-router' {
       path: '/news'
       fullPath: '/news'
       preLoaderRoute: typeof NewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/messages': {
+      id: '/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof MessagesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -588,6 +608,7 @@ const rootRouteChildren: RootRouteChildren = {
   GroupsRoute: GroupsRouteWithChildren,
   HomeworkRoute: HomeworkRoute,
   LoginRoute: LoginRoute,
+  MessagesRoute: MessagesRoute,
   NewsRoute: NewsRoute,
   ProfileRoute: ProfileRoute,
   ScheduleRoute: ScheduleRoute,
@@ -603,13 +624,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

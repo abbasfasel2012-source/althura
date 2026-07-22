@@ -224,9 +224,16 @@ function HomePage() {
               <span className="font-mono font-bold text-lg text-accent">{ar(String(examsCount).padStart(2, "0"))}</span>
             </Link>
 
-            <Link to="/videos" className="col-span-6 glass rounded-2xl p-4 flex items-center justify-between animate-reveal [animation-delay:300ms]">
+            <Link to="/messages" className="col-span-3 glass rounded-2xl p-4 flex items-center justify-between animate-reveal [animation-delay:290ms]">
               <span className="text-sm font-medium flex items-center gap-2">
-                مكتبة الفيديوهات
+                <MessagesSquare className="size-4 text-primary" /> تواصل
+              </span>
+              <span className="text-[11px] text-primary font-bold">فتح</span>
+            </Link>
+
+            <Link to="/videos" className="col-span-3 glass rounded-2xl p-4 flex items-center justify-between animate-reveal [animation-delay:300ms]">
+              <span className="text-sm font-medium flex items-center gap-2">
+                فيديوهات
               </span>
               <span className="text-[11px] text-primary font-bold">فتح</span>
             </Link>
