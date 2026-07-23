@@ -129,9 +129,10 @@ function HomePage() {
           </Link>
           <Link to="/books" className="glass rounded-2xl p-4 flex flex-col gap-1">
             <BookOpen className="size-5 text-primary" />
-            <div className="font-bold text-sm mt-2">الكتب</div>
-            <div className="text-[11px] text-muted-foreground">المكتبة العامة</div>
+            <div className="font-bold text-sm mt-2">المكتبة</div>
+            <div className="text-[11px] text-muted-foreground">كتب وفيديوهات</div>
           </Link>
+
           <Link to="/news" className="glass rounded-2xl p-4 flex flex-col gap-1">
             <Megaphone className="size-5 text-primary" />
             <div className="font-bold text-sm mt-2">الأخبار</div>
