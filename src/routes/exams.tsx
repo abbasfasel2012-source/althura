@@ -6,6 +6,7 @@ import {
 } from "@/lib/data";
 import { useAuth } from "@/lib/auth";
 import { useState } from "react";
+import { GRADE_NAMES, type Grade } from "@/lib/store";
 import { Loader2, Plus, Trash2, ClipboardCheck, X, GraduationCap } from "lucide-react";
 
 export const Route = createFileRoute("/exams")({
