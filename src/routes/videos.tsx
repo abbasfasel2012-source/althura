@@ -81,7 +81,7 @@ function VideosPage() {
                     {v.description && <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">{v.description}</p>}
                     <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mt-1.5">
                       <GraduationCap className="size-3" />
-                      {v.grade ? `صف ${ar(v.grade)}` : "كل الصفوف"}
+                      {v.grade ? (GRADE_NAMES[v.grade as Grade] ?? `الصف ${v.grade}`) : "كل الصفوف"}
                       {v.section ? ` • شعبة ${v.section}` : ""}
                     </div>
                   </div>
