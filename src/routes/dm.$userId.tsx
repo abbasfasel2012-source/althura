@@ -158,7 +158,7 @@ function DMPage() {
         </div>
       )}
 
-      <div className="flex flex-col h-[calc(100vh-260px)]">
+      <div className="flex flex-col h-[calc(100dvh-260px)] min-h-[400px]">
         <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-3 pb-4 px-1 scrollbar-hide">
           {messagesQ.isLoading ? (
             <div className="flex justify-center py-10"><Loader2 className="animate-spin text-primary" /></div>
