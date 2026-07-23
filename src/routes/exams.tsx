@@ -87,7 +87,7 @@ function ExamsPage() {
                   {q.description && <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">{q.description}</p>}
                   <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-1.5">
                     <GraduationCap className="size-3" />
-                    {q.grade ? `صف ${ar(q.grade)}` : "كل الصفوف"}
+                    {q.grade ? (GRADE_NAMES[q.grade as Grade] ?? `الصف ${q.grade}`) : "كل الصفوف"}
                     {q.section ? ` • شعبة ${q.section}` : ""}
                     {q.duration_minutes ? ` • ${ar(q.duration_minutes)} د` : ""}
                   </div>
