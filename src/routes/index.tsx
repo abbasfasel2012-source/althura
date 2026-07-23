@@ -210,12 +210,13 @@ function HomePage() {
 
             <Link to="/books" className="col-span-3 glass rounded-2xl p-4 flex items-center justify-between animate-reveal [animation-delay:240ms]">
               <span className="text-sm font-medium flex items-center gap-2">
-                <BookOpen className="size-4 text-primary" /> الكتب
+                <BookOpen className="size-4 text-primary" /> المكتبة
               </span>
               <span className="font-mono font-bold text-lg">
-                {stats.isLoading ? "…" : ar(booksCount)}
+                {stats.isLoading ? "…" : ar(String(booksCount).padStart(2, "0"))}
               </span>
             </Link>
+
 
             <Link to="/exams" className="col-span-3 glass rounded-2xl p-4 flex items-center justify-between animate-reveal [animation-delay:280ms]">
               <span className="text-sm font-medium flex items-center gap-2">
