@@ -122,7 +122,7 @@ function GroupChatPage() {
 
   return (
     <AppShell title={group?.name || "المحادثة"}>
-      <div className="flex flex-col h-[calc(100vh-180px)]">
+      <div className="flex flex-col h-[calc(100dvh-180px)] min-h-[400px]">
         <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-4 pb-4 px-1 scrollbar-hide">
           {!userId ? (
             <div className="text-center py-10 text-sm text-muted-foreground">يجب تسجيل الدخول</div>
