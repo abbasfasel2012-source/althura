@@ -5,6 +5,7 @@ import { ar, fetchVideos, createVideo, deleteVideo, youtubeEmbedUrl } from "@/li
 import { useAuth } from "@/lib/auth";
 import { useState } from "react";
 import { Loader2, Plus, Trash2, X, PlayCircle, GraduationCap } from "lucide-react";
+import { GRADE_NAMES, type Grade } from "@/lib/store";
 
 export const Route = createFileRoute("/videos")({
   head: () => ({
@@ -16,7 +17,7 @@ export const Route = createFileRoute("/videos")({
   component: VideosPage,
 });
 
-const GRADES = ["1","2","3","4","5","6","7","8","9","10","11","12"];
+const GRADES: Grade[] = ["1","2","3","4","5","6"];
 
 function VideosPage() {
   const { isOwner } = useAuth();
@@ -80,7 +81,7 @@ function VideosPage() {
                     {v.description && <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">{v.description}</p>}
                     <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mt-1.5">
                       <GraduationCap className="size-3" />
-                      {v.grade ? `صف ${ar(v.grade)}` : "كل الصفوف"}
+                      {v.grade ? (GRADE_NAMES[v.grade as Grade] ?? `الصف ${v.grade}`) : "كل الصفوف"}
                       {v.section ? ` • شعبة ${v.section}` : ""}
                     </div>
                   </div>
@@ -152,7 +153,7 @@ function AddVideoModal({ onClose, onDone }: { onClose: () => void; onDone: () =>
             <div className="grid grid-cols-2 gap-2">
               <select value={grade} onChange={(e) => setGrade(e.target.value)} className="px-3 py-2.5 rounded-xl bg-surface-2 border border-border text-sm">
                 <option value="">كل الصفوف</option>
-                {GRADES.map((g) => <option key={g} value={g}>صف {g}</option>)}
+                {GRADES.map((g) => <option key={g} value={g}>{GRADE_NAMES[g]}</option>)}
               </select>
               <input value={section} onChange={(e) => setSection(e.target.value)} placeholder="شعبة (اختياري)" className="px-3 py-2.5 rounded-xl bg-surface-2 border border-border text-sm" />
             </div>
