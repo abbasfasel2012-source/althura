@@ -153,7 +153,7 @@ function AddVideoModal({ onClose, onDone }: { onClose: () => void; onDone: () =>
             <div className="grid grid-cols-2 gap-2">
               <select value={grade} onChange={(e) => setGrade(e.target.value)} className="px-3 py-2.5 rounded-xl bg-surface-2 border border-border text-sm">
                 <option value="">كل الصفوف</option>
-                {GRADES.map((g) => <option key={g} value={g}>صف {g}</option>)}
+                {GRADES.map((g) => <option key={g} value={g}>{GRADE_NAMES[g]}</option>)}
               </select>
               <input value={section} onChange={(e) => setSection(e.target.value)} placeholder="شعبة (اختياري)" className="px-3 py-2.5 rounded-xl bg-surface-2 border border-border text-sm" />
             </div>
