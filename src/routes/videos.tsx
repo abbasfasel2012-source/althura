@@ -5,6 +5,7 @@ import { ar, fetchVideos, createVideo, deleteVideo, youtubeEmbedUrl } from "@/li
 import { useAuth } from "@/lib/auth";
 import { useState } from "react";
 import { Loader2, Plus, Trash2, X, PlayCircle, GraduationCap } from "lucide-react";
+import { GRADE_NAMES, type Grade } from "@/lib/store";
 
 export const Route = createFileRoute("/videos")({
   head: () => ({
