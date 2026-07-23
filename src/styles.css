@@ -222,9 +222,17 @@ input[type="time"] {
 
 
 /* Chat + native-app polish */
-html, body {
-  overscroll-behavior: none;
+html {
   overflow-x: hidden;
+}
+body {
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+* {
+  -webkit-overflow-scrolling: touch;
 }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { scrollbar-width: none; }
+
