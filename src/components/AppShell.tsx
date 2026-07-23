@@ -23,7 +23,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
 
 
   return (
-    <div className="min-h-screen pb-28">
+    <div className="min-h-dvh pb-28">
       <header className="sticky top-0 z-40 px-4 pt-3 pb-2">
         <div className="glass-strong rounded-2xl px-3 py-2 flex items-center justify-between shadow-soft">
           <Link to="/" className="flex items-center gap-2 min-w-0">
