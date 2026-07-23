@@ -10,7 +10,7 @@ const NAV = [
   { to: "/", label: "الرئيسية", icon: Home },
   { to: "/schedule", label: "الجدول", icon: CalendarDays },
   { to: "/ai", label: "عبوسي", icon: Sparkles },
-  { to: "/books", label: "الكتب", icon: BookOpen },
+  { to: "/books", label: "المكتبة", icon: BookOpen },
   { to: "/profile", label: "حسابي", icon: User2 },
 ];
 
