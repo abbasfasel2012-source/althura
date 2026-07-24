@@ -98,7 +98,7 @@
     background-image:
       radial-gradient(ellipse 80% 60% at 100% 0%, color-mix(in oklab, var(--primary) 16%, transparent), transparent 60%),
       radial-gradient(ellipse 60% 40% at 0% 100%, color-mix(in oklab, var(--accent) 12%, transparent), transparent 60%);
-    background-attachment: fixed;
+    background-attachment: scroll;
   }
   .dark body {
     background-image:
@@ -259,5 +259,18 @@ select {
 .scrollbar-none {
   scrollbar-width: none;
   -ms-overflow-style: none;
+}
+
+@media (hover: none), (pointer: coarse), (max-width: 768px) {
+  html.theme-ready, html.theme-ready * {
+    transition-duration: 0ms;
+  }
+  body {
+    background-attachment: scroll;
+  }
+  .glass,
+  .glass-strong {
+    backdrop-filter: none;
+  }
 }
 
