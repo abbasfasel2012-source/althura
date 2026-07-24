@@ -223,16 +223,41 @@ input[type="time"] {
 
 /* Chat + native-app polish */
 html {
+  min-height: 100%;
   overflow-x: hidden;
+  overflow-y: auto;
+  touch-action: pan-y;
 }
 body {
-  overflow-x: hidden;
+  min-height: 100%;
+  overflow-x: clip;
+  overflow-y: auto;
+  overscroll-behavior-y: auto;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+main {
+  min-width: 0;
+  touch-action: pan-y;
+}
+button,
+a,
+input,
+textarea,
+select {
+  touch-action: manipulation;
+}
+.scroll-y-native {
+  overflow-y: auto;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
-* {
-  -webkit-overflow-scrolling: touch;
+.scrollbar-hide::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-hide,
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
-.scrollbar-hide::-webkit-scrollbar { display: none; }
-.scrollbar-hide { scrollbar-width: none; }
 

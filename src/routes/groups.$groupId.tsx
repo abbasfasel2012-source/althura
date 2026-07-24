@@ -122,8 +122,8 @@ function GroupChatPage() {
 
   return (
     <AppShell title={group?.name || "المحادثة"}>
-      <div className="flex flex-col h-[calc(100dvh-180px)] min-h-[400px]">
-        <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-4 pb-4 px-1 scrollbar-hide">
+      <div className="flex h-[calc(100dvh-180px)] max-h-[calc(100dvh-180px)] min-h-0 flex-col overflow-hidden">
+        <div ref={scrollRef} className="scroll-y-native min-h-0 flex-1 space-y-4 pb-4 px-1 scrollbar-hide">
           {!userId ? (
             <div className="text-center py-10 text-sm text-muted-foreground">يجب تسجيل الدخول</div>
           ) : isLoading ? (
@@ -173,7 +173,7 @@ function GroupChatPage() {
           />
         )}
 
-        <form onSubmit={handleSend} className="relative flex items-center gap-2">
+        <form onSubmit={handleSend} className="relative flex shrink-0 items-center gap-2">
           {allowMedia && !editing && (
             <>
               <input

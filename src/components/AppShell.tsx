@@ -23,8 +23,8 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
 
 
   return (
-    <div className="min-h-dvh pb-28">
-      <header className="sticky top-0 z-40 px-4 pt-3 pb-2">
+    <div className="min-h-dvh overflow-x-clip pb-[calc(7rem+env(safe-area-inset-bottom))]">
+      <header className="sticky top-0 z-40 px-4 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-2">
         <div className="glass-strong rounded-2xl px-3 py-2 flex items-center justify-between shadow-soft">
           <Link to="/" className="flex items-center gap-2 min-w-0">
             <div className="size-9 shrink-0 rounded-xl bg-accent text-accent-foreground grid place-items-center font-bold">
@@ -79,9 +79,9 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
         </div>
       </header>
 
-      <main className="px-4 pt-2">{children}</main>
+      <main className="min-w-0 px-4 pt-2">{children}</main>
 
-      <nav className="fixed bottom-4 left-4 right-4 z-50">
+      <nav className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 right-4 z-50">
         <div className="glass-strong rounded-2xl px-2 py-2 shadow-glass flex items-center justify-between">
           {NAV.map((n) => {
             const active = location.pathname === n.to;

@@ -158,8 +158,8 @@ function DMPage() {
         </div>
       )}
 
-      <div className="flex flex-col h-[calc(100dvh-260px)] min-h-[400px]">
-        <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-3 pb-4 px-1 scrollbar-hide">
+      <div className="flex h-[calc(100dvh-260px)] max-h-[calc(100dvh-260px)] min-h-0 flex-col overflow-hidden">
+        <div ref={scrollRef} className="scroll-y-native min-h-0 flex-1 space-y-3 pb-4 px-1 scrollbar-hide">
           {messagesQ.isLoading ? (
             <div className="flex justify-center py-10"><Loader2 className="animate-spin text-primary" /></div>
           ) : (messagesQ.data ?? []).length === 0 ? (
@@ -198,7 +198,7 @@ function DMPage() {
           <AttachmentPreview file={file} quality={quality} onQualityChange={setQuality} onRemove={() => setFile(null)} />
         )}
 
-        <form onSubmit={submit} className="relative flex items-center gap-2">
+        <form onSubmit={submit} className="relative flex shrink-0 items-center gap-2">
           {!editing && (
             <>
               <input ref={fileRef} type="file" hidden
