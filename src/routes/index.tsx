@@ -233,6 +233,13 @@ function HomePage() {
               <span className="text-[11px] text-primary font-bold">فتح</span>
             </Link>
 
+            <Link to="/grades" className="col-span-3 glass rounded-2xl p-4 flex items-center justify-between animate-reveal [animation-delay:300ms]">
+              <span className="text-sm font-medium flex items-center gap-2">
+                <GraduationCap className="size-4 text-primary" /> الدرجات
+              </span>
+              <span className="text-[11px] text-primary font-bold">عرض</span>
+            </Link>
+
 
             {/* Homework */}
             <Link to="/homework" className="col-span-6 row-span-2 glass rounded-3xl p-5 shadow-soft flex flex-col justify-between animate-reveal [animation-delay:320ms]">
