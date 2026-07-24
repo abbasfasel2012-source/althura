@@ -29,15 +29,16 @@ function HomePage() {
   const navigate = useNavigate();
 
   // Hooks: declare all before any early return.
-  const stats = useQuery({ queryKey: ["admin-stats"], queryFn: fetchAdminStats });
-  const groupsQ = useQuery({ queryKey: ["groups"], queryFn: fetchGroups });
-  const annsQ = useQuery({ queryKey: ["announcements"], queryFn: fetchAnnouncements });
-  const periodsQ = useQuery({ queryKey: ["today-periods"], queryFn: fetchTodayPeriods });
-  const examsCountQ = useQuery({ queryKey: ["exams-upcoming"], queryFn: fetchUpcomingExamsCount });
+  const stats = useQuery({ queryKey: ["admin-stats"], queryFn: fetchAdminStats, staleTime: 60_000 });
+  const groupsQ = useQuery({ queryKey: ["groups"], queryFn: fetchGroups, staleTime: 60_000 });
+  const annsQ = useQuery({ queryKey: ["announcements"], queryFn: fetchAnnouncements, staleTime: 60_000 });
+  const periodsQ = useQuery({ queryKey: ["today-periods"], queryFn: fetchTodayPeriods, staleTime: 5 * 60_000 });
+  const examsCountQ = useQuery({ queryKey: ["exams-upcoming"], queryFn: fetchUpcomingExamsCount, staleTime: 60_000 });
   const homeworkQ = useQuery({
     queryKey: ["my-homework", userId],
     queryFn: () => fetchMyHomework(userId!),
     enabled: !!userId,
+    staleTime: 60_000,
   });
 
   useEffect(() => {
