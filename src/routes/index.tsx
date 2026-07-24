@@ -29,15 +29,16 @@ function HomePage() {
   const navigate = useNavigate();
 
   // Hooks: declare all before any early return.
-  const stats = useQuery({ queryKey: ["admin-stats"], queryFn: fetchAdminStats });
-  const groupsQ = useQuery({ queryKey: ["groups"], queryFn: fetchGroups });
-  const annsQ = useQuery({ queryKey: ["announcements"], queryFn: fetchAnnouncements });
-  const periodsQ = useQuery({ queryKey: ["today-periods"], queryFn: fetchTodayPeriods });
-  const examsCountQ = useQuery({ queryKey: ["exams-upcoming"], queryFn: fetchUpcomingExamsCount });
+  const stats = useQuery({ queryKey: ["admin-stats"], queryFn: fetchAdminStats, staleTime: 60_000 });
+  const groupsQ = useQuery({ queryKey: ["groups"], queryFn: fetchGroups, staleTime: 60_000 });
+  const annsQ = useQuery({ queryKey: ["announcements"], queryFn: fetchAnnouncements, staleTime: 60_000 });
+  const periodsQ = useQuery({ queryKey: ["today-periods"], queryFn: fetchTodayPeriods, staleTime: 5 * 60_000 });
+  const examsCountQ = useQuery({ queryKey: ["exams-upcoming"], queryFn: fetchUpcomingExamsCount, staleTime: 60_000 });
   const homeworkQ = useQuery({
     queryKey: ["my-homework", userId],
     queryFn: () => fetchMyHomework(userId!),
     enabled: !!userId,
+    staleTime: 60_000,
   });
 
   useEffect(() => {
@@ -233,6 +234,13 @@ function HomePage() {
               <span className="text-[11px] text-primary font-bold">فتح</span>
             </Link>
 
+            <Link to="/grades" className="col-span-3 glass rounded-2xl p-4 flex items-center justify-between animate-reveal [animation-delay:300ms]">
+              <span className="text-sm font-medium flex items-center gap-2">
+                <GraduationCap className="size-4 text-primary" /> الدرجات
+              </span>
+              <span className="text-[11px] text-primary font-bold">عرض</span>
+            </Link>
+
 
             {/* Homework */}
             <Link to="/homework" className="col-span-6 row-span-2 glass rounded-3xl p-5 shadow-soft flex flex-col justify-between animate-reveal [animation-delay:320ms]">
@@ -279,12 +287,12 @@ function HomePage() {
             <SectionTitle eyebrow="استكشف" title="أقسام أخرى" />
             <div className="grid grid-cols-3 gap-3">
               {[
-                { to: "/grades", label: "الدرجات" },
                 { to: "/calendar", label: "التقويم" },
                 { to: "/teachers", label: "المدرّسون" },
                 { to: "/news", label: "الأخبار" },
                 { to: "/events", label: "الفعاليات" },
-                { to: "/contact", label: "تواصل" },
+                { to: "/ai", label: "أبوسي" },
+                { to: "/announcements", label: "التبليغات" },
               ].map((s) => (
                 <Link key={s.to} to={s.to}
                   className="glass rounded-2xl p-4 text-center text-sm font-bold hover:bg-surface-2 transition">
