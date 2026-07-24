@@ -98,7 +98,7 @@
     background-image:
       radial-gradient(ellipse 80% 60% at 100% 0%, color-mix(in oklab, var(--primary) 16%, transparent), transparent 60%),
       radial-gradient(ellipse 60% 40% at 0% 100%, color-mix(in oklab, var(--accent) 12%, transparent), transparent 60%);
-    background-attachment: fixed;
+    background-attachment: scroll;
   }
   .dark body {
     background-image:
@@ -223,16 +223,54 @@ input[type="time"] {
 
 /* Chat + native-app polish */
 html {
+  min-height: 100%;
   overflow-x: hidden;
+  overflow-y: auto;
+  touch-action: pan-y;
 }
 body {
-  overflow-x: hidden;
+  min-height: 100%;
+  overflow-x: clip;
+  overflow-y: auto;
+  overscroll-behavior-y: auto;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+main {
+  min-width: 0;
+  touch-action: pan-y;
+}
+button,
+a,
+input,
+textarea,
+select {
+  touch-action: manipulation;
+}
+.scroll-y-native {
+  overflow-y: auto;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
-* {
-  -webkit-overflow-scrolling: touch;
+.scrollbar-hide::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-hide,
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
-.scrollbar-hide::-webkit-scrollbar { display: none; }
-.scrollbar-hide { scrollbar-width: none; }
+
+@media (hover: none), (pointer: coarse), (max-width: 768px) {
+  html.theme-ready, html.theme-ready * {
+    transition-duration: 0ms;
+  }
+  body {
+    background-attachment: scroll;
+  }
+  .glass,
+  .glass-strong {
+    backdrop-filter: none;
+  }
+}
 
