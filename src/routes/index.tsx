@@ -201,8 +201,8 @@ function HomePage() {
 
             {/* Latest announcement */}
             <Link to="/announcements" className="col-span-2 row-span-2 glass rounded-3xl p-3 flex flex-col items-center text-center justify-center animate-reveal [animation-delay:200ms]">
-              <div className="size-8 rounded-full bg-amber-50 grid place-items-center mb-2">
-                <Megaphone className="size-4 text-amber-700" />
+              <div className="size-8 rounded-full bg-primary/15 grid place-items-center mb-2">
+                <Megaphone className="size-4 text-primary" />
               </div>
               <div className="text-[9px] font-bold uppercase tracking-[0.18em] mb-1">تنبيه</div>
               <div className="text-[11px] font-medium leading-tight px-1 line-clamp-3">
@@ -291,7 +291,7 @@ function HomePage() {
                 { to: "/teachers", label: "المدرّسون" },
                 { to: "/news", label: "الأخبار" },
                 { to: "/events", label: "الفعاليات" },
-                { to: "/ai", label: "أبوسي" },
+                { to: "/settings", label: "الإعدادات" },
                 { to: "/announcements", label: "التبليغات" },
               ].map((s) => (
                 <Link key={s.to} to={s.to}
