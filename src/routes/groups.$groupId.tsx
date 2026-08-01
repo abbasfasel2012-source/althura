@@ -207,7 +207,7 @@ function GroupChatPage() {
           <button
             type="submit"
             disabled={sendMut.isPending || editMut.isPending || (!editing && !content.trim() && !file)}
-            className="absolute left-2 top-2 size-10 rounded-xl bg-primary text-white grid place-items-center disabled:opacity-50"
+            className="absolute left-2 top-2 size-10 rounded-xl bg-primary text-primary-foreground grid place-items-center disabled:opacity-50"
           >
             {sendMut.isPending || editMut.isPending ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
           </button>
