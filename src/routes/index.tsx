@@ -46,13 +46,6 @@ function HomePage() {
     if (user === null) navigate({ to: "/login" });
   }, [user, authLoading, navigate]);
 
-  if (authLoading && user === null) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="size-8 rounded-full border-4 border-primary border-t-transparent animate-spin" />
-      </div>
-    );
-  }
 
   const latestAnn = annsQ.data?.[0];
   const name = user?.fullName?.split(" ")[0] ?? "زائر";
