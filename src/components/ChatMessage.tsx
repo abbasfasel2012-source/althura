@@ -191,7 +191,7 @@ export function AttachmentPreview({
               <button
                 key={q}
                 onClick={() => onQualityChange(q)}
-                className={`text-[10px] px-2 py-0.5 rounded-full ${quality === q ? "bg-primary text-white" : "bg-surface-2"}`}
+                className={`text-[10px] px-2 py-0.5 rounded-full ${quality === q ? "bg-primary text-primary-foreground" : "bg-surface-2"}`}
               >
                 {q === "high" ? "أصلية" : q === "medium" ? "متوسطة" : "منخفضة"}
               </button>

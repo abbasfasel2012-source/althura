@@ -57,7 +57,7 @@ function MessagesPage() {
                   {new Date(c.last_at).toLocaleTimeString("ar-IQ", { hour: "2-digit", minute: "2-digit" })}
                 </div>
                 {c.unread > 0 && (
-                  <span className="inline-block mt-1 text-[10px] bg-primary text-white rounded-full px-1.5 py-0.5 font-mono">
+                  <span className="inline-block mt-1 text-[10px] bg-primary text-primary-foreground rounded-full px-1.5 py-0.5 font-mono">
                     {ar(c.unread)}
                   </span>
                 )}

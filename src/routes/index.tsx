@@ -46,13 +46,6 @@ function HomePage() {
     if (user === null) navigate({ to: "/login" });
   }, [user, authLoading, navigate]);
 
-  if (authLoading && user === null) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="size-8 rounded-full border-4 border-primary border-t-transparent animate-spin" />
-      </div>
-    );
-  }
 
   const latestAnn = annsQ.data?.[0];
   const name = user?.fullName?.split(" ")[0] ?? "زائر";
@@ -187,13 +180,13 @@ function HomePage() {
 
             {/* AI */}
             <Link to="/ai" className="col-span-4 row-span-2 rounded-3xl p-5 bg-accent text-accent-foreground shadow-glass flex flex-col justify-between relative overflow-hidden animate-reveal [animation-delay:140ms]">
-              <div className="size-9 grid place-items-center rounded-xl bg-white/15">
+              <div className="size-9 grid place-items-center rounded-xl bg-accent-foreground/15">
                 <Sparkles className="size-4" />
               </div>
               <div>
                 <h3 className="text-base font-bold leading-tight">مساعد عبوسي</h3>
                 <p className="text-[11px] opacity-80 mt-1">اسألني عن أي درس أو واجب.</p>
-                <div className="flex items-center gap-1 text-[11px] mt-3 text-primary">
+                <div className="flex items-center gap-1 text-[11px] mt-3 font-bold opacity-95">
                   ابدأ المحادثة <ArrowLeft className="size-3" />
                 </div>
               </div>
@@ -201,8 +194,8 @@ function HomePage() {
 
             {/* Latest announcement */}
             <Link to="/announcements" className="col-span-2 row-span-2 glass rounded-3xl p-3 flex flex-col items-center text-center justify-center animate-reveal [animation-delay:200ms]">
-              <div className="size-8 rounded-full bg-amber-50 grid place-items-center mb-2">
-                <Megaphone className="size-4 text-amber-700" />
+              <div className="size-8 rounded-full bg-primary/15 grid place-items-center mb-2">
+                <Megaphone className="size-4 text-primary" />
               </div>
               <div className="text-[9px] font-bold uppercase tracking-[0.18em] mb-1">تنبيه</div>
               <div className="text-[11px] font-medium leading-tight px-1 line-clamp-3">
@@ -291,7 +284,7 @@ function HomePage() {
                 { to: "/teachers", label: "المدرّسون" },
                 { to: "/news", label: "الأخبار" },
                 { to: "/events", label: "الفعاليات" },
-                { to: "/ai", label: "أبوسي" },
+                { to: "/settings", label: "الإعدادات" },
                 { to: "/announcements", label: "التبليغات" },
               ].map((s) => (
                 <Link key={s.to} to={s.to}
