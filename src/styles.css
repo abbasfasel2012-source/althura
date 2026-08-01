@@ -122,6 +122,12 @@
   border: 1px solid color-mix(in oklab, var(--foreground) 10%, transparent);
 }
 
+/* الشريط السفلي: خلفية معتمة (بدون شفافية) */
+@utility bottom-bar {
+  background: var(--surface-2);
+  border: 1px solid color-mix(in oklab, var(--foreground) 12%, transparent);
+}
+
 @utility ink-watermark {
   position: absolute;
   inset: auto -1rem -1.5rem auto;
