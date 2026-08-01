@@ -180,13 +180,13 @@ function HomePage() {
 
             {/* AI */}
             <Link to="/ai" className="col-span-4 row-span-2 rounded-3xl p-5 bg-accent text-accent-foreground shadow-glass flex flex-col justify-between relative overflow-hidden animate-reveal [animation-delay:140ms]">
-              <div className="size-9 grid place-items-center rounded-xl bg-white/15">
+              <div className="size-9 grid place-items-center rounded-xl bg-accent-foreground/15">
                 <Sparkles className="size-4" />
               </div>
               <div>
                 <h3 className="text-base font-bold leading-tight">مساعد عبوسي</h3>
                 <p className="text-[11px] opacity-80 mt-1">اسألني عن أي درس أو واجب.</p>
-                <div className="flex items-center gap-1 text-[11px] mt-3 text-primary">
+                <div className="flex items-center gap-1 text-[11px] mt-3 font-bold opacity-95">
                   ابدأ المحادثة <ArrowLeft className="size-3" />
                 </div>
               </div>
