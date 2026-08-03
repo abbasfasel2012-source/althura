@@ -26,16 +26,10 @@ function HomePage() {
   const { userId, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  // Hooks: declare all before any early return.
-  const stats = useQuery({ queryKey: ["admin-stats"], queryFn: fetchAdminStats, staleTime: 60_000 });
-  const groupsQ = useQuery({ queryKey: ["groups"], queryFn: fetchGroups, staleTime: 60_000 });
-  const annsQ = useQuery({ queryKey: ["announcements"], queryFn: fetchAnnouncements, staleTime: 60_000 });
-  const periodsQ = useQuery({ queryKey: ["today-periods"], queryFn: fetchTodayPeriods, staleTime: 5 * 60_000 });
-  const examsCountQ = useQuery({ queryKey: ["exams-upcoming"], queryFn: fetchUpcomingExamsCount, staleTime: 60_000 });
-  const homeworkQ = useQuery({
-    queryKey: ["my-homework", userId],
-    queryFn: () => fetchMyHomework(userId!),
-    enabled: !!userId,
+  // Single request for the whole home page.
+  const homeQ = useQuery({
+    queryKey: ["home-summary", userId],
+    queryFn: fetchHomeSummary,
     staleTime: 60_000,
   });
 
@@ -44,18 +38,19 @@ function HomePage() {
     if (user === null) navigate({ to: "/login" });
   }, [user, authLoading, navigate]);
 
-
-  const latestAnn = annsQ.data?.[0];
+  const summary = homeQ.data;
+  const latestAnn = summary?.announcements?.[0];
   const name = user?.fullName?.split(" ")[0] ?? "زائر";
   const isGuest = user?.role === "guest";
   const isOwner = user?.role === "owner";
 
-  const periods = periodsQ.data ?? [];
+  const periods = summary?.today_periods ?? [];
   const nowClass = periods[0];
-  const openHomework = (homeworkQ.data ?? []).filter((h) => !h.done);
-  const booksCount = stats.data?.books ?? 0;
-  const examsCount = examsCountQ.data ?? 0;
-  const groupsCount = groupsQ.data?.length ?? 0;
+  const openHomework = (summary?.homework ?? []).filter((h) => !h.done);
+  const booksCount = summary?.books_count ?? 0;
+  const examsCount = summary?.exams_upcoming ?? 0;
+  const groupsCount = summary?.groups_count ?? 0;
+
 
   return (
     <AppShell title="الرئيسية">
