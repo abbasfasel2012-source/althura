@@ -29,7 +29,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 // ========== TABS ==========
-type AdminTab = "overview" | "requests" | "schedule" | "students" | "content" | "admins";
+type AdminTab = "overview" | "requests" | "schedule" | "students" | "content" | "admins" | "tools";
 
 function AdminPage() {
   const { isOwner, loading } = useAuth();
