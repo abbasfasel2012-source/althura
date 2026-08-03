@@ -35,15 +35,15 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
               ذ
             </div>
             <div className="min-w-0">
-              <div className="text-[11px] text-muted-foreground -mb-0.5">الذرى الذكية</div>
-              <div className="text-sm font-bold truncate">{title ?? "الرئيسية"}</div>
+              <div className="text-[11px] text-muted-foreground -mb-0.5">{t("app.name")}</div>
+              <div className="text-sm font-bold truncate">{title ?? t("nav.home")}</div>
             </div>
           </Link>
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={toggle}
-              aria-label={resolved === "dark" ? "تفعيل الوضع الفاتح" : "تفعيل الوضع الداكن"}
+              aria-label={resolved === "dark" ? t("a11y.light") : t("a11y.dark")}
               className="relative size-9 grid place-items-center rounded-xl border border-border bg-surface-2/60 overflow-hidden"
             >
               <Sun className={`size-4 absolute transition-all duration-500 ${resolved === "dark" ? "opacity-0 rotate-90 scale-50" : "opacity-100 rotate-0 scale-100"}`} />
