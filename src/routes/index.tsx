@@ -4,10 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { AppShell, SectionTitle } from "@/components/AppShell";
 import { useUser } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
-import {
-  fetchAdminStats, fetchAnnouncements, fetchGroups, ar,
-  fetchTodayPeriods, fetchUpcomingExamsCount, fetchMyHomework,
-} from "@/lib/data";
+import { fetchHomeSummary, ar } from "@/lib/data";
+
 import {
   ArrowLeft, BookOpen, CalendarClock, ClipboardList, GraduationCap,
   Megaphone, MessagesSquare, Sparkles, Wrench,
