@@ -29,7 +29,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 // ========== TABS ==========
-type AdminTab = "overview" | "requests" | "schedule" | "students" | "content" | "admins";
+type AdminTab = "overview" | "requests" | "schedule" | "students" | "content" | "admins" | "tools";
 
 function AdminPage() {
   const { isOwner, loading } = useAuth();
@@ -57,6 +57,7 @@ function AdminPage() {
     { id: "students",  label: "الطلاب" },
     { id: "content",   label: "المحتوى" },
     { id: "admins",    label: "الإداريون" },
+    { id: "tools",     label: "أدوات المالك" },
   ];
 
   return (
@@ -100,6 +101,7 @@ function AdminPage() {
       {tab === "students"  && <TabStudents />}
       {tab === "content"   && <TabContent />}
       {tab === "admins"    && <TabAdmins />}
+      {tab === "tools"     && <TabTools />}
     </AppShell>
   );
 }
@@ -694,6 +696,35 @@ function ManageUserPanel({ user, onDone }: { user: any; onDone: () => void }) {
   );
 }
 
+
+// ===== TAB: CONTENT =====
+// ===== TAB: TOOLS (كل ميزات المالك في مكان واحد) =====
+const OWNER_LINKS: { to: string; title: string; desc: string }[] = [
+  { to: "/exams", title: "الاختبارات", desc: "إنشاء الاختبارات والتصحيح بالذكاء الاصطناعي" },
+  { to: "/books", title: "المكتبة", desc: "رفع الكتب والفيديوهات وتحديد الصفوف" },
+  { to: "/groups", title: "الكروبات", desc: "إنشاء الكروبات وإدارتها وصلاحيات الوسائط" },
+  { to: "/teachers", title: "المدرّسون", desc: "ترقية معلّم، الصف والشعبة والمادة" },
+  { to: "/messages", title: "تواصل", desc: "الرسائل الخاصة والإشراف عليها" },
+  { to: "/announcements", title: "التبليغات", desc: "متابعة كل ما نُشر للطلاب" },
+  { to: "/grades", title: "الدرجات", desc: "متابعة النتائج والمعدلات" },
+  { to: "/calendar", title: "التقويم", desc: "الامتحانات والفعاليات الشهرية" },
+];
+
+function TabTools() {
+  return (
+    <>
+      <SectionTitle eyebrow="اختصارات" title="كل أدوات المالك" />
+      <div className="grid grid-cols-2 gap-2">
+        {OWNER_LINKS.map((l) => (
+          <Link key={l.to} to={l.to} className="glass rounded-2xl p-3.5 active:scale-[0.98] transition">
+            <div className="font-bold text-sm mb-1">{l.title}</div>
+            <div className="text-[11px] text-muted-foreground leading-relaxed">{l.desc}</div>
+          </Link>
+        ))}
+      </div>
+    </>
+  );
+}
 
 // ===== TAB: CONTENT =====
 function TabContent() {

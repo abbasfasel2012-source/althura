@@ -122,8 +122,9 @@ function GroupChatPage() {
 
   return (
     <AppShell title={group?.name || "المحادثة"}>
-      <div className="flex h-[calc(100dvh-180px)] max-h-[calc(100dvh-180px)] min-h-0 flex-col overflow-hidden">
-        <div ref={scrollRef} className="scroll-y-native min-h-0 flex-1 space-y-4 pb-4 px-1 scrollbar-hide">
+      <div className="flex h-[calc(100dvh-190px)] max-h-[calc(100dvh-190px)] min-h-0 flex-col overflow-hidden">
+        <div ref={scrollRef} className="scroll-y-native min-h-0 flex-1 space-y-2.5 pb-3 px-1 scrollbar-hide">
+
           {!userId ? (
             <div className="text-center py-10 text-sm text-muted-foreground">يجب تسجيل الدخول</div>
           ) : isLoading ? (
@@ -173,7 +174,7 @@ function GroupChatPage() {
           />
         )}
 
-        <form onSubmit={handleSend} className="relative flex shrink-0 items-center gap-2">
+        <form onSubmit={handleSend} className="relative flex shrink-0 items-center gap-1.5">
           {allowMedia && !editing && (
             <>
               <input
@@ -183,7 +184,7 @@ function GroupChatPage() {
               />
               <button
                 type="button" onClick={() => fileRef.current?.click()}
-                className="size-11 shrink-0 rounded-2xl glass-strong border border-border grid place-items-center"
+                className="size-10 shrink-0 rounded-xl glass-strong border border-border grid place-items-center active:scale-95"
                 aria-label="مرفق"
               >
                 <Paperclip className="size-4" />
@@ -191,7 +192,7 @@ function GroupChatPage() {
               <button
                 type="button"
                 onClick={recording ? stopRecording : startRecording}
-                className={`size-11 shrink-0 rounded-2xl border border-border grid place-items-center ${recording ? "bg-destructive text-white animate-pulse" : "glass-strong"}`}
+                className={`size-10 shrink-0 rounded-xl border border-border grid place-items-center active:scale-95 ${recording ? "bg-destructive text-white animate-pulse" : "glass-strong"}`}
                 aria-label="تسجيل صوتي"
               >
                 {recording ? <StopCircle className="size-4" /> : <Mic className="size-4" />}
@@ -202,16 +203,17 @@ function GroupChatPage() {
             value={editing ? editing.content : content}
             onChange={(e) => editing ? setEditing({ ...editing, content: e.target.value }) : setContent(e.target.value)}
             placeholder={editing ? "عدّل رسالتك..." : "اكتب رسالتك..."}
-            className="flex-1 pl-14 pr-5 py-4 rounded-2xl glass-strong border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="min-w-0 flex-1 pe-12 ps-4 py-3 rounded-xl glass-strong border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
           <button
             type="submit"
             disabled={sendMut.isPending || editMut.isPending || (!editing && !content.trim() && !file)}
-            className="absolute left-2 top-2 size-10 rounded-xl bg-primary text-primary-foreground grid place-items-center disabled:opacity-50"
+            className="absolute end-1.5 top-1.5 size-9 rounded-lg bg-primary text-primary-foreground grid place-items-center disabled:opacity-50 active:scale-95"
           >
             {sendMut.isPending || editMut.isPending ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
           </button>
         </form>
+
       </div>
     </AppShell>
   );

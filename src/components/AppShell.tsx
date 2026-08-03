@@ -4,14 +4,15 @@ import { useUser } from "@/lib/store";
 import { signOut } from "@/lib/auth";
 import { useHasUnreadNotifications, markNotificationsSeen } from "@/lib/notifications";
 import { useTheme } from "@/lib/theme";
+import { useI18n } from "@/lib/i18n";
 import type { ReactNode } from "react";
 
 const NAV = [
-  { to: "/", label: "الرئيسية", icon: Home },
-  { to: "/schedule", label: "الجدول", icon: CalendarDays },
-  { to: "/ai", label: "عبوسي", icon: Sparkles },
-  { to: "/books", label: "المكتبة", icon: BookOpen },
-  { to: "/profile", label: "حسابي", icon: User2 },
+  { to: "/", key: "nav.home", icon: Home },
+  { to: "/schedule", key: "nav.schedule", icon: CalendarDays },
+  { to: "/ai", key: "nav.ai", icon: Sparkles },
+  { to: "/books", key: "nav.library", icon: BookOpen },
+  { to: "/profile", key: "nav.profile", icon: User2 },
 ];
 
 export function AppShell({ children, title }: { children: ReactNode; title?: string }) {
@@ -20,6 +21,9 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
   const location = useLocation();
   const hasUnread = useHasUnreadNotifications();
   const { resolved, toggle } = useTheme();
+  const { t } = useI18n();
+
+
 
 
   return (
@@ -31,15 +35,15 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
               ذ
             </div>
             <div className="min-w-0">
-              <div className="text-[11px] text-muted-foreground -mb-0.5">الذرى الذكية</div>
-              <div className="text-sm font-bold truncate">{title ?? "الرئيسية"}</div>
+              <div className="text-[11px] text-muted-foreground -mb-0.5">{t("app.name")}</div>
+              <div className="text-sm font-bold truncate">{title ?? t("nav.home")}</div>
             </div>
           </Link>
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={toggle}
-              aria-label={resolved === "dark" ? "تفعيل الوضع الفاتح" : "تفعيل الوضع الداكن"}
+              aria-label={resolved === "dark" ? t("a11y.light") : t("a11y.dark")}
               className="relative size-9 grid place-items-center rounded-xl border border-border bg-surface-2/60 overflow-hidden"
             >
               <Sun className={`size-4 absolute transition-all duration-500 ${resolved === "dark" ? "opacity-0 rotate-90 scale-50" : "opacity-100 rotate-0 scale-100"}`} />
@@ -97,7 +101,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
                 }`}
               >
                 <Icon className="size-[18px]" strokeWidth={active ? 2.4 : 1.8} />
-                <span className="text-[10px] font-bold">{n.label}</span>
+                <span className="text-[10px] font-bold">{t(n.key)}</span>
               </Link>
             );
           })}

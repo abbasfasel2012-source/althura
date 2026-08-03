@@ -206,11 +206,11 @@ function DMPage() {
                 onChange={(e) => { const f = e.target.files?.[0]; if (f) setFile(f); e.target.value = ""; }}
               />
               <button type="button" onClick={() => fileRef.current?.click()}
-                className="size-11 shrink-0 rounded-2xl glass-strong border border-border grid place-items-center" aria-label="مرفق">
+                className="size-10 shrink-0 rounded-xl glass-strong border border-border grid place-items-center active:scale-95" aria-label="مرفق">
                 <Paperclip className="size-4" />
               </button>
               <button type="button" onClick={recording ? stopRecording : startRecording}
-                className={`size-11 shrink-0 rounded-2xl border border-border grid place-items-center ${recording ? "bg-destructive text-white animate-pulse" : "glass-strong"}`}
+                className={`size-10 shrink-0 rounded-xl border border-border grid place-items-center active:scale-95 ${recording ? "bg-destructive text-white animate-pulse" : "glass-strong"}`}
                 aria-label="تسجيل صوتي">
                 {recording ? <StopCircle className="size-4" /> : <Mic className="size-4" />}
               </button>
@@ -220,12 +220,12 @@ function DMPage() {
             value={editing ? editing.content : content}
             onChange={(e) => editing ? setEditing({ ...editing, content: e.target.value }) : setContent(e.target.value)}
             placeholder={editing ? "عدّل رسالتك..." : "اكتب رسالتك..."}
-            className="flex-1 pl-14 pr-5 py-4 rounded-2xl glass-strong border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="min-w-0 flex-1 pe-12 ps-4 py-3 rounded-xl glass-strong border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
           <button
             type="submit"
             disabled={send.isPending || editMut.isPending || (!editing && !content.trim() && !file)}
-            className="absolute left-2 top-2 size-10 rounded-xl bg-primary text-primary-foreground grid place-items-center disabled:opacity-50"
+            className="absolute end-1.5 top-1.5 size-9 rounded-lg bg-primary text-primary-foreground grid place-items-center disabled:opacity-50 active:scale-95"
           >
             {send.isPending || editMut.isPending ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
           </button>
