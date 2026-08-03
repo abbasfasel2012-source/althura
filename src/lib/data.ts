@@ -287,38 +287,38 @@ export async function setAdminLabel(userId: string, label: string) {
 // ==================== GROUPS & CHAT ====================
 
 export async function fetchGroups(): Promise<Group[]> {
-  const { data, error } = await supabase
-    .from("groups")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const { data, error } = await (supabase as any).rpc("groups_overview");
   if (error) throw error;
-
-  // Fetch members count and last message for each group in parallel
-  const groupsWithMeta = await Promise.all(
-    (data ?? []).map(async (g) => {
-      const [{ count }, { data: lastMsg }] = await Promise.all([
-        supabase
-          .from("group_members")
-          .select("id", { count: "exact", head: true })
-          .eq("group_id", g.id),
-        supabase
-          .from("messages")
-          .select("content")
-          .eq("group_id", g.id)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle(),
-      ]);
-      return {
-        ...g,
-        members_count: count ?? 0,
-        last_message: lastMsg?.content ?? undefined,
-      };
-    })
-  );
-
-  return groupsWithMeta;
+  return ((data ?? []) as Group[]);
 }
+
+// ==================== HOME SUMMARY (single request) ====================
+
+export interface HomeSummary {
+  books_count: number;
+  groups_count: number;
+  students_count: number;
+  exams_upcoming: number;
+  announcements: Announcement[];
+  today_periods: SchedulePeriod[];
+  homework: HomeworkItem[];
+}
+
+export async function fetchHomeSummary(): Promise<HomeSummary> {
+  const { data, error } = await (supabase as any).rpc("home_summary");
+  if (error) throw error;
+  const d = (data ?? {}) as Partial<HomeSummary>;
+  return {
+    books_count: d.books_count ?? 0,
+    groups_count: d.groups_count ?? 0,
+    students_count: d.students_count ?? 0,
+    exams_upcoming: d.exams_upcoming ?? 0,
+    announcements: d.announcements ?? [],
+    today_periods: d.today_periods ?? [],
+    homework: d.homework ?? [],
+  };
+}
+
 
 export async function fetchMessages(groupId: string): Promise<Message[]> {
   const { data, error } = await supabase

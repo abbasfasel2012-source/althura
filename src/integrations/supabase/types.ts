@@ -943,6 +943,7 @@ export type Database = {
         Args: { _grade: string; _section: string }
         Returns: boolean
       }
+      groups_overview: { Args: never; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -950,6 +951,8 @@ export type Database = {
         }
         Returns: boolean
       }
+      home_summary: { Args: never; Returns: Json }
+      latest_activity_at: { Args: never; Returns: string }
     }
     Enums: {
       app_role: "admin" | "student"
