@@ -85,14 +85,22 @@
     font-family: var(--font-display);
     -webkit-font-smoothing: antialiased;
   }
-  /* Smooth color/background transitions when theme switches.
-     Scoped to common chrome props so it doesn't fight layout animations. */
-  html.theme-ready, html.theme-ready * {
-    transition: background-color 360ms var(--ease-out-expo),
-                border-color 360ms var(--ease-out-expo),
-                color 240ms var(--ease-out-expo),
-                fill 240ms var(--ease-out-expo),
-                stroke 240ms var(--ease-out-expo);
+  /* Smooth theme switching — scoped to real surfaces instead of `*`
+     so it stays buttery on mobile without repainting every node. */
+  html.theme-ready body,
+  html.theme-ready header,
+  html.theme-ready nav,
+  html.theme-ready .glass,
+  html.theme-ready .glass-strong,
+  html.theme-ready .bottom-bar,
+  html.theme-ready button,
+  html.theme-ready a,
+  html.theme-ready input,
+  html.theme-ready textarea,
+  html.theme-ready select {
+    transition: background-color 320ms var(--ease-out-expo),
+                border-color 320ms var(--ease-out-expo),
+                color 220ms var(--ease-out-expo);
   }
   body {
     background-image:
