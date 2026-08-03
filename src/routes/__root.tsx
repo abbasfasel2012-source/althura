@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { ThemeProvider, themeBootstrapScript } from "../lib/theme";
+import { LanguageProvider } from "../lib/i18n";
 
 function NotFoundComponent() {
   return (
