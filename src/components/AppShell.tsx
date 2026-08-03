@@ -101,7 +101,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
                 }`}
               >
                 <Icon className="size-[18px]" strokeWidth={active ? 2.4 : 1.8} />
-                <span className="text-[10px] font-bold">{n.label}</span>
+                <span className="text-[10px] font-bold">{t(n.key)}</span>
               </Link>
             );
           })}
