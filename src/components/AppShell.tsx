@@ -4,14 +4,15 @@ import { useUser } from "@/lib/store";
 import { signOut } from "@/lib/auth";
 import { useHasUnreadNotifications, markNotificationsSeen } from "@/lib/notifications";
 import { useTheme } from "@/lib/theme";
+import { useI18n } from "@/lib/i18n";
 import type { ReactNode } from "react";
 
 const NAV = [
-  { to: "/", label: "الرئيسية", icon: Home },
-  { to: "/schedule", label: "الجدول", icon: CalendarDays },
-  { to: "/ai", label: "عبوسي", icon: Sparkles },
-  { to: "/books", label: "المكتبة", icon: BookOpen },
-  { to: "/profile", label: "حسابي", icon: User2 },
+  { to: "/", key: "nav.home", icon: Home },
+  { to: "/schedule", key: "nav.schedule", icon: CalendarDays },
+  { to: "/ai", key: "nav.ai", icon: Sparkles },
+  { to: "/books", key: "nav.library", icon: BookOpen },
+  { to: "/profile", key: "nav.profile", icon: User2 },
 ];
 
 export function AppShell({ children, title }: { children: ReactNode; title?: string }) {
@@ -20,6 +21,9 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
   const location = useLocation();
   const hasUnread = useHasUnreadNotifications();
   const { resolved, toggle } = useTheme();
+  const { t } = useI18n();
+
+
 
 
   return (
