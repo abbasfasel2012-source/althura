@@ -57,6 +57,7 @@ function AdminPage() {
     { id: "students",  label: "الطلاب" },
     { id: "content",   label: "المحتوى" },
     { id: "admins",    label: "الإداريون" },
+    { id: "tools",     label: "أدوات المالك" },
   ];
 
   return (
