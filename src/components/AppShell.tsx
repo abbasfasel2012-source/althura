@@ -147,7 +147,7 @@ export function Card({
 }) {
   return (
     <div
-      className={`glass rounded-3xl p-5 shadow-soft relative overflow-hidden ${className}`}
+      className={`glass rounded-3xl p-5 shadow-soft relative overflow-hidden hover-lift ${className}`}
     >
       {children}
     </div>
