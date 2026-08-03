@@ -44,7 +44,8 @@ export function setUser(u: User | null) {
 }
 
 export function useUser(): User | null {
-  const [u, setU] = useState<User | null>(getUser());
+  // Start null so SSR markup matches first client render (avoids hydration mismatch).
+  const [u, setU] = useState<User | null>(null);
   useEffect(() => {
     setU(getUser());
     const onChange = () => setU(getUser());

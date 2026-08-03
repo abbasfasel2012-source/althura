@@ -85,14 +85,22 @@
     font-family: var(--font-display);
     -webkit-font-smoothing: antialiased;
   }
-  /* Smooth color/background transitions when theme switches.
-     Scoped to common chrome props so it doesn't fight layout animations. */
-  html.theme-ready, html.theme-ready * {
-    transition: background-color 360ms var(--ease-out-expo),
-                border-color 360ms var(--ease-out-expo),
-                color 240ms var(--ease-out-expo),
-                fill 240ms var(--ease-out-expo),
-                stroke 240ms var(--ease-out-expo);
+  /* Smooth theme switching — scoped to real surfaces instead of `*`
+     so it stays buttery on mobile without repainting every node. */
+  html.theme-ready body,
+  html.theme-ready header,
+  html.theme-ready nav,
+  html.theme-ready .glass,
+  html.theme-ready .glass-strong,
+  html.theme-ready .bottom-bar,
+  html.theme-ready button,
+  html.theme-ready a,
+  html.theme-ready input,
+  html.theme-ready textarea,
+  html.theme-ready select {
+    transition: background-color 320ms var(--ease-out-expo),
+                border-color 320ms var(--ease-out-expo),
+                color 220ms var(--ease-out-expo);
   }
   body {
     background-image:
@@ -149,11 +157,86 @@
   to { opacity: 1; }
 }
 
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes pop-in {
+  0% { opacity: 0; transform: scale(0.9) translateY(6px); }
+  60% { opacity: 1; transform: scale(1.02) translateY(0); }
+  100% { transform: scale(1); }
+}
+@keyframes slide-in-start {
+  from { opacity: 0; transform: translateX(-14px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes float-soft {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--primary) 45%, transparent); }
+  70% { box-shadow: 0 0 0 10px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
 .animate-reveal {
   animation: slide-up 0.6s var(--ease-out-expo) both;
 }
 .animate-fade {
   animation: fade-in 0.4s var(--ease-out-expo) both;
+}
+.animate-scale-in { animation: scale-in 0.35s var(--ease-out-expo) both; }
+.animate-pop { animation: pop-in 0.4s var(--ease-out-expo) both; }
+.animate-slide-start { animation: slide-in-start 0.45s var(--ease-out-expo) both; }
+.animate-float { animation: float-soft 4s ease-in-out infinite; }
+.animate-pulse-ring { animation: pulse-ring 2.2s ease-out infinite; }
+
+/* شريط لمعان خفيف للعناصر أثناء التحميل */
+.shimmer {
+  background-image: linear-gradient(
+    100deg,
+    transparent 20%,
+    color-mix(in oklab, var(--foreground) 7%, transparent) 40%,
+    transparent 60%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+/* تأخير متدرّج للقوائم */
+.stagger > * { animation: slide-up 0.5s var(--ease-out-expo) both; }
+.stagger > *:nth-child(1) { animation-delay: 0.03s; }
+.stagger > *:nth-child(2) { animation-delay: 0.07s; }
+.stagger > *:nth-child(3) { animation-delay: 0.11s; }
+.stagger > *:nth-child(4) { animation-delay: 0.15s; }
+.stagger > *:nth-child(5) { animation-delay: 0.19s; }
+.stagger > *:nth-child(6) { animation-delay: 0.23s; }
+.stagger > *:nth-child(7) { animation-delay: 0.27s; }
+.stagger > *:nth-child(8) { animation-delay: 0.31s; }
+
+/* تفاعلات لمس/مرور لطيفة */
+.press {
+  transition: transform 160ms var(--ease-out-expo), box-shadow 200ms var(--ease-out-expo);
+}
+.press:active { transform: scale(0.965); }
+.hover-lift {
+  transition: transform 220ms var(--ease-out-expo), box-shadow 220ms var(--ease-out-expo);
+}
+@media (hover: hover) {
+  .hover-lift:hover { transform: translateY(-2px); box-shadow: var(--shadow-glass); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 .font-mono { font-family: var(--font-mono); }
@@ -268,9 +351,6 @@ select {
 }
 
 @media (hover: none), (pointer: coarse), (max-width: 768px) {
-  html.theme-ready, html.theme-ready * {
-    transition-duration: 0ms;
-  }
   body {
     background-attachment: scroll;
   }

@@ -83,7 +83,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
         </div>
       </header>
 
-      <main className="min-w-0 px-4 pt-2">{children}</main>
+      <main key={location.pathname} className="min-w-0 px-4 pt-2 animate-fade">{children}</main>
 
       <nav className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 right-4 z-50">
         <div className="bottom-bar rounded-2xl px-2 py-2 shadow-glass flex items-center justify-between">
@@ -94,13 +94,16 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
               <Link
                 key={n.to}
                 to={n.to}
-                className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 rounded-xl transition ${
+                className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 rounded-xl press transition-colors ${
                   active
                     ? "bg-accent text-accent-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Icon className="size-[18px]" strokeWidth={active ? 2.4 : 1.8} />
+                <Icon
+                  className={`size-[18px] transition-transform duration-300 ${active ? "scale-110 -translate-y-px" : ""}`}
+                  strokeWidth={active ? 2.4 : 1.8}
+                />
                 <span className="text-[10px] font-bold">{t(n.key)}</span>
               </Link>
             );
@@ -144,7 +147,7 @@ export function Card({
 }) {
   return (
     <div
-      className={`glass rounded-3xl p-5 shadow-soft relative overflow-hidden ${className}`}
+      className={`glass rounded-3xl p-5 shadow-soft relative overflow-hidden hover-lift ${className}`}
     >
       {children}
     </div>
