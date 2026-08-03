@@ -276,9 +276,6 @@ select {
 }
 
 @media (hover: none), (pointer: coarse), (max-width: 768px) {
-  html.theme-ready, html.theme-ready * {
-    transition-duration: 0ms;
-  }
   body {
     background-attachment: scroll;
   }
