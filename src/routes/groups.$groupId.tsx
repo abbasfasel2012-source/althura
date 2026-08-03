@@ -203,12 +203,12 @@ function GroupChatPage() {
             value={editing ? editing.content : content}
             onChange={(e) => editing ? setEditing({ ...editing, content: e.target.value }) : setContent(e.target.value)}
             placeholder={editing ? "عدّل رسالتك..." : "اكتب رسالتك..."}
-            className="min-w-0 flex-1 ps-12 pe-4 py-3 rounded-xl glass-strong border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="min-w-0 flex-1 pe-12 ps-4 py-3 rounded-xl glass-strong border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
           <button
             type="submit"
             disabled={sendMut.isPending || editMut.isPending || (!editing && !content.trim() && !file)}
-            className="absolute start-1.5 top-1.5 size-9 rounded-lg bg-primary text-primary-foreground grid place-items-center disabled:opacity-50 active:scale-95"
+            className="absolute end-1.5 top-1.5 size-9 rounded-lg bg-primary text-primary-foreground grid place-items-center disabled:opacity-50 active:scale-95"
           >
             {sendMut.isPending || editMut.isPending ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
           </button>
