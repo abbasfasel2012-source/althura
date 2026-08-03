@@ -94,13 +94,16 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
               <Link
                 key={n.to}
                 to={n.to}
-                className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 rounded-xl transition ${
+                className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 rounded-xl press transition-colors ${
                   active
                     ? "bg-accent text-accent-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Icon className="size-[18px]" strokeWidth={active ? 2.4 : 1.8} />
+                <Icon
+                  className={`size-[18px] transition-transform duration-300 ${active ? "scale-110 -translate-y-px" : ""}`}
+                  strokeWidth={active ? 2.4 : 1.8}
+                />
                 <span className="text-[10px] font-bold">{t(n.key)}</span>
               </Link>
             );
