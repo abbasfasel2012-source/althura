@@ -16,19 +16,23 @@ export function markNotificationsSeen() {
   window.dispatchEvent(new Event("aladhra:notif"));
 }
 
-async function fetchLatest(): Promise<number> {
-  const tables = ["announcements", "news", "events"] as const;
-  const results = await Promise.all(
-    tables.map((t) =>
-      supabase.from(t).select("created_at").order("created_at", { ascending: false }).limit(1).maybeSingle()
-    )
-  );
-  let max = 0;
-  for (const r of results) {
-    const ts = r.data?.created_at ? new Date(r.data.created_at as string).getTime() : 0;
-    if (ts > max) max = ts;
-  }
-  return max;
+let cachedLatest = 0;
+let cachedAt = 0;
+let inflight: Promise<number> | null = null;
+const TTL = 5 * 60_000;
+
+async function fetchLatest(force = false): Promise<number> {
+  const now = Date.now();
+  if (!force && cachedAt && now - cachedAt < TTL) return cachedLatest;
+  if (inflight) return inflight;
+  inflight = (async () => {
+    const { data } = await (supabase as any).rpc("latest_activity_at");
+    cachedLatest = data ? new Date(data as string).getTime() : 0;
+    cachedAt = Date.now();
+    inflight = null;
+    return cachedLatest;
+  })();
+  return inflight;
 }
 
 export function useHasUnreadNotifications(): boolean {
@@ -36,9 +40,9 @@ export function useHasUnreadNotifications(): boolean {
 
   useEffect(() => {
     let mounted = true;
-    const check = async () => {
+    const check = async (force = false) => {
       try {
-        const latest = await fetchLatest();
+        const latest = await fetchLatest(force);
         if (!mounted) return;
         setUnread(latest > 0 && latest > getLastSeen());
       } catch {
@@ -46,9 +50,9 @@ export function useHasUnreadNotifications(): boolean {
       }
     };
     check();
-    const onChange = () => check();
+    const onChange = () => check(true);
     window.addEventListener("aladhra:notif", onChange);
-    const interval = window.setInterval(check, 60000);
+    const interval = window.setInterval(() => check(true), 5 * 60_000);
     return () => {
       mounted = false;
       window.removeEventListener("aladhra:notif", onChange);
@@ -58,3 +62,4 @@ export function useHasUnreadNotifications(): boolean {
 
   return unread;
 }
+
