@@ -101,6 +101,7 @@ function AdminPage() {
       {tab === "students"  && <TabStudents />}
       {tab === "content"   && <TabContent />}
       {tab === "admins"    && <TabAdmins />}
+      {tab === "tools"     && <TabTools />}
     </AppShell>
   );
 }
