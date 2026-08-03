@@ -280,3 +280,23 @@ select {
   }
 }
 
+
+/* ===== استجابة اللمس الفورية ===== */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+button, a, [role="button"] {
+  -webkit-touch-callout: none;
+}
+button:active, a:active, [role="button"]:active {
+  opacity: 0.85;
+}
+/* منع تأخير 300ms وتحسين الرسم أثناء التمرير */
+@media (hover: none), (pointer: coarse) {
+  button, a, [role="button"], label, input, select, textarea {
+    touch-action: manipulation;
+  }
+  .glass, .glass-strong, .bottom-bar {
+    will-change: auto;
+  }
+}
