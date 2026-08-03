@@ -164,7 +164,7 @@ function HomePage() {
                     <div className="text-sm font-medium">{c.subject}</div>
                   </div>
                 ))}
-                {periods.length === 0 && !periodsQ.isLoading && (
+                {periods.length === 0 && !homeQ.isLoading && (
                   <div className="text-xs text-muted-foreground">— لم يُضف بعد —</div>
                 )}
               </div>
@@ -201,7 +201,7 @@ function HomePage() {
                 <BookOpen className="size-4 text-primary" /> المكتبة
               </span>
               <span className="font-mono font-bold text-lg">
-                {stats.isLoading ? "…" : ar(String(booksCount).padStart(2, "0"))}
+                {homeQ.isLoading ? "…" : ar(String(booksCount).padStart(2, "0"))}
               </span>
             </Link>
 
@@ -244,7 +244,7 @@ function HomePage() {
                     </div>
                   </div>
                 ))}
-                {openHomework.length === 0 && !homeworkQ.isLoading && (
+                {openHomework.length === 0 && !homeQ.isLoading && (
                   <div className="text-xs text-muted-foreground">لا توجد واجبات مفتوحة 🎉</div>
                 )}
               </div>
@@ -255,7 +255,7 @@ function HomePage() {
               <MessagesSquare className="size-5 text-primary" />
               <div>
                 <div className="font-bold text-sm">الكروبات</div>
-                <div className="text-[11px] text-muted-foreground mt-0.5">{groupsQ.isLoading ? "…" : ar(groupsCount)} كروبات نشطة</div>
+                <div className="text-[11px] text-muted-foreground mt-0.5">{homeQ.isLoading ? "…" : ar(groupsCount)} كروبات نشطة</div>
               </div>
             </Link>
 
