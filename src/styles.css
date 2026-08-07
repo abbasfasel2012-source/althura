@@ -208,6 +208,40 @@
   animation: shimmer 1.6s linear infinite;
 }
 
+/* هياكل التحميل (Skeleton) */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in oklab, var(--foreground) 8%, transparent);
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+    100deg,
+    transparent 20%,
+    color-mix(in oklab, var(--foreground) 10%, transparent) 45%,
+    transparent 70%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s linear infinite;
+}
+
+/* شريط تقدّم أعلى الصفحة عند التنقل */
+.route-progress {
+  position: fixed;
+  top: 0;
+  inset-inline: 0;
+  height: 2px;
+  z-index: 100;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  background-size: 50% 100%;
+  animation: shimmer 1s linear infinite;
+  pointer-events: none;
+}
+
+
 /* تأخير متدرّج للقوائم */
 .stagger > * { animation: slide-up 0.5s var(--ease-out-expo) both; }
 .stagger > *:nth-child(1) { animation-delay: 0.03s; }

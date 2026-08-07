@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth";
 import { useState } from "react";
 import { GRADE_NAMES, type Grade } from "@/lib/store";
 import { Loader2, Plus, Trash2, ClipboardCheck, X, GraduationCap } from "lucide-react";
+import { SkList } from "@/components/Skeletons";
 
 export const Route = createFileRoute("/exams")({
   head: () => ({
@@ -69,7 +70,7 @@ function ExamsPage() {
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center py-14"><Loader2 className="size-6 animate-spin text-primary" /></div>
+        <SkList rows={4} />
       ) : visible.length === 0 ? (
         <Card className="mt-6 text-center py-10 text-sm text-muted-foreground">
           لا توجد اختبارات متاحة الآن.

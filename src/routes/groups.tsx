@@ -5,6 +5,7 @@ import { fetchGroups, createGroup, deleteGroup, ar } from "@/lib/data";
 import { useAuth } from "@/lib/auth";
 import { Users, MessageCircle, Loader2, Plus, Trash2, Lock, Globe } from "lucide-react";
 import { useState } from "react";
+import { SkList } from "@/components/Skeletons";
 
 export const Route = createFileRoute("/groups")({
   head: () => ({
@@ -126,10 +127,7 @@ function GroupsPage() {
       )}
 
       {isLoading && (
-        <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-          <Loader2 className="size-8 animate-spin mb-2" />
-          <p className="text-sm">جاري تحميل الكروبات...</p>
-        </div>
+        <SkList rows={5} />
       )}
 
       {error && (

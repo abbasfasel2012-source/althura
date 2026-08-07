@@ -4,6 +4,7 @@ import { AppShell, Card } from "@/components/AppShell";
 import { fetchAnnouncements, deleteAnnouncement, formatDate } from "@/lib/data";
 import { useAuth } from "@/lib/auth";
 import { Loader2, Pin, Trash2 } from "lucide-react";
+import { SkList } from "@/components/Skeletons";
 
 export const Route = createFileRoute("/announcements")({
   head: () => ({
@@ -39,9 +40,7 @@ function AnnouncementsPage() {
       </div>
 
       {isLoading && (
-        <div className="flex justify-center py-10">
-          <Loader2 className="size-6 animate-spin text-primary" />
-        </div>
+        <SkList rows={4} />
       )}
 
       {error && (

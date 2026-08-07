@@ -4,6 +4,7 @@ import { AppShell, Card } from "@/components/AppShell";
 import { fetchWeekSchedule, fetchDayPeriods } from "@/lib/data";
 import { Loader2, Palmtree } from "lucide-react";
 import { useState } from "react";
+import { SkList } from "@/components/Skeletons";
 
 export const Route = createFileRoute("/schedule")({
   head: () => ({
@@ -33,9 +34,7 @@ function SchedulePage() {
   if (daysQ.isLoading) {
     return (
       <AppShell title="جدول الدروس">
-        <div className="flex justify-center py-20">
-          <Loader2 className="size-6 animate-spin text-primary" />
-        </div>
+        <SkList rows={5} />
       </AppShell>
     );
   }
