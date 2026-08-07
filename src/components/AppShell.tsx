@@ -1,11 +1,11 @@
-import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { Bell, Home, CalendarDays, BookOpen, User2, Search, LogOut, Sparkles, Sun, Moon } from "lucide-react";
+import { Link, useLocation, useNavigate, useRouterState } from "@tanstack/react-router";
+import { Bell, Home, CalendarDays, BookOpen, User2, Search, LogOut, Sparkles, Sun, Moon, WifiOff } from "lucide-react";
 import { useUser } from "@/lib/store";
 import { signOut } from "@/lib/auth";
 import { useHasUnreadNotifications, markNotificationsSeen } from "@/lib/notifications";
 import { useTheme } from "@/lib/theme";
 import { useI18n } from "@/lib/i18n";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 const NAV = [
   { to: "/", key: "nav.home", icon: Home },
@@ -22,12 +22,30 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
   const hasUnread = useHasUnreadNotifications();
   const { resolved, toggle } = useTheme();
   const { t } = useI18n();
+  const isNavigating = useRouterState({ select: (s) => s.status === "pending" });
+  const [offline, setOffline] = useState(false);
 
+  // Scroll to top on route change (native-app feel).
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+  }, [location.pathname]);
 
-
+  // Offline awareness.
+  useEffect(() => {
+    const update = () => setOffline(!navigator.onLine);
+    update();
+    window.addEventListener("online", update);
+    window.addEventListener("offline", update);
+    return () => {
+      window.removeEventListener("online", update);
+      window.removeEventListener("offline", update);
+    };
+  }, []);
 
   return (
     <div className="min-h-dvh overflow-x-clip pb-[calc(7rem+env(safe-area-inset-bottom))]">
+      {isNavigating && <div className="route-progress" />}
+
       <header className="sticky top-0 z-40 px-4 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-2">
         <div className="glass-strong rounded-2xl px-3 py-2 flex items-center justify-between shadow-soft">
           <Link to="/" className="flex items-center gap-2 min-w-0">
