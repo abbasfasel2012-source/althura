@@ -5,6 +5,8 @@ import { AppShell, SectionTitle } from "@/components/AppShell";
 import { useUser } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
 import { fetchHomeSummary, ar } from "@/lib/data";
+import { HomeSkeleton } from "@/components/Skeletons";
+
 
 import {
   ArrowLeft, BookOpen, CalendarClock, ClipboardList, GraduationCap,
