@@ -34,9 +34,12 @@ function HomePage() {
   });
 
   useEffect(() => {
+    // Redirect only when the real auth session is resolved AND there is no
+    // local (guest) user — otherwise a signed-in owner gets bounced to /login
+    // on the first render (local user state hydrates one tick later).
     if (authLoading) return;
-    if (user === null) navigate({ to: "/login" });
-  }, [user, authLoading, navigate]);
+    if (!userId && user === null) navigate({ to: "/login" });
+  }, [user, userId, authLoading, navigate]);
 
   const summary = homeQ.data;
   const latestAnn = summary?.announcements?.[0];
@@ -50,6 +53,16 @@ function HomePage() {
   const booksCount = summary?.books_count ?? 0;
   const examsCount = summary?.exams_upcoming ?? 0;
   const groupsCount = summary?.groups_count ?? 0;
+
+  if (authLoading || (homeQ.isLoading && !summary)) {
+    return (
+      <AppShell title="الرئيسية">
+        <HomeSkeleton />
+      </AppShell>
+    );
+  }
+
+
 
 
   return (
