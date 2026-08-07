@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ar } from "@/lib/data";
+import { SkList } from "@/components/Skeletons";
 
 export const Route = createFileRoute("/homework")({
   head: () => ({
@@ -63,7 +64,7 @@ function HomeworkPage() {
   if (loading || isLoading) {
     return (
       <AppShell title="الواجبات">
-        <div className="flex justify-center py-20"><Loader2 className="size-6 animate-spin text-primary" /></div>
+        <SkList rows={4} />
       </AppShell>
     );
   }

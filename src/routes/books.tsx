@@ -7,6 +7,7 @@ import {
 import { useAuth } from "@/lib/auth";
 import { Download, Loader2, PlayCircle, BookOpen, Film, Plus, GraduationCap } from "lucide-react";
 import { useState } from "react";
+import { Sk } from "@/components/Skeletons";
 
 export const Route = createFileRoute("/books")({
   head: () => ({
@@ -67,7 +68,9 @@ function LibraryPage() {
       {tab === "books" ? (
         <>
           {books.isLoading && (
-            <Card className="mt-6 py-10 text-center"><Loader2 className="size-5 animate-spin mx-auto text-primary" /></Card>
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              {Array.from({ length: 4 }).map((_, i) => <Sk key={i} className="h-40 rounded-2xl" />)}
+            </div>
           )}
           {!books.isLoading && booksList.length === 0 && (
             <Card className="mt-6 text-center text-xs text-muted-foreground py-10">
@@ -83,7 +86,9 @@ function LibraryPage() {
       ) : (
         <>
           {videos.isLoading && (
-            <Card className="mt-6 py-10 text-center"><Loader2 className="size-5 animate-spin mx-auto text-primary" /></Card>
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              {Array.from({ length: 4 }).map((_, i) => <Sk key={i} className="h-40 rounded-2xl" />)}
+            </div>
           )}
           {!videos.isLoading && videosList.length === 0 && (
             <Card className="mt-6 text-center text-xs text-muted-foreground py-10">
