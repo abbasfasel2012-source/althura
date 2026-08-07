@@ -99,7 +99,13 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
             ) : null}
           </div>
         </div>
+        {offline && (
+          <div className="mt-2 rounded-xl px-3 py-1.5 bg-destructive/15 text-destructive text-[11px] font-bold flex items-center gap-2 animate-pop">
+            <WifiOff className="size-3.5" /> لا يوجد اتصال بالإنترنت
+          </div>
+        )}
       </header>
+
 
       <main className="min-w-0 px-4 pt-2 animate-fade">{children}</main>
 
