@@ -3,7 +3,9 @@ import { AppShell, Card, SectionTitle } from "@/components/AppShell";
 import { useLocalStorage } from "@/lib/store";
 import { useTheme, type Theme } from "@/lib/theme";
 import { useI18n, LANGS, type Lang } from "@/lib/i18n";
-import { Bell, Globe, Languages, Monitor, Moon, Sun, Vibrate, Volume2 } from "lucide-react";
+import { Bell, BellRing, Globe, Languages, Monitor, Moon, Sun, Vibrate, Volume2, WifiOff } from "lucide-react";
+import { useEffect, useState } from "react";
+import { enableDeviceNotifications, getPushPermission, type PushPermission } from "@/lib/push";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -23,6 +25,9 @@ function SettingsPage() {
   const [notif, setNotif] = useLocalStorage("aladhra.notif", true);
   const [sound, setSound] = useLocalStorage("aladhra.sound", true);
   const [vibrate, setVibrate] = useLocalStorage("aladhra.vibrate", false);
+  const [perm, setPerm] = useState<PushPermission>("default");
+
+  useEffect(() => { setPerm(getPushPermission()); }, []);
 
   const options: { value: Theme; label: string; icon: typeof Sun }[] = [
     { value: "light", label: t("settings.light"), icon: Sun },
@@ -85,9 +90,39 @@ function SettingsPage() {
       <SectionTitle eyebrow={t("settings.alerts")} title={t("settings.notifications")} />
       <div className="space-y-2 mb-5">
         <Toggle icon={<Bell className="size-4" />} label={t("settings.adminNotif")} value={notif} onChange={setNotif} />
+        <div className="w-full glass rounded-2xl px-4 py-3.5 flex items-center gap-3">
+          <span className="text-primary"><BellRing className="size-4" /></span>
+          <span className="font-bold text-sm flex-1 text-start">{t("settings.device")}</span>
+          {perm === "granted" ? (
+            <span className="text-[11px] font-bold text-accent">{t("settings.deviceOn")}</span>
+          ) : perm === "denied" ? (
+            <span className="text-[11px] text-muted-foreground">{t("settings.deviceDenied")}</span>
+          ) : perm === "unsupported" ? (
+            <span className="text-[11px] text-muted-foreground">{t("settings.deviceUnsupported")}</span>
+          ) : (
+            <button
+              onClick={async () => setPerm(await enableDeviceNotifications())}
+              className="text-[11px] font-bold rounded-full px-3 py-1.5 bg-primary text-primary-foreground active:scale-95 transition"
+            >
+              {t("settings.deviceEnable")}
+            </button>
+          )}
+        </div>
         <Toggle icon={<Volume2 className="size-4" />} label={t("settings.sound")} value={sound} onChange={setSound} />
         <Toggle icon={<Vibrate className="size-4" />} label={t("settings.vibrate")} value={vibrate} onChange={setVibrate} />
       </div>
+
+      <Card className="!p-4 mb-5">
+        <div className="flex items-center gap-3">
+          <div className="size-10 rounded-xl bg-primary/10 text-primary grid place-items-center">
+            <WifiOff className="size-4" />
+          </div>
+          <div className="flex-1">
+            <div className="font-bold text-sm">{t("settings.offline")}</div>
+            <div className="text-[11px] text-muted-foreground">{t("settings.offlineHint")}</div>
+          </div>
+        </div>
+      </Card>
 
       <SectionTitle eyebrow={t("settings.aboutEyebrow")} title={t("settings.about")} />
       <Card className="!p-4">
