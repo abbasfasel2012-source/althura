@@ -9,6 +9,10 @@ export const Route = createFileRoute("/messages")({
     meta: [
       { title: "الذرى الذكية | تواصل" },
       { name: "description", content: "محادثاتك الخاصة مع الطلاب والمدرّسين." },
+      { property: "og:title", content: "الذرى الذكية | تواصل" },
+      { property: "og:description", content: "محادثاتك الخاصة مع الطلاب والمدرّسين." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: MessagesPage,

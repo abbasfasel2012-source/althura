@@ -11,6 +11,10 @@ export const Route = createFileRoute("/announcements")({
     meta: [
       { title: "الذرى الذكية | التبليغات" },
       { name: "description", content: "آخر تبليغات الإدارة والمعلمين." },
+      { property: "og:title", content: "الذرى الذكية | التبليغات" },
+      { property: "og:description", content: "آخر تبليغات الإدارة والمعلمين." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: AnnouncementsPage,

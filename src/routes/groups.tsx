@@ -12,6 +12,10 @@ export const Route = createFileRoute("/groups")({
     meta: [
       { title: "الذرى الذكية | الكروبات" },
       { name: "description", content: "تواصل مع زملائك ومعلميك عبر الكروبات." },
+      { property: "og:title", content: "الذرى الذكية | الكروبات" },
+      { property: "og:description", content: "تواصل مع زملائك ومعلميك عبر الكروبات." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: GroupsPage,
@@ -139,7 +143,7 @@ function GroupsPage() {
       <div className="space-y-3">
         {groups?.map((g) => (
           <div key={g.id} className="flex items-center gap-2">
-            <Link to={`/groups/${g.id}`} className="block flex-1 transition-transform active:scale-[0.98]">
+            <Link to="/groups/$groupId" params={{ groupId: g.id }} className="block flex-1 transition-transform active:scale-[0.98]">
               <Card>
                 <div className="flex items-center gap-3">
                   <div className="size-12 rounded-2xl bg-accent/10 text-accent grid place-items-center shrink-0">

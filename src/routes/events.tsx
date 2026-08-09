@@ -10,6 +10,10 @@ export const Route = createFileRoute("/events")({
     meta: [
       { title: "الذرى الذكية | الفعاليات" },
       { name: "description", content: "فعاليات المدرسة القادمة." },
+      { property: "og:title", content: "الذرى الذكية | الفعاليات" },
+      { property: "og:description", content: "فعاليات المدرسة القادمة." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: EventsPage,

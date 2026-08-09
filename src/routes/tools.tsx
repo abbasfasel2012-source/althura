@@ -9,6 +9,10 @@ export const Route = createFileRoute("/tools")({
     meta: [
       { title: "الذرى الذكية | الأدوات" },
       { name: "description", content: "أدوات سريعة: حاسبة، ملاحظات، عداد، تحويل عملات، ولعبة سريعة." },
+      { property: "og:title", content: "الذرى الذكية | الأدوات" },
+      { property: "og:description", content: "أدوات سريعة: حاسبة، ملاحظات، عداد، تحويل عملات، ولعبة سريعة." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: ToolsPage,

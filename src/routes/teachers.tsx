@@ -12,6 +12,10 @@ export const Route = createFileRoute("/teachers")({
     meta: [
       { title: "الذرى الذكية | المدرّسون" },
       { name: "description", content: "هيئة التدريس في ثانوية الذرى الذكية للمتميزين." },
+      { property: "og:title", content: "الذرى الذكية | المدرّسون" },
+      { property: "og:description", content: "هيئة التدريس في ثانوية الذرى الذكية للمتميزين." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: TeachersPage,

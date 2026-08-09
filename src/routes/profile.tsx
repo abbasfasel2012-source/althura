@@ -11,6 +11,10 @@ export const Route = createFileRoute("/profile")({
     meta: [
       { title: "الذرى الذكية | حسابي" },
       { name: "description", content: "بياناتك الشخصية الحقيقية ودرجاتك." },
+      { property: "og:title", content: "الذرى الذكية | حسابي" },
+      { property: "og:description", content: "بياناتك الشخصية الحقيقية ودرجاتك." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: ProfilePage,

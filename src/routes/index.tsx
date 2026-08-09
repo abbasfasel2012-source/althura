@@ -18,6 +18,10 @@ export const Route = createFileRoute("/")({
     meta: [
       { title: "ثانوية الذرى الذكية | الرئيسية" },
       { name: "description", content: "اللوحة الرئيسية للطالب — جدول اليوم، الواجبات، الامتحانات، والتبليغات." },
+      { property: "og:title", content: "ثانوية الذرى الذكية | الرئيسية" },
+      { property: "og:description", content: "اللوحة الرئيسية للطالب — جدول اليوم، الواجبات، الامتحانات، والتبليغات." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: HomePage,

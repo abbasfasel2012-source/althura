@@ -12,6 +12,10 @@ export const Route = createFileRoute("/search")({
     meta: [
       { title: "الذرى الذكية | البحث" },
       { name: "description", content: "ابحث في الكتب، المدرّسين، الواجبات، والتبليغات." },
+      { property: "og:title", content: "الذرى الذكية | البحث" },
+      { property: "og:description", content: "ابحث في الكتب، المدرّسين، الواجبات، والتبليغات." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: SearchPage,

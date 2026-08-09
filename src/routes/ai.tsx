@@ -13,6 +13,10 @@ export const Route = createFileRoute("/ai")({
     meta: [
       { title: "الذرى الذكية | مساعد عبوسي" },
       { name: "description", content: "مساعد ذكي يساعدك في دروسك وواجباتك." },
+      { property: "og:title", content: "الذرى الذكية | مساعد عبوسي" },
+      { property: "og:description", content: "مساعد ذكي يساعدك في دروسك وواجباتك." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: AIPage,

@@ -16,6 +16,10 @@ export const Route = createFileRoute("/login")({
     meta: [
       { title: "الذرى الذكية | تسجيل الدخول" },
       { name: "description", content: "سجّل دخولك إلى منصة ثانوية الذرى الذكية للمتميزين." },
+      { property: "og:title", content: "الذرى الذكية | تسجيل الدخول" },
+      { property: "og:description", content: "سجّل دخولك إلى منصة ثانوية الذرى الذكية للمتميزين." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: LoginPage,

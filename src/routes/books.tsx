@@ -14,6 +14,10 @@ export const Route = createFileRoute("/books")({
     meta: [
       { title: "الذرى الذكية | المكتبة" },
       { name: "description", content: "المكتبة الرقمية: كتب وفيديوهات تعليمية." },
+      { property: "og:title", content: "الذرى الذكية | المكتبة" },
+      { property: "og:description", content: "المكتبة الرقمية: كتب وفيديوهات تعليمية." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: LibraryPage,
@@ -133,7 +137,7 @@ function BookCard({ book, color }: { book: BookItem; color: string }) {
     <button onClick={open} className="glass rounded-2xl p-3 animate-reveal text-right">
       <div className={`aspect-[3/4] rounded-xl bg-gradient-to-br ${color} relative overflow-hidden mb-2 grid place-items-center text-center p-3`}>
         {book.cover_url ? (
-          <img src={book.cover_url} alt={book.title} className="absolute inset-0 size-full object-cover" />
+          <img src={book.cover_url} alt={book.title} loading="lazy" decoding="async" className="absolute inset-0 size-full object-cover" />
         ) : (
           <div className="text-xs font-bold text-stone-800 leading-tight">{book.title}</div>
         )}
@@ -165,7 +169,7 @@ function VideoRow({ v }: { v: any }) {
       ) : (
         <button onClick={() => setPlaying(true)} className="relative w-full aspect-video rounded-2xl overflow-hidden mb-3 bg-surface-2 grid place-items-center">
           {v.thumbnail_url ? (
-            <img src={v.thumbnail_url} alt={v.title} className="w-full h-full object-cover" />
+            <img src={v.thumbnail_url} alt={v.title} loading="lazy" decoding="async" className="w-full h-full object-cover" />
           ) : null}
           <div className="absolute inset-0 bg-black/40 grid place-items-center">
             <PlayCircle className="size-14 text-white drop-shadow-lg" strokeWidth={1.5} />
