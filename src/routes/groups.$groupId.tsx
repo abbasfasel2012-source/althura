@@ -13,6 +13,16 @@ import { ProfileModal } from "@/components/ProfileModal";
 import { ChatMessage, AttachmentPreview } from "@/components/ChatMessage";
 
 export const Route = createFileRoute("/groups/$groupId")({
+  head: () => ({
+    meta: [
+      { title: "الذرى الذكية | محادثة الكروب" },
+      { name: "description", content: "محادثة الكروب: رسائل، وسائط، وتفاعلات بين الطلبة والمدرّسين." },
+      { property: "og:title", content: "الذرى الذكية | محادثة الكروب" },
+      { property: "og:description", content: "محادثة الكروب: رسائل، وسائط، وتفاعلات بين الطلبة والمدرّسين." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: GroupChatPage,
 });
 
