@@ -13,6 +13,9 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { ThemeProvider, themeBootstrapScript } from "../lib/theme";
 import { LanguageProvider } from "../lib/i18n";
+import { LiveNotifications } from "../lib/push";
+import { setupOffline } from "../lib/pwa";
+import { Toaster } from "../components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -135,6 +138,8 @@ function RootComponent() {
         <LanguageProvider>
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
+          <LiveNotifications />
+          <Toaster position="top-center" />
         </LanguageProvider>
       </ThemeProvider>
     </QueryClientProvider>
