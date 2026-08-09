@@ -15,6 +15,10 @@ export const Route = createFileRoute("/exams")({
     meta: [
       { title: "الذرى الذكية | الاختبارات" },
       { name: "description", content: "اختبارات تفاعلية مع تصحيح ذكي." },
+      { property: "og:title", content: "الذرى الذكية | الاختبارات" },
+      { property: "og:description", content: "اختبارات تفاعلية مع تصحيح ذكي." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: ExamsPage,

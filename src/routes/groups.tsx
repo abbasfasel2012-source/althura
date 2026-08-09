@@ -12,6 +12,10 @@ export const Route = createFileRoute("/groups")({
     meta: [
       { title: "الذرى الذكية | الكروبات" },
       { name: "description", content: "تواصل مع زملائك ومعلميك عبر الكروبات." },
+      { property: "og:title", content: "الذرى الذكية | الكروبات" },
+      { property: "og:description", content: "تواصل مع زملائك ومعلميك عبر الكروبات." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: GroupsPage,

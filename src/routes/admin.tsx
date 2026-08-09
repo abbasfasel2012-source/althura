@@ -23,6 +23,10 @@ export const Route = createFileRoute("/admin")({
     meta: [
       { title: "الذرى الذكية | لوحة التحكم" },
       { name: "description", content: "لوحة المالك لإدارة المنصة بالكامل." },
+      { property: "og:title", content: "الذرى الذكية | لوحة التحكم" },
+      { property: "og:description", content: "لوحة المالك لإدارة المنصة بالكامل." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: AdminPage,

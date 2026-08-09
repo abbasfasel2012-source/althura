@@ -17,6 +17,10 @@ export const Route = createFileRoute("/dm/$userId")({
     meta: [
       { title: "الذرى الذكية | تواصل" },
       { name: "description", content: "محادثة خاصة بين أعضاء المدرسة." },
+      { property: "og:title", content: "الذرى الذكية | تواصل" },
+      { property: "og:description", content: "محادثة خاصة بين أعضاء المدرسة." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: DMPage,

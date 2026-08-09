@@ -7,6 +7,10 @@ export const Route = createFileRoute("/contact")({
     meta: [
       { title: "الذرى الذكية | تواصل" },
       { name: "description", content: "تواصل مع إدارة ثانوية الذرى الذكية للمتميزين." },
+      { property: "og:title", content: "الذرى الذكية | تواصل" },
+      { property: "og:description", content: "تواصل مع إدارة ثانوية الذرى الذكية للمتميزين." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: ContactPage,

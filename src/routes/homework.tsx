@@ -13,6 +13,10 @@ export const Route = createFileRoute("/homework")({
     meta: [
       { title: "الذرى الذكية | الواجبات" },
       { name: "description", content: "تابع واجباتك اليومية ومواعيد تسليمها." },
+      { property: "og:title", content: "الذرى الذكية | الواجبات" },
+      { property: "og:description", content: "تابع واجباتك اليومية ومواعيد تسليمها." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: HomeworkPage,

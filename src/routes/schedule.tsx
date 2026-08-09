@@ -11,6 +11,10 @@ export const Route = createFileRoute("/schedule")({
     meta: [
       { title: "الذرى الذكية | جدول الدروس" },
       { name: "description", content: "جدول الدروس الأسبوعي مع تفاصيل دقيقة لكل حصة." },
+      { property: "og:title", content: "الذرى الذكية | جدول الدروس" },
+      { property: "og:description", content: "جدول الدروس الأسبوعي مع تفاصيل دقيقة لكل حصة." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: SchedulePage,

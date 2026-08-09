@@ -14,6 +14,10 @@ export const Route = createFileRoute("/books")({
     meta: [
       { title: "الذرى الذكية | المكتبة" },
       { name: "description", content: "المكتبة الرقمية: كتب وفيديوهات تعليمية." },
+      { property: "og:title", content: "الذرى الذكية | المكتبة" },
+      { property: "og:description", content: "المكتبة الرقمية: كتب وفيديوهات تعليمية." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: LibraryPage,

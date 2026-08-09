@@ -10,6 +10,10 @@ export const Route = createFileRoute("/news")({
     meta: [
       { title: "الذرى الذكية | الأخبار" },
       { name: "description", content: "آخر أخبار وفعاليات ثانوية الذرى الذكية." },
+      { property: "og:title", content: "الذرى الذكية | الأخبار" },
+      { property: "og:description", content: "آخر أخبار وفعاليات ثانوية الذرى الذكية." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: NewsPage,

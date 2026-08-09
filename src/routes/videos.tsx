@@ -12,6 +12,10 @@ export const Route = createFileRoute("/videos")({
     meta: [
       { title: "الذرى الذكية | مكتبة الفيديوهات" },
       { name: "description", content: "فيديوهات تعليمية لكل صف وشعبة." },
+      { property: "og:title", content: "الذرى الذكية | مكتبة الفيديوهات" },
+      { property: "og:description", content: "فيديوهات تعليمية لكل صف وشعبة." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: VideosPage,

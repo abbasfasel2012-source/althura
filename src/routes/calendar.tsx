@@ -10,6 +10,10 @@ export const Route = createFileRoute("/calendar")({
     meta: [
       { title: "الذرى الذكية | التقويم" },
       { name: "description", content: "تقويم شهري للامتحانات والفعاليات." },
+      { property: "og:title", content: "الذرى الذكية | التقويم" },
+      { property: "og:description", content: "تقويم شهري للامتحانات والفعاليات." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: CalendarPage,

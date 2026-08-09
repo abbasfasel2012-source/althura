@@ -10,6 +10,10 @@ export const Route = createFileRoute("/grades")({
     meta: [
       { title: "الذرى الذكية | الدرجات" },
       { name: "description", content: "درجاتك الفعلية من السجل الأكاديمي." },
+      { property: "og:title", content: "الذرى الذكية | الدرجات" },
+      { property: "og:description", content: "درجاتك الفعلية من السجل الأكاديمي." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: GradesPage,
