@@ -143,7 +143,7 @@ function GroupsPage() {
       <div className="space-y-3">
         {groups?.map((g) => (
           <div key={g.id} className="flex items-center gap-2">
-            <Link to={`/groups/${g.id}`} className="block flex-1 transition-transform active:scale-[0.98]">
+            <Link to="/groups/$groupId" params={{ groupId: g.id }} className="block flex-1 transition-transform active:scale-[0.98]">
               <Card>
                 <div className="flex items-center gap-3">
                   <div className="size-12 rounded-2xl bg-accent/10 text-accent grid place-items-center shrink-0">
