@@ -71,7 +71,7 @@ function VideosPage() {
                 ) : (
                   <button onClick={() => setPlaying(v.id)} className="relative w-full aspect-video rounded-2xl overflow-hidden mb-3 bg-surface-2 grid place-items-center">
                     {v.thumbnail_url ? (
-                      <img src={v.thumbnail_url} alt={v.title} className="w-full h-full object-cover" />
+                      <img src={v.thumbnail_url} alt={v.title} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                     ) : null}
                     <div className="absolute inset-0 bg-black/40 grid place-items-center">
                       <PlayCircle className="size-14 text-white drop-shadow-lg" strokeWidth={1.5} />
