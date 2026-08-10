@@ -246,21 +246,22 @@
 
 
 /* تأخير متدرّج للقوائم */
-.stagger > * { animation: slide-up 0.5s var(--ease-out-expo) both; }
-.stagger > *:nth-child(1) { animation-delay: 0.03s; }
-.stagger > *:nth-child(2) { animation-delay: 0.07s; }
-.stagger > *:nth-child(3) { animation-delay: 0.11s; }
-.stagger > *:nth-child(4) { animation-delay: 0.15s; }
-.stagger > *:nth-child(5) { animation-delay: 0.19s; }
-.stagger > *:nth-child(6) { animation-delay: 0.23s; }
-.stagger > *:nth-child(7) { animation-delay: 0.27s; }
-.stagger > *:nth-child(8) { animation-delay: 0.31s; }
+.stagger > * { animation: slide-up 0.24s var(--ease-out-expo) both; }
+.stagger > *:nth-child(1) { animation-delay: 0.01s; }
+.stagger > *:nth-child(2) { animation-delay: 0.03s; }
+.stagger > *:nth-child(3) { animation-delay: 0.05s; }
+.stagger > *:nth-child(4) { animation-delay: 0.07s; }
+.stagger > *:nth-child(5) { animation-delay: 0.09s; }
+.stagger > *:nth-child(6) { animation-delay: 0.11s; }
+.stagger > *:nth-child(7) { animation-delay: 0.13s; }
+.stagger > *:nth-child(8) { animation-delay: 0.15s; }
 
 /* تفاعلات لمس/مرور لطيفة */
 .press {
-  transition: transform 160ms var(--ease-out-expo), box-shadow 200ms var(--ease-out-expo);
+  transition: transform 120ms var(--ease-out-expo);
 }
-.press:active { transform: scale(0.965); }
+.press:active { transform: scale(0.97); }
+
 .hover-lift {
   transition: transform 220ms var(--ease-out-expo), box-shadow 220ms var(--ease-out-expo);
 }
