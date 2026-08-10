@@ -43,41 +43,57 @@ function emit(next: AuthState) {
   listeners.forEach((l) => l(next));
 }
 
-async function loadProfileAndRole(userId: string, email: string | null) {
-  const [{ data: profile }, { data: roles }] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("full_name, student_id, grade, section, admin_label")
-      .eq("id", userId)
-      .maybeSingle(),
-    supabase.from("user_roles").select("role").eq("user_id", userId),
-  ]);
+// Dedupe: the profile+role pair used to be fetched once per auth event
+// (getSession, INITIAL_SESSION, TOKEN_REFRESHED, focus…), which meant 4-6
+// duplicate round-trips on every load and a visible stall.
+let loadedFor: string | null = null;
+let inflight: Promise<void> | null = null;
 
-  const role = roles?.find((r) => r.role === "admin")
-    ? "admin"
-    : roles && roles.length > 0
-    ? "student"
-    : null;
+async function loadProfileAndRole(userId: string, email: string | null, force = false) {
+  if (!force && loadedFor === userId && cached.profile) return;
+  if (inflight && loadedFor === userId) return inflight;
+  loadedFor = userId;
 
-  const state: AuthState = {
-    loading: false,
-    userId,
-    email,
-    profile: profile ?? null,
-    role,
-    isOwner: role === "admin",
-  };
+  inflight = (async () => {
+    const [{ data: profile }, { data: roles }] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("full_name, student_id, grade, section, admin_label")
+        .eq("id", userId)
+        .maybeSingle(),
+      supabase.from("user_roles").select("role").eq("user_id", userId),
+    ]);
 
-  if (profile) {
-    setLocalUser({
-      fullName: profile.full_name || email || "طالب",
-      grade: (profile.grade as never) ?? "6",
-      section: (profile.section as never) ?? undefined,
-      role: role === "admin" ? "owner" : "student",
-    });
-  }
+    const role = roles?.find((r) => r.role === "admin")
+      ? "admin"
+      : roles && roles.length > 0
+      ? "student"
+      : null;
 
-  emit(state);
+    const state: AuthState = {
+      loading: false,
+      userId,
+      email,
+      profile: profile ?? null,
+      role,
+      isOwner: role === "admin",
+    };
+
+    if (profile) {
+      setLocalUser({
+        fullName: profile.full_name || email || "طالب",
+        grade: (profile.grade as never) ?? "6",
+        section: (profile.section as never) ?? undefined,
+        role: role === "admin" ? "owner" : "student",
+      });
+    }
+
+    emit(state);
+  })().finally(() => {
+    inflight = null;
+  });
+
+  return inflight;
 }
 
 let initialized = false;
@@ -87,19 +103,29 @@ function init() {
 
   supabase.auth.getSession().then(({ data }) => {
     const s = data.session;
-    if (s) loadProfileAndRole(s.user.id, s.user.email ?? null);
+    if (s) void loadProfileAndRole(s.user.id, s.user.email ?? null);
     else emit({ ...initial, loading: false });
   });
 
   supabase.auth.onAuthStateChange((event, session) => {
     if (event === "SIGNED_OUT" || !session) {
+      loadedFor = null;
       setLocalUser(null);
       emit({ ...initial, loading: false });
-    } else {
-      loadProfileAndRole(session.user.id, session.user.email ?? null);
+      return;
     }
+    // Token refreshes and repeated INITIAL_SESSION events carry no new
+    // identity — ignore them instead of refetching the profile.
+    if (
+      (event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") &&
+      loadedFor === session.user.id
+    ) {
+      return;
+    }
+    void loadProfileAndRole(session.user.id, session.user.email ?? null, event === "USER_UPDATED");
   });
 }
+
 
 export function useAuth(): AuthState {
   const [s, setS] = useState<AuthState>(cached);
