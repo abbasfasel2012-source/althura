@@ -34,12 +34,15 @@ function HomePage() {
   const { userId, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  // Single request for the whole home page.
+  // Single request for the whole home page. Waits for the auth session so we
+  // don't fire the same RPC twice (once anonymous, once authenticated).
   const homeQ = useQuery({
     queryKey: ["home-summary", userId],
     queryFn: fetchHomeSummary,
+    enabled: !authLoading,
     staleTime: 60_000,
   });
+
 
   useEffect(() => {
     // Redirect only when the real auth session is resolved AND there is no
