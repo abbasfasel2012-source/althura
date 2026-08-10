@@ -36,7 +36,7 @@
   --radius-xl: 28px;
   --radius-2xl: 36px;
 
-  --shadow-glass: 0 30px 60px -30px rgba(42, 59, 49, 0.25), 0 6px 20px -6px rgba(157, 132, 93, 0.18);
+  --shadow-glass: 0 15px 30px -15px rgba(42, 59, 49, 0.2), 0 4px 12px -4px rgba(157, 132, 93, 0.12);
   --shadow-soft: 0 1px 0 rgba(26, 26, 24, 0.04), 0 8px 24px -12px rgba(26, 26, 24, 0.12);
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
@@ -395,6 +395,8 @@ select {
   .glass,
   .glass-strong {
     backdrop-filter: none;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
   }
 }
 
@@ -415,6 +417,6 @@ button:active, a:active, [role="button"]:active {
     touch-action: manipulation;
   }
   .glass, .glass-strong, .bottom-bar {
-    will-change: auto;
+    will-change: transform;
   }
 }

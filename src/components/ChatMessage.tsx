@@ -58,7 +58,7 @@ export function ChatMessage({
   };
 
   return (
-    <div className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
+    <div style={{ contain: "layout style" }} className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
       {!isMe && m.sender_name && (
         <button
           onClick={() => onOpenProfile?.(m.sender_id)}
