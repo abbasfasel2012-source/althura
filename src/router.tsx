@@ -6,13 +6,17 @@ export const getRouter = () => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 30_000,
-        gcTime: 5 * 60_000,
+        // Cached pages must paint instantly when the user comes back to them;
+        // a refetch on every mount was what made navigation feel sticky.
+        staleTime: 60_000,
+        gcTime: 30 * 60_000,
+        refetchOnMount: false,
         refetchOnWindowFocus: false,
         retry: 1,
       },
     },
   });
+
 
   const router = createRouter({
     routeTree,

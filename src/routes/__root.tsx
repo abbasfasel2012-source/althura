@@ -116,18 +116,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="ar" dir="rtl">
+    // The inline theme script mutates <html> (class + color-scheme) before
+    // hydration, so React must be told not to diff those attributes —
+    // otherwise it logs a hydration mismatch and re-renders the whole tree.
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
         <HeadContent />
         <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         {children}
         <Scripts />
       </body>
     </html>
   );
 }
+
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
