@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Download, Pencil, Trash2, Smile, Play, Copy, X } from "lucide-react";
 import { ar } from "@/lib/data";
 import { useI18n } from "@/lib/i18n";
@@ -219,10 +219,18 @@ export function AttachmentPreview({
 }) {
   const isImage = file.type.startsWith("image/");
   const isVideo = file.type.startsWith("video/");
+  const previewUrl = useMemo(() => isImage ? URL.createObjectURL(file) : null, [file, isImage]);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
   return (
     <div className="glass rounded-2xl p-2 flex items-center gap-2 mb-2">
       <div className="size-11 rounded-xl bg-surface-2 grid place-items-center shrink-0 overflow-hidden">
-        {isImage ? <img src={URL.createObjectURL(file)} alt="" className="size-full object-cover" />
+        {isImage && previewUrl ? <img src={previewUrl} alt="" className="size-full object-cover" />
           : isVideo ? <Play className="size-5 text-primary" />
           : <Download className="size-5 text-muted-foreground" />}
       </div>

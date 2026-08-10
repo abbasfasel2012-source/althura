@@ -398,6 +398,23 @@ select {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
   }
+  .animate-reveal,
+  .animate-fade,
+  .animate-scale-in,
+  .animate-slide-start,
+  .stagger > * {
+    animation: none !important;
+  }
+}
+
+.app-bottom-nav {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  contain: layout style paint;
+}
+
+.scroll-y-native > * {
+  contain: layout style;
 }
 
 
@@ -415,9 +432,6 @@ button:active, a:active, [role="button"]:active {
 @media (hover: none), (pointer: coarse) {
   button, a, [role="button"], label, input, select, textarea {
     touch-action: manipulation;
-  }
-  .glass, .glass-strong, .bottom-bar {
-    will-change: transform;
   }
 }
 
