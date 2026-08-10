@@ -130,7 +130,7 @@ function HomePage() {
       </section>
 
       {isGuest && (
-        <section className="grid grid-cols-2 gap-3 mb-6 animate-reveal [animation-delay:80ms]">
+        <section className="grid grid-cols-2 gap-3 mb-6 animate-reveal [animation-delay:30ms]">
           <Link to="/announcements" className="glass rounded-2xl p-4 col-span-2 flex items-center gap-3">
             <Megaphone className="size-5 text-primary shrink-0" />
             <div className="min-w-0">
@@ -169,7 +169,7 @@ function HomePage() {
         <>
           <section className="grid grid-cols-6 gap-3 auto-rows-[110px]">
             {/* Today schedule */}
-            <Link to="/schedule" className="col-span-6 row-span-2 glass rounded-3xl p-5 shadow-soft relative overflow-hidden animate-reveal [animation-delay:80ms]">
+            <Link to="/schedule" className="col-span-6 row-span-2 glass rounded-3xl p-5 shadow-soft relative overflow-hidden animate-reveal [animation-delay:30ms]">
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <div className="text-[10px] tracking-[0.2em] text-primary font-bold uppercase mb-1">{t("home.todaySchedule")}</div>
@@ -196,7 +196,7 @@ function HomePage() {
             </Link>
 
             {/* AI */}
-            <Link to="/ai" className="col-span-4 row-span-2 rounded-3xl p-5 bg-accent text-accent-foreground shadow-glass flex flex-col justify-between relative overflow-hidden animate-reveal [animation-delay:140ms]">
+            <Link to="/ai" className="col-span-4 row-span-2 rounded-3xl p-5 bg-accent text-accent-foreground shadow-glass flex flex-col justify-between relative overflow-hidden animate-reveal [animation-delay:50ms]">
               <div className="size-9 grid place-items-center rounded-xl bg-accent-foreground/15">
                 <Sparkles className="size-4" />
               </div>
@@ -210,7 +210,7 @@ function HomePage() {
             </Link>
 
             {/* Latest announcement */}
-            <Link to="/announcements" className="col-span-2 row-span-2 glass rounded-3xl p-3 flex flex-col items-center text-center justify-center animate-reveal [animation-delay:200ms]">
+            <Link to="/announcements" className="col-span-2 row-span-2 glass rounded-3xl p-3 flex flex-col items-center text-center justify-center animate-reveal [animation-delay:70ms]">
               <div className="size-8 rounded-full bg-primary/15 grid place-items-center mb-2">
                 <Megaphone className="size-4 text-primary" />
               </div>
@@ -220,7 +220,7 @@ function HomePage() {
               </div>
             </Link>
 
-            <Link to="/books" className="col-span-3 glass rounded-2xl p-4 flex items-center justify-between animate-reveal [animation-delay:240ms]">
+            <Link to="/books" className="col-span-3 glass rounded-2xl p-4 flex items-center justify-between animate-reveal [animation-delay:80ms]">
               <span className="text-sm font-medium flex items-center gap-2">
                 <BookOpen className="size-4 text-primary" /> {t("home.library")}
               </span>
@@ -230,21 +230,21 @@ function HomePage() {
             </Link>
 
 
-            <Link to="/exams" className="col-span-3 glass rounded-2xl p-4 flex items-center justify-between animate-reveal [animation-delay:280ms]">
+            <Link to="/exams" className="col-span-3 glass rounded-2xl p-4 flex items-center justify-between animate-reveal [animation-delay:90ms]">
               <span className="text-sm font-medium flex items-center gap-2">
                 <CalendarClock className="size-4 text-primary" /> {t("home.quizzes")}
               </span>
               <span className="font-mono font-bold text-lg text-accent">{ar(String(examsCount).padStart(2, "0"))}</span>
             </Link>
 
-            <Link to="/messages" className="col-span-3 glass rounded-2xl p-4 flex items-center justify-between animate-reveal [animation-delay:290ms]">
+            <Link to="/messages" className="col-span-3 glass rounded-2xl p-4 flex items-center justify-between animate-reveal [animation-delay:100ms]">
               <span className="text-sm font-medium flex items-center gap-2">
                 <MessagesSquare className="size-4 text-primary" /> {t("home.contact")}
               </span>
               <span className="text-[11px] text-primary font-bold">{t("home.open")}</span>
             </Link>
 
-            <Link to="/grades" className="col-span-3 glass rounded-2xl p-4 flex items-center justify-between animate-reveal [animation-delay:300ms]">
+            <Link to="/grades" className="col-span-3 glass rounded-2xl p-4 flex items-center justify-between animate-reveal [animation-delay:100ms]">
               <span className="text-sm font-medium flex items-center gap-2">
                 <GraduationCap className="size-4 text-primary" /> {t("home.grades")}
               </span>
@@ -253,7 +253,7 @@ function HomePage() {
 
 
             {/* Homework */}
-            <Link to="/homework" className="col-span-6 row-span-2 glass rounded-3xl p-5 shadow-soft flex flex-col justify-between animate-reveal [animation-delay:320ms]">
+            <Link to="/homework" className="col-span-6 row-span-2 glass rounded-3xl p-5 shadow-soft flex flex-col justify-between animate-reveal [animation-delay:110ms]">
               <div className="flex items-center justify-between">
                 <h3 className="font-bold">{t("home.latestHomework")}</h3>
                 <span className="text-[11px] text-primary">عرض الكل</span>
@@ -275,7 +275,7 @@ function HomePage() {
             </Link>
 
             {/* Groups */}
-            <Link to="/groups" className="col-span-3 row-span-2 glass rounded-3xl p-4 flex flex-col justify-between animate-reveal [animation-delay:380ms]">
+            <Link to="/groups" className="col-span-3 row-span-2 glass rounded-3xl p-4 flex flex-col justify-between animate-reveal [animation-delay:130ms]">
               <MessagesSquare className="size-5 text-primary" />
               <div>
                 <div className="font-bold text-sm">الكروبات</div>
@@ -284,7 +284,7 @@ function HomePage() {
             </Link>
 
             {/* Tools */}
-            <Link to="/tools" className="col-span-3 row-span-2 rounded-3xl p-4 bg-accent/5 border border-accent/15 flex flex-col justify-between animate-reveal [animation-delay:420ms]">
+            <Link to="/tools" className="col-span-3 row-span-2 rounded-3xl p-4 bg-accent/5 border border-accent/15 flex flex-col justify-between animate-reveal [animation-delay:140ms]">
               <Wrench className="size-5 text-accent" />
               <div>
                 <div className="font-bold text-sm">الأدوات</div>

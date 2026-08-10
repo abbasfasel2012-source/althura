@@ -122,7 +122,7 @@ function LoginPage() {
         </div>
       </div>
 
-      <div className="animate-reveal [animation-delay:80ms]">
+      <div className="animate-reveal [animation-delay:30ms]">
         <h1 className="text-4xl font-bold leading-tight tracking-tight">
           منصة <span className="text-primary">الذرى</span>
           <br />
@@ -131,7 +131,7 @@ function LoginPage() {
       </div>
 
       {/* Tabs */}
-      <div className="mt-7 glass-strong rounded-2xl p-1.5 grid grid-cols-3 gap-1 animate-reveal [animation-delay:140ms]">
+      <div className="mt-7 glass-strong rounded-2xl p-1.5 grid grid-cols-3 gap-1 animate-reveal [animation-delay:50ms]">
         {(
           [
             ["student", "طالب"],
@@ -152,7 +152,7 @@ function LoginPage() {
         ))}
       </div>
 
-      <div className="mt-5 glass-strong rounded-3xl p-5 shadow-soft animate-reveal [animation-delay:200ms]">
+      <div className="mt-5 glass-strong rounded-3xl p-5 shadow-soft animate-reveal [animation-delay:70ms]">
 
         {/* ===== GUEST ===== */}
         {tab === "guest" && (

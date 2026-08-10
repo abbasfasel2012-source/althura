@@ -92,7 +92,7 @@ function SchedulePage() {
 
           {!isHoliday && periods.length > 0 && (
             <div
-              className="mt-4 animate-reveal [animation-delay:80ms] rounded-3xl p-5 shadow-glass relative overflow-hidden"
+              className="mt-4 animate-reveal [animation-delay:30ms] rounded-3xl p-5 shadow-glass relative overflow-hidden"
               style={{ background: "var(--accent)", color: "var(--accent-foreground)" }}
             >
               <div className="flex items-center justify-between">
