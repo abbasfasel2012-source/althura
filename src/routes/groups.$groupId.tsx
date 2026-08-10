@@ -6,7 +6,7 @@ import {
   uploadChatMedia, detectAttachmentType,
   editMessage, softDeleteMessage, toggleReaction, fetchReactions,
 } from "@/lib/data";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Send, Loader2, Paperclip, Mic, StopCircle, X } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { ProfileModal } from "@/components/ProfileModal";
@@ -56,12 +56,12 @@ function GroupChatPage() {
     enabled: !!userId,
   });
 
-  const ids = (messages ?? []).map((m) => m.id);
+  const ids = useMemo(() => (messages ?? []).map((m) => m.id), [messages]);
   const reactionsQ = useQuery({
     queryKey: ["reactions", "group", ids.join(",")],
     queryFn: () => fetchReactions(ids, "group"),
     enabled: ids.length > 0,
-    refetchInterval: 4000,
+    refetchInterval: 6000,
   });
 
   const sendMut = useMutation({

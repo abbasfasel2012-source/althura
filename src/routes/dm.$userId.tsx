@@ -7,7 +7,7 @@ import {
   editDirectMessage, softDeleteDirectMessage, toggleReaction, fetchReactions,
   blockUser, unblockUser, isBlocked,
 } from "@/lib/data";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Send, Loader2, ArrowRight, Paperclip, Mic, StopCircle, X, Ban, ShieldOff } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { ChatMessage, AttachmentPreview } from "@/components/ChatMessage";
@@ -49,12 +49,12 @@ function DMPage() {
     refetchInterval: 3000, enabled: !!userId,
   });
 
-  const ids = (messagesQ.data ?? []).map((m) => m.id);
+  const ids = useMemo(() => (messagesQ.data ?? []).map((m) => m.id), [messagesQ.data]);
   const reactionsQ = useQuery({
     queryKey: ["reactions", "dm", ids.join(",")],
     queryFn: () => fetchReactions(ids, "dm"),
     enabled: ids.length > 0,
-    refetchInterval: 4000,
+    refetchInterval: 6000,
   });
 
   const send = useMutation({

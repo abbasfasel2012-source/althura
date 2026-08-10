@@ -107,9 +107,9 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
       </header>
 
 
-      <main className="min-w-0 px-4 pt-2 animate-fade">{children}</main>
+      <main className="min-w-0 px-4 pt-2">{children}</main>
 
-      <nav className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 right-4 z-50">
+      <nav className="app-bottom-nav fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 right-4 z-50">
         <div className="bottom-bar rounded-2xl px-2 py-2 shadow-glass flex items-center justify-between">
           {NAV.map((n) => {
             const active = location.pathname === n.to;
