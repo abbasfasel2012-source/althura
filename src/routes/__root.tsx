@@ -15,7 +15,10 @@ import { ThemeProvider, themeBootstrapScript } from "../lib/theme";
 import { LanguageProvider } from "../lib/i18n";
 import { LiveNotifications } from "../lib/push";
 import { setupOffline } from "../lib/pwa";
+import { setupQueryPersistence } from "../lib/query-persist";
+import { InstallPrompt } from "../components/InstallPrompt";
 import { Toaster } from "../components/ui/sonner";
+
 
 function NotFoundComponent() {
   return (
