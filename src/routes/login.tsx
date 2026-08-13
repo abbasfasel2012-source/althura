@@ -54,9 +54,11 @@ function LoginPage() {
     try {
       if (mode === "in") {
         await signInStudent(studentId, password);
-        // Wait for Supabase auth state to update store before navigating
-        await new Promise(r => setTimeout(r, 300));
-        navigate({ to: "/" });
+        // Navigate the moment the session + profile are actually ready:
+        // the spinner keeps turning until the page really changes.
+        await waitForAuthReady();
+        await navigate({ to: "/" });
+        return;
       } else if (mode === "up") {
         await requestStudentRegistration({ studentId, password, fullName, grade, section });
         setSuccess("تم إرسال طلبك! انتظر موافقة الإدارة قبل تسجيل الدخول.");
@@ -69,6 +71,7 @@ function LoginPage() {
       setBusy(false);
     }
   }
+
 
   async function checkStatus(e: React.FormEvent) {
     e.preventDefault();
