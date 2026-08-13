@@ -73,15 +73,32 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
 
       <header className="sticky top-0 z-40 px-4 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-2">
         <div className="glass-strong rounded-2xl px-3 py-2 flex items-center justify-between shadow-soft">
-          <Link to="/" className="flex items-center gap-2 min-w-0">
-            <div className="size-9 shrink-0 rounded-xl bg-accent text-accent-foreground grid place-items-center font-bold">
-              ذ
-            </div>
-            <div className="min-w-0">
-              <div className="text-[11px] text-muted-foreground -mb-0.5">{t("app.name")}</div>
-              <div className="text-sm font-bold truncate">{title ?? t("nav.home")}</div>
-            </div>
-          </Link>
+          <div className="flex items-center gap-2 min-w-0">
+            {!isTab && (
+              <button
+                type="button"
+                onClick={() => {
+                  tap();
+                  if (window.history.length > 1) router.history.back();
+                  else navigate({ to: "/" });
+                }}
+                aria-label="رجوع"
+                className="size-9 shrink-0 grid place-items-center rounded-xl border border-border bg-surface-2/60 press"
+              >
+                <ChevronLeft className="size-4 rotate-180" />
+              </button>
+            )}
+            <Link to="/" className="flex items-center gap-2 min-w-0">
+              <div className="size-9 shrink-0 rounded-xl bg-accent text-accent-foreground grid place-items-center font-bold">
+                ذ
+              </div>
+              <div className="min-w-0">
+                <div className="text-[11px] text-muted-foreground -mb-0.5">{t("app.name")}</div>
+                <div className="text-sm font-bold truncate">{title ?? t("nav.home")}</div>
+              </div>
+            </Link>
+          </div>
+
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
