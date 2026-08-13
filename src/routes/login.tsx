@@ -105,9 +105,11 @@ function LoginPage() {
           throw innerErr;
         }
       }
-      // Wait for auth state to propagate
-      await new Promise(r => setTimeout(r, 300));
-      navigate({ to: "/admin" });
+      // Navigate exactly when the owner session + role are resolved.
+      await waitForAuthReady();
+      await navigate({ to: "/admin" });
+      return;
+
     } catch (e: any) {
       setErr(translate(e?.message));
     } finally {
