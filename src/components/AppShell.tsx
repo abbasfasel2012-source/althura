@@ -1,5 +1,5 @@
-import { Link, useLocation, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Bell, Home, CalendarDays, BookOpen, User2, Search, LogOut, Sparkles, Sun, Moon, WifiOff } from "lucide-react";
+import { Link, useLocation, useNavigate, useRouterState, useRouter } from "@tanstack/react-router";
+import { Bell, Home, CalendarDays, BookOpen, User2, Search, LogOut, Sparkles, Sun, Moon, WifiOff, ChevronLeft } from "lucide-react";
 import { useUser } from "@/lib/store";
 import { signOut } from "@/lib/auth";
 import { useHasUnreadNotifications, markNotificationsSeen } from "@/lib/notifications";
@@ -8,16 +8,38 @@ import { useI18n } from "@/lib/i18n";
 import { useEffect, useState, type ReactNode } from "react";
 
 const NAV = [
-  { to: "/", key: "nav.home", icon: Home },
-  { to: "/schedule", key: "nav.schedule", icon: CalendarDays },
-  { to: "/ai", key: "nav.ai", icon: Sparkles },
-  { to: "/books", key: "nav.library", icon: BookOpen },
-  { to: "/profile", key: "nav.profile", icon: User2 },
+  { to: "/", key: "nav.home", icon: Home, match: ["/"] },
+  {
+    to: "/schedule",
+    key: "nav.schedule",
+    icon: CalendarDays,
+    match: ["/schedule", "/calendar", "/homework", "/exams", "/grades"],
+  },
+  { to: "/ai", key: "nav.ai", icon: Sparkles, match: ["/ai", "/tools"] },
+  { to: "/books", key: "nav.library", icon: BookOpen, match: ["/books", "/videos"] },
+  {
+    to: "/profile",
+    key: "nav.profile",
+    icon: User2,
+    match: ["/profile", "/settings", "/messages", "/groups", "/dm", "/teachers", "/admin"],
+  },
 ];
+
+function isActive(pathname: string, match: string[]) {
+  return match.some((m) => (m === "/" ? pathname === "/" : pathname === m || pathname.startsWith(m + "/")));
+}
+
+// Light haptic feedback on tab taps (Android/Chrome; silently ignored elsewhere).
+function tap() {
+  if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+    try { navigator.vibrate(8); } catch { /* ignore */ }
+  }
+}
 
 export function AppShell({ children, title }: { children: ReactNode; title?: string }) {
   const user = useUser();
   const navigate = useNavigate();
+  const router = useRouter();
   const location = useLocation();
   const hasUnread = useHasUnreadNotifications();
   const { resolved, toggle } = useTheme();
@@ -25,10 +47,12 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
   const isNavigating = useRouterState({ select: (s) => s.status === "pending" });
   const [offline, setOffline] = useState(false);
 
-  // Scroll to top on route change (native-app feel).
+  // Top-level tabs keep their own scroll position (handled by the router);
+  // inner pages always start at the top.
+  const isTab = NAV.some((n) => n.to === location.pathname);
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
-  }, [location.pathname]);
+    if (!isTab) window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+  }, [location.pathname, isTab]);
 
   // Offline awareness.
   useEffect(() => {
@@ -41,6 +65,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
       window.removeEventListener("offline", update);
     };
   }, []);
+
 
   return (
     <div className="min-h-dvh overflow-x-clip pb-[calc(7rem+env(safe-area-inset-bottom))]">
