@@ -21,7 +21,17 @@ export default defineConfig({
         devOptions: { enabled: false },
         filename: "sw.js",
         manifest: false,
+        // ⚠️ إصلاح جوهري: التصميم الأصلي (بدون outDir/globDirectory صريح)
+        // كان يكتب sw.js إلى dist/ ويبحث عن الملفات ليعمل لها precache هناك
+        // أيضاً — لكن هذا المشروع (TanStack Start + nitro) يخرج فعلياً إلى
+        // .output/public. النتيجة: "precache 0 entries" بكل بناء (شفناها
+        // بلوق البناء)، و sw.js نفسه ما كان حتى يوصل للمجلد المنشور فعلياً
+        // — يعني تسجيل الـ Service Worker بالموقع الحي كان يفشل بصمت
+        // (404 على /sw.js)، وبالتالي كل ميزات PWA (offline، precache،
+        // تحميل فوري للصفحات المزارة) ما كانت تشتغل إطلاقاً بالإنتاج.
+        outDir: ".output/public",
         workbox: {
+          globDirectory: ".output/public",
           globPatterns: ["**/*.{js,css,woff2,png,svg,webmanifest,html}"],
           navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//],
           cleanupOutdatedCaches: true,
