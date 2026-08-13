@@ -69,6 +69,42 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
     };
   }, []);
 
+  // Edge swipe = go back (native feel on inner pages).
+  useEffect(() => {
+    if (isTab) return;
+    let x0 = 0;
+    let y0 = 0;
+    let tracking = false;
+    const onStart = (e: TouchEvent) => {
+      const t0 = e.touches[0];
+      if (!t0) return;
+      const edge = 28;
+      tracking = t0.clientX <= edge || t0.clientX >= window.innerWidth - edge;
+      x0 = t0.clientX;
+      y0 = t0.clientY;
+    };
+    const onEnd = (e: TouchEvent) => {
+      if (!tracking) return;
+      tracking = false;
+      const t1 = e.changedTouches[0];
+      if (!t1) return;
+      const dx = t1.clientX - x0;
+      const dy = Math.abs(t1.clientY - y0);
+      if (Math.abs(dx) > 90 && dy < 60) {
+        tap();
+        if (window.history.length > 1) router.history.back();
+      }
+    };
+    window.addEventListener("touchstart", onStart, { passive: true });
+    window.addEventListener("touchend", onEnd, { passive: true });
+    return () => {
+      window.removeEventListener("touchstart", onStart);
+      window.removeEventListener("touchend", onEnd);
+    };
+  }, [isTab, router]);
+
+
+
 
   return (
     <div className="min-h-dvh overflow-x-clip pb-[calc(7rem+env(safe-area-inset-bottom))]">
