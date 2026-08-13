@@ -6,6 +6,7 @@ import { AppShell } from "@/components/AppShell";
 import { Send, Sparkles, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { supabase } from "@/integrations/supabase/client";
 
 
 export const Route = createFileRoute("/ai")({
@@ -28,7 +29,16 @@ function AIPage() {
   const endRef = useRef<HTMLDivElement>(null);
 
   const { messages, sendMessage, status, error } = useChat({
-    transport: new DefaultChatTransport({ api: "/api/chat" }),
+    transport: new DefaultChatTransport({
+      api: "/api/chat",
+      headers: async () => {
+        const { data } = await supabase.auth.getSession();
+        const token = data.session?.access_token;
+        const headers: Record<string, string> = {};
+        if (token) headers.Authorization = `Bearer ${token}`;
+        return headers;
+      },
+    }),
   });
 
   const isLoading = status === "submitted" || status === "streaming";
@@ -37,9 +47,11 @@ function AIPage() {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, status]);
 
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
+  // ⚠️ ما نركّز على الحقل تلقائياً عند فتح الصفحة — بالجوال هذا يفتح لوحة
+  // المفاتيح فوراً ويكون مزعج. التركيز يصير فقط لما المستخدم يلمس الحقل بنفسه،
+  // أو بعد الإرسال بحاسوب حقيقي (مو جوال) حيث فتح الكيبورد مو مزعج.
+  const isTouchDevice = () =>
+    typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,7 +59,7 @@ function AIPage() {
     if (!t || isLoading) return;
     setInput("");
     await sendMessage({ text: t });
-    inputRef.current?.focus();
+    if (!isTouchDevice()) inputRef.current?.focus();
   };
 
   const getText = (m: (typeof messages)[number]) =>

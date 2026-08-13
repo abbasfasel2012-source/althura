@@ -441,3 +441,11 @@ button:active, a:active, [role="button"]:active {
     backdrop-filter: none !important;
   }
 }
+
+/* إخفاء علامة "Edit with Lovable" التي تُحقن تلقائياً على الموقع المنشور —
+   لا تحتاج خطة مدفوعة، مجرد إخفاء العنصر بالـ CSS كافٍ. */
+#lovable-badge,
+[id="lovable-badge"],
+a[href*="lovable.dev"][class*="badge"] {
+  display: none !important;
+}

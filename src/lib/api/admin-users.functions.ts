@@ -32,6 +32,55 @@ export const resetUserPassword = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+// Approve a pending student registration (owner-only). Creates the auth
+// account server-side with the service-role key, then immediately clears
+// password_hash so the plaintext password is never left sitting in the DB.
+export const approvePendingRegistration = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(z.object({ registrationId: z.string().uuid() }))
+  .handler(async ({ data, context }) => {
+    await assertOwner(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: reg, error: fetchErr } = await supabaseAdmin
+      .from("pending_registrations")
+      .select("*")
+      .eq("id", data.registrationId)
+      .maybeSingle();
+    if (fetchErr) throw new Error(fetchErr.message);
+    if (!reg) throw new Error("الطلب غير موجود");
+    if (reg.status !== "pending") throw new Error("تمت معالجة هذا الطلب مسبقاً");
+
+    const email = `${reg.student_id.trim().toLowerCase().replace(/[^a-z0-9]/g, "")}@aladhra.school`;
+
+    const { error: createErr } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password: reg.password_hash,
+      email_confirm: true,
+      user_metadata: {
+        full_name: reg.full_name,
+        student_id: reg.student_id,
+        grade: reg.grade,
+        section: reg.section,
+      },
+    });
+    if (createErr && !/already registered|already exists/i.test(createErr.message ?? "")) {
+      throw new Error(createErr.message);
+    }
+
+    const { error: updateErr } = await supabaseAdmin
+      .from("pending_registrations")
+      .update({
+        status: "approved",
+        reviewed_at: new Date().toISOString(),
+        password_hash: "[cleared]", // الباسورد استُهلك — ما نخزنه نص صريح بعد الآن
+      })
+      .eq("id", data.registrationId);
+    if (updateErr) throw new Error(updateErr.message);
+
+    return { ok: true };
+  });
+
 // Promote/demote teacher (owner-only). Also sets teaching_grade/section.
 export const setTeacher = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

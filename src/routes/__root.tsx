@@ -1,4 +1,5 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import {
   Outlet,
   Link,
@@ -7,7 +8,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useMemo, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -15,7 +16,7 @@ import { ThemeProvider, themeBootstrapScript } from "../lib/theme";
 import { LanguageProvider } from "../lib/i18n";
 import { LiveNotifications } from "../lib/push";
 import { setupOffline } from "../lib/pwa";
-import { setupQueryPersistence } from "../lib/query-persist";
+import { getQueryPersistOptions } from "../lib/query-persist";
 import { InstallPrompt } from "../components/InstallPrompt";
 import { Toaster } from "../components/ui/sonner";
 
@@ -98,6 +99,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/7jS9CamGVmNYX1rwZi7SC4S92ly2/social-images/social-1781327614662-1000270650.webp" },
     ],
     links: [
+      // preload الأصول الحرجة (CSS الرئيسي + خط الموقع) عشان تبدأ تنزل مباشرة
+      // مع الـ HTML بدل ما تنتظر اكتشافها بمنتصف تحليل الصفحة — هذا يقلل
+      // الفرق الزمني بين ظهور الهيكل والمحتوى الفعلي (شريط التحميل → سكيلتون → محتوى).
+      { rel: "preload", href: appCss, as: "style" },
       { rel: "stylesheet", href: appCss },
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
@@ -105,6 +110,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", type: "image/png", sizes: "512x512", href: "/icon-512.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "preload",
+        as: "style",
+        href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap",
+      },
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap",
@@ -140,16 +150,16 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  // Stable across renders (persister must not be recreated every render,
+  // or PersistQueryClientProvider re-restores on each one).
+  const persistOptions = useMemo(() => getQueryPersistOptions(), []);
 
   useEffect(() => {
     setupOffline();
-    setupQueryPersistence(queryClient);
-  }, [queryClient]);
-
-
+  }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
       <ThemeProvider>
         <LanguageProvider>
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
@@ -159,7 +169,7 @@ function RootComponent() {
           <Toaster position="top-center" />
         </LanguageProvider>
       </ThemeProvider>
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   );
 }
 

@@ -213,20 +213,11 @@ export async function fetchPendingRegistrations(): Promise<PendingRegistration[]
   if (error) throw error;
   return (data ?? []) as PendingRegistration[];
 }
+// الموافقة صارت سيرفرية بالكامل (createUser بصلاحية service role) — الباسورد
+// النص الصريح ما يعود يتحرك عبر متصفح الأدمن، ويُصفّى من الجدول فور الاستخدام.
 export async function approveRegistration(reg: PendingRegistration) {
-  const email = `${reg.student_id.trim().toLowerCase().replace(/[^a-z0-9]/g, "")}@aladhra.school`;
-  const { error: signUpError } = await supabase.auth.signUp({
-    email,
-    password: reg.password_hash,
-    options: {
-      data: { full_name: reg.full_name, student_id: reg.student_id, grade: reg.grade, section: reg.section },
-    },
-  });
-  if (signUpError && !/already registered/i.test(signUpError.message ?? "")) throw signUpError;
-  const { error } = await supabase.from("pending_registrations")
-    .update({ status: "approved", reviewed_at: new Date().toISOString() })
-    .eq("id", reg.id);
-  if (error) throw error;
+  const { approvePendingRegistration } = await import("@/lib/api/admin-users.functions");
+  await approvePendingRegistration({ data: { registrationId: reg.id } });
 }
 export async function rejectRegistration(id: string, reason: string) {
   const { error } = await supabase.from("pending_registrations")
@@ -486,15 +477,24 @@ export async function fetchQuizzes(): Promise<Quiz[]> {
   return (data ?? []) as Quiz[];
 }
 
+// ⚠️ للطالب أثناء أداء الاختبار: لا نجلب correct_answer إطلاقاً حتى لا يظهر
+// بشبكة المتصفح قبل الإرسال. التصحيح الفعلي يصير سيرفرياً في submitQuiz.
 export async function fetchQuizWithQuestions(quizId: string): Promise<{ quiz: Quiz; questions: QuizQuestion[] }> {
   const [{ data: quiz, error: qErr }, { data: questions, error: qsErr }] = await Promise.all([
     supabase.from("quizzes").select("*").eq("id", quizId).maybeSingle(),
-    supabase.from("quiz_questions").select("*").eq("quiz_id", quizId).order("position", { ascending: true }),
+    supabase
+      .from("quiz_questions")
+      .select("id, quiz_id, position, type, question, options, points")
+      .eq("quiz_id", quizId)
+      .order("position", { ascending: true }),
   ]);
   if (qErr) throw qErr;
   if (qsErr) throw qsErr;
   if (!quiz) throw new Error("الاختبار غير موجود");
-  return { quiz: quiz as Quiz, questions: (questions ?? []) as QuizQuestion[] };
+  return {
+    quiz: quiz as Quiz,
+    questions: (questions ?? []).map((q) => ({ ...q, correct_answer: null })) as QuizQuestion[],
+  };
 }
 
 export async function createQuiz(p: {
@@ -550,86 +550,15 @@ export async function fetchAttemptAnswers(attemptId: string): Promise<QuizAnswer
   return (data ?? []) as QuizAnswer[];
 }
 
-// Submit + grade: auto-grade mcq/tf; call AI for text
+// الإرسال + التصحيح صار بالكامل سيرفرياً (submitQuizAttempt) — المتصفح ما يشوف
+// correct_answer ولا يكتب الدرجة مباشرة، فقط يرسل إجابات الطالب الخام.
 export async function submitQuiz(args: {
   attemptId: string;
   quizId: string;
   answers: Record<string, string>; // question_id -> answer
 }): Promise<QuizAttempt> {
-  const { questions } = await fetchQuizWithQuestions(args.quizId);
-  let totalScore = 0;
-  let maxScore = 0;
-
-  // First pass: auto-grade mcq / true_false
-  const rows: Array<{ attempt_id: string; question_id: string; answer: string | null; is_correct: boolean | null; points_awarded: number; ai_feedback: string | null }> = [];
-  const textQs: QuizQuestion[] = [];
-  const textAnswers: string[] = [];
-
-  for (const q of questions) {
-    maxScore += q.points;
-    const raw = args.answers[q.id] ?? "";
-    if (q.type === "mcq" || q.type === "true_false") {
-      const correct = (raw || "").trim() === (q.correct_answer || "").trim() && raw !== "";
-      const pts = correct ? q.points : 0;
-      totalScore += pts;
-      rows.push({
-        attempt_id: args.attemptId, question_id: q.id, answer: raw,
-        is_correct: correct, points_awarded: pts, ai_feedback: null,
-      });
-    } else {
-      textQs.push(q);
-      textAnswers.push(raw);
-      rows.push({
-        attempt_id: args.attemptId, question_id: q.id, answer: raw,
-        is_correct: null, points_awarded: 0, ai_feedback: null,
-      });
-    }
-  }
-
-  // AI grade text questions
-  if (textQs.length > 0) {
-    try {
-      const res = await fetch("/api/grade-text", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: textQs.map((q, i) => ({
-            question: q.question,
-            reference: q.correct_answer ?? "",
-            student_answer: textAnswers[i],
-            max_points: q.points,
-          })),
-        }),
-      });
-      if (res.ok) {
-        const graded = (await res.json()) as Array<{ score: number; feedback: string }>;
-        for (let i = 0; i < textQs.length; i++) {
-          const g = graded[i];
-          const q = textQs[i];
-          const row = rows.find((r) => r.question_id === q.id)!;
-          const pts = Math.max(0, Math.min(q.points, Number(g?.score ?? 0)));
-          row.points_awarded = pts;
-          row.ai_feedback = g?.feedback ?? null;
-          row.is_correct = pts >= q.points * 0.8;
-          totalScore += pts;
-        }
-      }
-    } catch {
-      // AI failed — leave text ungraded (0 pts, no feedback)
-    }
-  }
-
-  // Upsert answers
-  const { error: aErr } = await supabase.from("quiz_answers").upsert(rows, { onConflict: "attempt_id,question_id" });
-  if (aErr) throw aErr;
-
-  const { data: updated, error: uErr } = await supabase.from("quiz_attempts").update({
-    submitted_at: new Date().toISOString(),
-    score: totalScore,
-    max_score: maxScore,
-    status: "graded",
-  }).eq("id", args.attemptId).select().single();
-  if (uErr) throw uErr;
+  const { submitQuizAttempt } = await import("@/lib/api/quiz-grading.functions");
+  const updated = await submitQuizAttempt({ data: args });
   return updated as QuizAttempt;
 }
 
