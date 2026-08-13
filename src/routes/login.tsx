@@ -8,7 +8,9 @@ import {
   signUpOwner,
   requestStudentRegistration,
   checkRegistrationStatus,
+  waitForAuthReady,
 } from "@/lib/auth";
+
 import { CheckCircle, Clock, Loader2, Shield, XCircle } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
