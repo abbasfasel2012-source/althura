@@ -5,7 +5,7 @@ import { signOut } from "@/lib/auth";
 import { useHasUnreadNotifications, markNotificationsSeen } from "@/lib/notifications";
 import { useTheme } from "@/lib/theme";
 import { useI18n } from "@/lib/i18n";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useState, type ReactNode } from "react";
 
 const NAV = [
   { to: "/", key: "nav.home", icon: Home, match: ["/"] },
@@ -45,15 +45,31 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
   const { resolved, toggle } = useTheme();
   const { t } = useI18n();
   const isNavigating = useRouterState({ select: (s) => s.status === "pending" });
+  // شريط التحميل يظهر فقط لو التنقل أخذ أكثر من 120ms — عشان ما "يومض"
+  // للحظة على الانتقالات السريعة المحمّلة مسبقاً (كان يظهر ويختفي بسرعة
+  // ويحس المستخدم بومضة/كرنج بدل انتقال نظيف).
+  const [showProgress, setShowProgress] = useState(false);
+  useEffect(() => {
+    if (!isNavigating) {
+      setShowProgress(false);
+      return;
+    }
+    const id = setTimeout(() => setShowProgress(true), 120);
+    return () => clearTimeout(id);
+  }, [isNavigating]);
   const [offline, setOffline] = useState(false);
 
   const activeIndex = NAV.findIndex((n) => isActive(location.pathname, n.match));
 
   // Top-level tabs keep their own scroll position (handled by the router);
-
   // inner pages always start at the top.
+  //
+  // ⚠️ كان useEffect (يشتغل بعد الرسم) يتصادم مع استعادة السكرول التلقائية
+  // بالراوتر + التلاشي البصري بين الصفحتين → قفزة سكرول محسوسة أثناء
+  // الانتقال (كرنج). useLayoutEffect يشتغل قبل الرسم فيصير جزء من نفس
+  // اللقطة اللي يلتقطها الـ View Transition، بدون أي قفزة منفصلة بعده.
   const isTab = NAV.some((n) => n.to === location.pathname);
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!isTab) window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   }, [location.pathname, isTab]);
 
@@ -110,7 +126,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
     // نفس بنية الجوال بدون أي تغيير (bottom-nav + header مضغوط). التعديلات
     // الحقيقية للكومبيوتر كلها بأصناف lg: مضافة بجانبها، ما تلمس القيم الافتراضية.
     <div className="min-h-dvh overflow-x-clip pb-[calc(7rem+env(safe-area-inset-bottom))] lg:pb-0 lg:pe-72">
-      {isNavigating && <div className="route-progress" />}
+      {showProgress && <div className="route-progress" />}
 
       {/* ============ الشريط الجانبي — كومبيوتر فقط (lg+) ============ */}
       <aside className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:end-0 lg:w-72 lg:border-s lg:border-border lg:bg-surface/80 lg:backdrop-blur-xl lg:px-5 lg:py-6 lg:z-40">
