@@ -1,11 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { convertToModelMessages, streamText, type UIMessage } from "ai";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
+
+// يمنع أي زائر غير مسجّل دخول من استهلاك مفتاح Lovable AI Gateway مباشرة.
+async function requireAuth(request: Request) {
+  const authHeader = request.headers.get("authorization");
+  if (!authHeader?.startsWith("Bearer ")) return false;
+  const token = authHeader.slice("Bearer ".length);
+  const { data, error } = await supabaseAdmin.auth.getClaims(token);
+  return !error && !!data?.claims?.sub;
+}
 
 export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        if (!(await requireAuth(request))) {
+          return new Response("غير مصرح — سجّل الدخول أولاً", { status: 401 });
+        }
         const key = process.env.LOVABLE_API_KEY;
         if (!key) {
           return new Response("LOVABLE_API_KEY غير مهيأ", { status: 500 });

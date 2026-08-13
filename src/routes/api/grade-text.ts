@@ -1,6 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { generateText } from "ai";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
+
+// ملاحظة: هذا المسار غير مستخدم من الواجهة بعد الآن (التصحيح صار عبر
+// submitQuizAttempt السيرفري). أبقيناه محمياً بمصادقة تحسباً لأي استخدام مستقبلي،
+// بدل ما نحذفه ونكسر التوليد الآلي لجدول المسارات.
+async function requireAuth(request: Request) {
+  const authHeader = request.headers.get("authorization");
+  if (!authHeader?.startsWith("Bearer ")) return false;
+  const token = authHeader.slice("Bearer ".length);
+  const { data, error } = await supabaseAdmin.auth.getClaims(token);
+  return !error && !!data?.claims?.sub;
+}
 
 interface GradeItem {
   question: string;
@@ -13,6 +25,9 @@ export const Route = createFileRoute("/api/grade-text")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        if (!(await requireAuth(request))) {
+          return new Response("Unauthorized", { status: 401 });
+        }
         const key = process.env.LOVABLE_API_KEY;
         if (!key) return new Response("LOVABLE_API_KEY missing", { status: 500 });
         const { items }: { items: GradeItem[] } = await request.json();

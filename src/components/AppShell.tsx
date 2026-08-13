@@ -107,10 +107,86 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
 
 
   return (
-    <div className="min-h-dvh overflow-x-clip pb-[calc(7rem+env(safe-area-inset-bottom))]">
+    // نفس بنية الجوال بدون أي تغيير (bottom-nav + header مضغوط). التعديلات
+    // الحقيقية للكومبيوتر كلها بأصناف lg: مضافة بجانبها، ما تلمس القيم الافتراضية.
+    <div className="min-h-dvh overflow-x-clip pb-[calc(7rem+env(safe-area-inset-bottom))] lg:pb-0 lg:pe-72">
       {isNavigating && <div className="route-progress" />}
 
-      <header className="sticky top-0 z-40 px-4 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-2">
+      {/* ============ الشريط الجانبي — كومبيوتر فقط (lg+) ============ */}
+      <aside className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:end-0 lg:w-72 lg:border-s lg:border-border lg:bg-surface/80 lg:backdrop-blur-xl lg:px-5 lg:py-6 lg:z-40">
+        <Link to="/" className="flex items-center gap-3 px-1 mb-8">
+          <div className="size-11 shrink-0 rounded-2xl bg-accent text-accent-foreground grid place-items-center font-bold text-lg">
+            ذ
+          </div>
+          <div className="min-w-0">
+            <div className="text-xs text-muted-foreground -mb-0.5">{t("app.name")}</div>
+            <div className="text-base font-bold truncate">الذرى الذكية</div>
+          </div>
+        </Link>
+
+        <nav className="flex flex-col gap-1 flex-1">
+          {NAV.map((n) => {
+            const active = isActive(location.pathname, n.match);
+            const Icon = n.icon;
+            return (
+              <Link
+                key={n.to}
+                to={n.to}
+                onClick={tap}
+                preload="intent"
+                aria-current={active ? "page" : undefined}
+                className={`flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm transition-colors ${
+                  active
+                    ? "bg-accent text-accent-foreground shadow-glass"
+                    : "text-muted-foreground hover:bg-surface-2/70 hover:text-foreground"
+                }`}
+              >
+                <Icon className="size-[19px]" strokeWidth={active ? 2.4 : 1.8} />
+                {t(n.key)}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="flex flex-col gap-1 pt-4 border-t border-border">
+          <Link
+            to="/search"
+            className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold text-muted-foreground hover:bg-surface-2/70 hover:text-foreground"
+          >
+            <Search className="size-[18px]" /> بحث
+          </Link>
+          <Link
+            to="/announcements"
+            onClick={() => markNotificationsSeen()}
+            className="relative flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold text-muted-foreground hover:bg-surface-2/70 hover:text-foreground"
+          >
+            <Bell className="size-[18px]" /> الإشعارات
+            {hasUnread && <span className="absolute top-3.5 end-4 size-2 rounded-full bg-primary" />}
+          </Link>
+          <button
+            type="button"
+            onClick={toggle}
+            className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold text-muted-foreground hover:bg-surface-2/70 hover:text-foreground"
+          >
+            {resolved === "dark" ? <Sun className="size-[18px]" /> : <Moon className="size-[18px]" />}
+            {resolved === "dark" ? "الوضع الفاتح" : "الوضع الداكن"}
+          </button>
+          {user && user.role !== "guest" ? (
+            <button
+              onClick={async () => {
+                await signOut();
+                navigate({ to: "/login" });
+              }}
+              className="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold text-destructive hover:bg-destructive/10"
+            >
+              <LogOut className="size-[18px]" /> تسجيل الخروج
+            </button>
+          ) : null}
+        </div>
+      </aside>
+
+      {/* ============ الهيدر — نفسه بالجوال، مضغوط ومركزي بالكومبيوتر ============ */}
+      <header className="sticky top-0 z-30 px-4 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-2 lg:hidden">
         <div className="glass-strong rounded-2xl px-3 py-2 flex items-center justify-between shadow-soft">
           <div className="flex items-center gap-2 min-w-0">
             {!isTab && (
@@ -187,10 +263,19 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
         )}
       </header>
 
+      {/* عنوان الصفحة بالكومبيوتر — يعوّض الهيدر المخفي بدون تكرار أزرار الشريط الجانبي */}
+      <div className="hidden lg:flex lg:items-center lg:justify-between lg:px-10 lg:pt-8 lg:pb-2 lg:max-w-5xl lg:mx-auto">
+        <h1 className="text-2xl font-bold tracking-tight">{title ?? t("nav.home")}</h1>
+        {offline && (
+          <div className="rounded-xl px-3 py-1.5 bg-destructive/15 text-destructive text-xs font-bold flex items-center gap-2">
+            <WifiOff className="size-3.5" /> لا يوجد اتصال بالإنترنت
+          </div>
+        )}
+      </div>
 
-      <main className="min-w-0 px-4 pt-2">{children}</main>
+      <main className="min-w-0 px-4 pt-2 lg:px-10 lg:pt-4 lg:pb-16 lg:max-w-5xl lg:mx-auto">{children}</main>
 
-      <nav className="app-bottom-nav fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 right-4 z-50">
+      <nav className="app-bottom-nav fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 right-4 z-50 lg:hidden">
         <div className="bottom-bar rounded-2xl px-2 py-2 shadow-glass relative">
           {activeIndex >= 0 && (
             <span
