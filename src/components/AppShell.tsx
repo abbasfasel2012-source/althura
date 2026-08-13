@@ -47,7 +47,10 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
   const isNavigating = useRouterState({ select: (s) => s.status === "pending" });
   const [offline, setOffline] = useState(false);
 
+  const activeIndex = NAV.findIndex((n) => isActive(location.pathname, n.match));
+
   // Top-level tabs keep their own scroll position (handled by the router);
+
   // inner pages always start at the top.
   const isTab = NAV.some((n) => n.to === location.pathname);
   useEffect(() => {
