@@ -22,8 +22,9 @@ export default defineConfig({
         filename: "sw.js",
         manifest: false,
         workbox: {
-          globPatterns: ["**/*.{js,css,woff2}"],
+          globPatterns: ["**/*.{js,css,woff2,png,svg,webmanifest,html}"],
           navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//],
+          cleanupOutdatedCaches: true,
           runtimeCaching: [
             {
               urlPattern: ({ request }) => request.mode === "navigate",
@@ -37,6 +38,29 @@ export default defineConfig({
               options: {
                 cacheName: "assets",
                 expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              },
+            },
+            {
+              // Google Fonts files — never block the first paint on a cold network.
+              urlPattern: ({ url }) =>
+                url.origin === "https://fonts.googleapis.com" ||
+                url.origin === "https://fonts.gstatic.com",
+              handler: "StaleWhileRevalidate",
+              options: {
+                cacheName: "google-fonts",
+                expiration: { maxEntries: 40, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              },
+            },
+            {
+              // Read-only backend data: serve last known copy instantly, refresh in background.
+              urlPattern: ({ url, request }) =>
+                request.method === "GET" &&
+                /\/rest\/v1\/|\/rest\/v1\/rpc\//.test(url.pathname) &&
+                url.origin !== self.location.origin,
+              handler: "StaleWhileRevalidate",
+              options: {
+                cacheName: "api-reads",
+                expiration: { maxEntries: 120, maxAgeSeconds: 60 * 60 * 24 },
               },
             },
           ],
