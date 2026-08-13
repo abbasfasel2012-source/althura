@@ -138,7 +138,10 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
-  useEffect(() => { setupOffline(); }, []);
+  useEffect(() => {
+    setupOffline();
+    setupQueryPersistence(queryClient);
+  }, [queryClient]);
 
 
 
@@ -149,9 +152,11 @@ function RootComponent() {
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
           <LiveNotifications />
+          <InstallPrompt />
           <Toaster position="top-center" />
         </LanguageProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
 }
+
