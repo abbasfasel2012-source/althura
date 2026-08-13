@@ -141,6 +141,30 @@ export function useAuth(): AuthState {
   return s;
 }
 
+// Resolves as soon as the signed-in profile/role is actually loaded, so the
+// login screen can navigate at the real moment instead of guessing with a
+// fixed timeout (which made the spinner stop ~1s before the redirect).
+export function waitForAuthReady(timeoutMs = 6000): Promise<AuthState> {
+  if (typeof window === "undefined") return Promise.resolve(cached);
+  init();
+  if (cached.userId && !cached.loading) return Promise.resolve(cached);
+
+  return new Promise((resolve) => {
+    const done = (s: AuthState) => {
+      clearTimeout(timer);
+      listeners.delete(l);
+      resolve(s);
+    };
+    const l = (n: AuthState) => {
+      if (n.userId && !n.loading) done(n);
+    };
+    const timer = setTimeout(() => done(cached), timeoutMs);
+    listeners.add(l);
+    if (cached.userId && !cached.loading) done(cached);
+  });
+}
+
+
 // ---------- Actions ----------
 
 export async function signInStudent(studentId: string, password: string) {

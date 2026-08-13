@@ -8,7 +8,9 @@ import {
   signUpOwner,
   requestStudentRegistration,
   checkRegistrationStatus,
+  waitForAuthReady,
 } from "@/lib/auth";
+
 import { CheckCircle, Clock, Loader2, Shield, XCircle } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
@@ -54,9 +56,11 @@ function LoginPage() {
     try {
       if (mode === "in") {
         await signInStudent(studentId, password);
-        // Wait for Supabase auth state to update store before navigating
-        await new Promise(r => setTimeout(r, 300));
-        navigate({ to: "/" });
+        // Navigate the moment the session + profile are actually ready:
+        // the spinner keeps turning until the page really changes.
+        await waitForAuthReady();
+        await navigate({ to: "/" });
+        return;
       } else if (mode === "up") {
         await requestStudentRegistration({ studentId, password, fullName, grade, section });
         setSuccess("تم إرسال طلبك! انتظر موافقة الإدارة قبل تسجيل الدخول.");
@@ -69,6 +73,7 @@ function LoginPage() {
       setBusy(false);
     }
   }
+
 
   async function checkStatus(e: React.FormEvent) {
     e.preventDefault();
@@ -100,9 +105,11 @@ function LoginPage() {
           throw innerErr;
         }
       }
-      // Wait for auth state to propagate
-      await new Promise(r => setTimeout(r, 300));
-      navigate({ to: "/admin" });
+      // Navigate exactly when the owner session + role are resolved.
+      await waitForAuthReady();
+      await navigate({ to: "/admin" });
+      return;
+
     } catch (e: any) {
       setErr(translate(e?.message));
     } finally {

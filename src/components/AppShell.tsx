@@ -1,5 +1,5 @@
-import { Link, useLocation, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Bell, Home, CalendarDays, BookOpen, User2, Search, LogOut, Sparkles, Sun, Moon, WifiOff } from "lucide-react";
+import { Link, useLocation, useNavigate, useRouterState, useRouter } from "@tanstack/react-router";
+import { Bell, Home, CalendarDays, BookOpen, User2, Search, LogOut, Sparkles, Sun, Moon, WifiOff, ChevronLeft } from "lucide-react";
 import { useUser } from "@/lib/store";
 import { signOut } from "@/lib/auth";
 import { useHasUnreadNotifications, markNotificationsSeen } from "@/lib/notifications";
@@ -8,16 +8,38 @@ import { useI18n } from "@/lib/i18n";
 import { useEffect, useState, type ReactNode } from "react";
 
 const NAV = [
-  { to: "/", key: "nav.home", icon: Home },
-  { to: "/schedule", key: "nav.schedule", icon: CalendarDays },
-  { to: "/ai", key: "nav.ai", icon: Sparkles },
-  { to: "/books", key: "nav.library", icon: BookOpen },
-  { to: "/profile", key: "nav.profile", icon: User2 },
+  { to: "/", key: "nav.home", icon: Home, match: ["/"] },
+  {
+    to: "/schedule",
+    key: "nav.schedule",
+    icon: CalendarDays,
+    match: ["/schedule", "/calendar", "/homework", "/exams", "/grades"],
+  },
+  { to: "/ai", key: "nav.ai", icon: Sparkles, match: ["/ai", "/tools"] },
+  { to: "/books", key: "nav.library", icon: BookOpen, match: ["/books", "/videos"] },
+  {
+    to: "/profile",
+    key: "nav.profile",
+    icon: User2,
+    match: ["/profile", "/settings", "/messages", "/groups", "/dm", "/teachers", "/admin"],
+  },
 ];
+
+function isActive(pathname: string, match: string[]) {
+  return match.some((m) => (m === "/" ? pathname === "/" : pathname === m || pathname.startsWith(m + "/")));
+}
+
+// Light haptic feedback on tab taps (Android/Chrome; silently ignored elsewhere).
+function tap() {
+  if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+    try { navigator.vibrate(8); } catch { /* ignore */ }
+  }
+}
 
 export function AppShell({ children, title }: { children: ReactNode; title?: string }) {
   const user = useUser();
   const navigate = useNavigate();
+  const router = useRouter();
   const location = useLocation();
   const hasUnread = useHasUnreadNotifications();
   const { resolved, toggle } = useTheme();
@@ -25,10 +47,15 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
   const isNavigating = useRouterState({ select: (s) => s.status === "pending" });
   const [offline, setOffline] = useState(false);
 
-  // Scroll to top on route change (native-app feel).
+  const activeIndex = NAV.findIndex((n) => isActive(location.pathname, n.match));
+
+  // Top-level tabs keep their own scroll position (handled by the router);
+
+  // inner pages always start at the top.
+  const isTab = NAV.some((n) => n.to === location.pathname);
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
-  }, [location.pathname]);
+    if (!isTab) window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+  }, [location.pathname, isTab]);
 
   // Offline awareness.
   useEffect(() => {
@@ -42,21 +69,75 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
     };
   }, []);
 
+  // Edge swipe = go back (native feel on inner pages).
+  useEffect(() => {
+    if (isTab) return;
+    let x0 = 0;
+    let y0 = 0;
+    let tracking = false;
+    const onStart = (e: TouchEvent) => {
+      const t0 = e.touches[0];
+      if (!t0) return;
+      const edge = 28;
+      tracking = t0.clientX <= edge || t0.clientX >= window.innerWidth - edge;
+      x0 = t0.clientX;
+      y0 = t0.clientY;
+    };
+    const onEnd = (e: TouchEvent) => {
+      if (!tracking) return;
+      tracking = false;
+      const t1 = e.changedTouches[0];
+      if (!t1) return;
+      const dx = t1.clientX - x0;
+      const dy = Math.abs(t1.clientY - y0);
+      if (Math.abs(dx) > 90 && dy < 60) {
+        tap();
+        if (window.history.length > 1) router.history.back();
+      }
+    };
+    window.addEventListener("touchstart", onStart, { passive: true });
+    window.addEventListener("touchend", onEnd, { passive: true });
+    return () => {
+      window.removeEventListener("touchstart", onStart);
+      window.removeEventListener("touchend", onEnd);
+    };
+  }, [isTab, router]);
+
+
+
+
   return (
     <div className="min-h-dvh overflow-x-clip pb-[calc(7rem+env(safe-area-inset-bottom))]">
       {isNavigating && <div className="route-progress" />}
 
       <header className="sticky top-0 z-40 px-4 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-2">
         <div className="glass-strong rounded-2xl px-3 py-2 flex items-center justify-between shadow-soft">
-          <Link to="/" className="flex items-center gap-2 min-w-0">
-            <div className="size-9 shrink-0 rounded-xl bg-accent text-accent-foreground grid place-items-center font-bold">
-              ذ
-            </div>
-            <div className="min-w-0">
-              <div className="text-[11px] text-muted-foreground -mb-0.5">{t("app.name")}</div>
-              <div className="text-sm font-bold truncate">{title ?? t("nav.home")}</div>
-            </div>
-          </Link>
+          <div className="flex items-center gap-2 min-w-0">
+            {!isTab && (
+              <button
+                type="button"
+                onClick={() => {
+                  tap();
+                  if (window.history.length > 1) router.history.back();
+                  else navigate({ to: "/" });
+                }}
+                aria-label="رجوع"
+                className="size-9 shrink-0 grid place-items-center rounded-xl border border-border bg-surface-2/60 press"
+              >
+                <ChevronLeft className="size-4 rotate-180" />
+              </button>
+            )}
+            <Link to="/" className="flex items-center gap-2 min-w-0">
+              <div className="size-9 shrink-0 rounded-xl bg-accent text-accent-foreground grid place-items-center font-bold">
+                ذ
+              </div>
+              <div className="min-w-0">
+                <div className="text-[11px] text-muted-foreground -mb-0.5">{t("app.name")}</div>
+                <div className="text-sm font-bold truncate">{title ?? t("nav.home")}</div>
+              </div>
+            </Link>
+          </div>
+
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
@@ -110,30 +191,44 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
       <main className="min-w-0 px-4 pt-2">{children}</main>
 
       <nav className="app-bottom-nav fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 right-4 z-50">
-        <div className="bottom-bar rounded-2xl px-2 py-2 shadow-glass flex items-center justify-between">
-          {NAV.map((n) => {
-            const active = location.pathname === n.to;
-            const Icon = n.icon;
-            return (
-              <Link
-                key={n.to}
-                to={n.to}
-                className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 rounded-xl press transition-colors ${
-                  active
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Icon
-                  className={`size-[18px] transition-transform duration-300 ${active ? "scale-110 -translate-y-px" : ""}`}
-                  strokeWidth={active ? 2.4 : 1.8}
-                />
-                <span className="text-[10px] font-bold">{t(n.key)}</span>
-              </Link>
-            );
-          })}
+        <div className="bottom-bar rounded-2xl px-2 py-2 shadow-glass relative">
+          {activeIndex >= 0 && (
+            <span
+              aria-hidden
+              className="absolute top-2 bottom-2 rounded-xl bg-accent transition-[inset-inline-start] duration-300 ease-out"
+              style={{
+                width: `calc(${100 / NAV.length}% - 0.5rem)`,
+                insetInlineStart: `calc(${(activeIndex * 100) / NAV.length}% + 0.25rem)`,
+              }}
+            />
+          )}
+          <div className="relative flex items-stretch justify-between">
+            {NAV.map((n) => {
+              const active = isActive(location.pathname, n.match);
+              const Icon = n.icon;
+              return (
+                <Link
+                  key={n.to}
+                  to={n.to}
+                  onClick={tap}
+                  preload="intent"
+                  aria-current={active ? "page" : undefined}
+                  className={`flex-1 min-h-11 flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-xl press transition-colors ${
+                    active ? "text-accent-foreground" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Icon
+                    className={`size-[18px] transition-transform duration-300 ${active ? "scale-110 -translate-y-px" : ""}`}
+                    strokeWidth={active ? 2.4 : 1.8}
+                  />
+                  <span className="text-[10px] font-bold">{t(n.key)}</span>
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </nav>
+
     </div>
   );
 }
