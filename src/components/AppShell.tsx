@@ -152,30 +152,44 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
       <main className="min-w-0 px-4 pt-2">{children}</main>
 
       <nav className="app-bottom-nav fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 right-4 z-50">
-        <div className="bottom-bar rounded-2xl px-2 py-2 shadow-glass flex items-center justify-between">
-          {NAV.map((n) => {
-            const active = location.pathname === n.to;
-            const Icon = n.icon;
-            return (
-              <Link
-                key={n.to}
-                to={n.to}
-                className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 rounded-xl press transition-colors ${
-                  active
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Icon
-                  className={`size-[18px] transition-transform duration-300 ${active ? "scale-110 -translate-y-px" : ""}`}
-                  strokeWidth={active ? 2.4 : 1.8}
-                />
-                <span className="text-[10px] font-bold">{t(n.key)}</span>
-              </Link>
-            );
-          })}
+        <div className="bottom-bar rounded-2xl px-2 py-2 shadow-glass relative">
+          {activeIndex >= 0 && (
+            <span
+              aria-hidden
+              className="absolute top-2 bottom-2 rounded-xl bg-accent transition-[inset-inline-start] duration-300 ease-out"
+              style={{
+                width: `calc(${100 / NAV.length}% - 0.5rem)`,
+                insetInlineStart: `calc(${(activeIndex * 100) / NAV.length}% + 0.25rem)`,
+              }}
+            />
+          )}
+          <div className="relative flex items-stretch justify-between">
+            {NAV.map((n) => {
+              const active = isActive(location.pathname, n.match);
+              const Icon = n.icon;
+              return (
+                <Link
+                  key={n.to}
+                  to={n.to}
+                  onClick={tap}
+                  preload="intent"
+                  aria-current={active ? "page" : undefined}
+                  className={`flex-1 min-h-11 flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-xl press transition-colors ${
+                    active ? "text-accent-foreground" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Icon
+                    className={`size-[18px] transition-transform duration-300 ${active ? "scale-110 -translate-y-px" : ""}`}
+                    strokeWidth={active ? 2.4 : 1.8}
+                  />
+                  <span className="text-[10px] font-bold">{t(n.key)}</span>
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </nav>
+
     </div>
   );
 }
