@@ -428,9 +428,24 @@ button, a, [role="button"] {
 button:active, a:active, [role="button"]:active {
   opacity: 0.85;
 }
-/* منع تأخير 300ms وتحسين الرسم أثناء التمرير */
+/* انتقال سلس وسريع بين الصفحات (View Transitions API) — يمنع القطع
+   المفاجئ/الكرنج لما التنقل يصير فوري من الكاش. مدة قصيرة عمداً عشان يحس
+   خفيف وسريع، مو بطيء. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 140ms;
+  animation-timing-function: ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
 @media (hover: none), (pointer: coarse) {
   button, a, [role="button"], label, input, select, textarea {
+    /* منع تأخير 300ms وتحسين الرسم أثناء التمرير */
     touch-action: manipulation;
   }
 }
