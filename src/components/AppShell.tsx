@@ -293,19 +293,14 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
 
       <nav className="app-bottom-nav fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 right-4 z-50 lg:hidden">
         <div className="bottom-bar rounded-2xl px-2 py-2 shadow-glass relative">
-          {/* الدائرة/الخلفية المتحركة تحت التبويب النشط — نقلتها لتصير ابن مباشر
-              لنفس الحاوية اللي فيها أيقونات التنقل (بدل ما تكون شقيقة لها
-              بحاوية أبعد فيها padding إضافي). كانت نسبة % الخاصة بموضعها
-              تُحسب من عرض مرجعي غير عرض الأيقونات الفعلي — يسبب فرق ملموس
-              بين موضع الدائرة والأيقونة فوقها بالضبط. كذلك قصّرت مدة حركتها
-              لتطابق مدة تلاشي الصفحة (140ms) — كانت أطول (300ms) فتتجمّد
-              أثناء التلاشي ثم "تقفز" فجأة لتكمل حركتها بعده، وهذا القفز هو
-              الإحساس المزعج بالحركة. */}
+          {/* خلفية التبويب النشط — ابن مباشر لنفس حاوية الأيقونات (نفس عرض
+              مرجعي بالضبط، بدون فرق padding). انتقال فوري بلا حركة بناءً
+              على طلب عباس — أبسط وأوضح من التحريك المتدرّج. */}
           <div className="relative flex items-stretch justify-between">
             {activeIndex >= 0 && (
               <span
                 aria-hidden
-                className="absolute top-0 bottom-0 rounded-xl bg-accent transition-[inset-inline-start] duration-100 ease-out"
+                className="absolute top-0 bottom-0 rounded-xl bg-accent"
                 style={{
                   width: `calc(${100 / NAV.length}% - 0.5rem)`,
                   insetInlineStart: `calc(${(activeIndex * 100) / NAV.length}% + 0.25rem)`,
