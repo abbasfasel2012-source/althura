@@ -293,17 +293,25 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
 
       <nav className="app-bottom-nav fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 right-4 z-50 lg:hidden">
         <div className="bottom-bar rounded-2xl px-2 py-2 shadow-glass relative">
-          {activeIndex >= 0 && (
-            <span
-              aria-hidden
-              className="absolute top-2 bottom-2 rounded-xl bg-accent transition-[inset-inline-start] duration-300 ease-out"
-              style={{
-                width: `calc(${100 / NAV.length}% - 0.5rem)`,
-                insetInlineStart: `calc(${(activeIndex * 100) / NAV.length}% + 0.25rem)`,
-              }}
-            />
-          )}
+          {/* الدائرة/الخلفية المتحركة تحت التبويب النشط — نقلتها لتصير ابن مباشر
+              لنفس الحاوية اللي فيها أيقونات التنقل (بدل ما تكون شقيقة لها
+              بحاوية أبعد فيها padding إضافي). كانت نسبة % الخاصة بموضعها
+              تُحسب من عرض مرجعي غير عرض الأيقونات الفعلي — يسبب فرق ملموس
+              بين موضع الدائرة والأيقونة فوقها بالضبط. كذلك قصّرت مدة حركتها
+              لتطابق مدة تلاشي الصفحة (140ms) — كانت أطول (300ms) فتتجمّد
+              أثناء التلاشي ثم "تقفز" فجأة لتكمل حركتها بعده، وهذا القفز هو
+              الإحساس المزعج بالحركة. */}
           <div className="relative flex items-stretch justify-between">
+            {activeIndex >= 0 && (
+              <span
+                aria-hidden
+                className="absolute top-0 bottom-0 rounded-xl bg-accent transition-[inset-inline-start] duration-100 ease-out"
+                style={{
+                  width: `calc(${100 / NAV.length}% - 0.5rem)`,
+                  insetInlineStart: `calc(${(activeIndex * 100) / NAV.length}% + 0.25rem)`,
+                }}
+              />
+            )}
             {NAV.map((n) => {
               const active = isActive(location.pathname, n.match);
               const Icon = n.icon;
@@ -314,7 +322,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
                   onClick={tap}
                   preload="intent"
                   aria-current={active ? "page" : undefined}
-                  className={`flex-1 min-h-11 flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-xl press transition-colors ${
+                  className={`relative flex-1 min-h-11 flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-xl press transition-colors ${
                     active ? "text-accent-foreground" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
