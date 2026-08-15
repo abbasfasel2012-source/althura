@@ -3,7 +3,9 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, Card, SectionTitle } from "@/components/AppShell";
 import { fetchExams, fetchEvents, ar } from "@/lib/data";
-import { Loader2 } from "lucide-react";
+import { Loader2, Download } from "lucide-react";
+import { toast } from "sonner";
+import { exportExamsToIcs } from "@/lib/ics-export";
 
 export const Route = createFileRoute("/calendar")({
   head: () => ({
@@ -63,9 +65,24 @@ function CalendarPage() {
 
   return (
     <AppShell title="التقويم">
-      <div className="animate-reveal mb-5">
-        <div className="text-[11px] tracking-[0.2em] text-primary font-bold uppercase mb-1">هذا الشهر</div>
-        <h1 className="text-2xl font-bold">{monthLabel}</h1>
+      <div className="animate-reveal mb-5 flex items-start justify-between gap-3">
+        <div>
+          <div className="text-[11px] tracking-[0.2em] text-primary font-bold uppercase mb-1">هذا الشهر</div>
+          <h1 className="text-2xl font-bold">{monthLabel}</h1>
+        </div>
+        {(examsQ.data?.length ?? 0) > 0 && (
+          <button
+            type="button"
+            onClick={() => {
+              exportExamsToIcs(examsQ.data ?? []);
+              toast.success("تم تحميل ملف الامتحانات", { description: "افتحه من تطبيق التقويم عندك لإضافته" });
+            }}
+            className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-surface-2/60 text-xs font-bold text-foreground"
+          >
+            <Download className="size-3.5" />
+            الامتحانات للتقويم
+          </button>
+        )}
       </div>
 
       <Card className="!p-3 mb-5">

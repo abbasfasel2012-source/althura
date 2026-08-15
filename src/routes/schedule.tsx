@@ -1,10 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, Card } from "@/components/AppShell";
-import { fetchWeekSchedule, fetchDayPeriods } from "@/lib/data";
-import { Loader2, Palmtree } from "lucide-react";
+import { fetchWeekSchedule, fetchDayPeriods, type SchedulePeriod } from "@/lib/data";
+import { Loader2, Palmtree, Download } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { SkList } from "@/components/Skeletons";
+import { exportScheduleToIcs } from "@/lib/ics-export";
 
 export const Route = createFileRoute("/schedule")({
   head: () => ({
@@ -23,6 +25,7 @@ export const Route = createFileRoute("/schedule")({
 function SchedulePage() {
   const today = new Date().getDay(); // 0..6
   const [dayIdx, setDayIdx] = useState(today);
+  const [exporting, setExporting] = useState(false);
 
   const daysQ = useQuery({ queryKey: ["week-schedule"], queryFn: fetchWeekSchedule });
   const days = daysQ.data ?? [];
@@ -34,6 +37,23 @@ function SchedulePage() {
     enabled: !!selectedDay && !selectedDay.is_holiday,
   });
   const periods = periodsQ.data ?? [];
+
+  async function handleExport() {
+    if (exporting || days.length === 0) return;
+    setExporting(true);
+    try {
+      const entries = await Promise.all(
+        days.filter((d) => !d.is_holiday).map(async (d) => [d.id, await fetchDayPeriods(d.id)] as const),
+      );
+      const map = new Map<string, SchedulePeriod[]>(entries);
+      exportScheduleToIcs(days, map);
+      toast.success("تم تحميل ملف الجدول", { description: "افتحه من تطبيق التقويم عندك لإضافته" });
+    } catch {
+      toast.error("ما قدرنا نصدّر الجدول", { description: "جرّب مرة ثانية" });
+    } finally {
+      setExporting(false);
+    }
+  }
 
   if (daysQ.isLoading) {
     return (
@@ -49,9 +69,22 @@ function SchedulePage() {
 
   return (
     <AppShell title="جدول الدروس">
-      <div className="animate-reveal">
-        <div className="text-[11px] tracking-[0.2em] text-primary font-bold uppercase mb-1">أسبوع الدراسة</div>
-        <h1 className="text-2xl font-bold">{dayName}</h1>
+      <div className="animate-reveal flex items-start justify-between gap-3">
+        <div>
+          <div className="text-[11px] tracking-[0.2em] text-primary font-bold uppercase mb-1">أسبوع الدراسة</div>
+          <h1 className="text-2xl font-bold">{dayName}</h1>
+        </div>
+        {days.length > 0 && (
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={exporting}
+            className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-surface-2/60 text-xs font-bold text-foreground disabled:opacity-60"
+          >
+            {exporting ? <Loader2 className="size-3.5 animate-spin" /> : <Download className="size-3.5" />}
+            إضافة للتقويم
+          </button>
+        )}
       </div>
 
       {days.length === 0 ? (
