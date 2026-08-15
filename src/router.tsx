@@ -1,9 +1,34 @@
-import { QueryClient } from "@tanstack/react-query";
+import { QueryClient, QueryCache, MutationCache } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
+import { toast } from "sonner";
 import { routeTree } from "./routeTree.gen";
 
 export const getRouter = () => {
   const queryClient = new QueryClient({
+    // شبكات الطلاب بالعراق مو دايماً مستقرة — بدون هذا، أي طلب فاشل كان
+    // يترك سكيلتون عالق بصمت بدون أي تفسير للمستخدم (يحس التطبيق "معلّق"
+    // أو "مو ثابت"). الحين أي فشل شبكة حقيقي يطلع toast واضح بدل الصمت.
+    // نتجاهل أخطاء المصادقة (401/جلسة منتهية) لأنها تُعالج بمكان ثاني
+    // (تحويل لصفحة الدخول)، ونتجاهل الأخطاء أثناء عدم الاتصال أصلاً
+    // (already shown by the offline banner).
+    queryCache: new QueryCache({
+      onError: (error) => {
+        if (typeof navigator !== "undefined" && !navigator.onLine) return;
+        const msg = error instanceof Error ? error.message : "";
+        if (/JWT|401|Unauthorized|not allowed/i.test(msg)) return;
+        toast.error("صار خطأ بتحميل البيانات", { description: "جرّب تحدّث الصفحة" });
+      },
+    }),
+    mutationCache: new MutationCache({
+      onError: (error) => {
+        if (typeof navigator !== "undefined" && !navigator.onLine) {
+          toast.error("لا يوجد اتصال بالإنترنت", { description: "حاول مرة ثانية بعد الاتصال" });
+          return;
+        }
+        const msg = error instanceof Error ? error.message : "صار خطأ غير متوقع";
+        toast.error(msg);
+      },
+    }),
     defaultOptions: {
       queries: {
         // Cached pages must paint instantly when the user comes back to them;

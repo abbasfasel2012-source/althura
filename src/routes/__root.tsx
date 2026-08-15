@@ -16,6 +16,7 @@ import { ThemeProvider, themeBootstrapScript } from "../lib/theme";
 import { LanguageProvider } from "../lib/i18n";
 import { LiveNotifications } from "../lib/push";
 import { setupOffline } from "../lib/pwa";
+import { setupGlobalErrorCapture } from "../lib/global-error-capture";
 import { getQueryPersistOptions } from "../lib/query-persist";
 import { InstallPrompt } from "../components/InstallPrompt";
 import { Toaster } from "../components/ui/sonner";
@@ -160,6 +161,7 @@ function RootComponent() {
 
   useEffect(() => {
     setupOffline();
+    setupGlobalErrorCapture();
   }, []);
 
   return (
