@@ -38,6 +38,14 @@ const initial: AuthState = {
 let cached: AuthState = initial;
 const listeners = new Set<(s: AuthState) => void>();
 
+// قراءة متزامنة لحالة الجلسة من خارج مكوّنات React (مثلاً معالج أخطاء
+// عام بمستوى الراوتر) — يستخدمها queryCache.onError عشان ما يطلع تنبيه
+// خطأ لاستعلامات تفشل بشكل طبيعي ومتوقع أثناء تهيئة الجلسة أو وقت تسجيل
+// الخروج (RLS يرفضها لأنه ما فيه مستخدم بعد، هذا مو خطأ حقيقي بالتطبيق).
+export function getCachedAuthState(): AuthState {
+  return cached;
+}
+
 function emit(next: AuthState) {
   cached = next;
   listeners.forEach((l) => l(next));
