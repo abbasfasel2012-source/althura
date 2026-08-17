@@ -73,15 +73,33 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
     if (!isTab) window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   }, [location.pathname, isTab]);
 
-  // Offline awareness.
+  // Offline awareness. navigator.onLine يقدر يرجع قراءة خاطئة/متذبذبة
+  // للحظة وقت إقلاع التطبيق (خصوصاً لما الـ Service Worker يتسلّم السيطرة) —
+  // لو عرضنا شريط "لا يوجد اتصال" فوراً، يومض ويختفي بسرعة حتى والنت شغّال.
+  // الحل: مؤقت قصير — نصدّق حالة "غير متصل" فقط لو استمرت أكثر من ٨٠٠ms،
+  // بينما رجوع الاتصال (online) يُطبّق فوراً بدون تأخير.
   useEffect(() => {
-    const update = () => setOffline(!navigator.onLine);
-    update();
-    window.addEventListener("online", update);
-    window.addEventListener("offline", update);
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const clearTimer = () => {
+      if (timer) clearTimeout(timer);
+      timer = null;
+    };
+    const goOnline = () => {
+      clearTimer();
+      setOffline(false);
+    };
+    const goOffline = () => {
+      clearTimer();
+      timer = setTimeout(() => setOffline(true), 800);
+    };
+    if (navigator.onLine) goOnline();
+    else goOffline();
+    window.addEventListener("online", goOnline);
+    window.addEventListener("offline", goOffline);
     return () => {
-      window.removeEventListener("online", update);
-      window.removeEventListener("offline", update);
+      clearTimer();
+      window.removeEventListener("online", goOnline);
+      window.removeEventListener("offline", goOffline);
     };
   }, []);
 
