@@ -20,9 +20,9 @@ export const Route = createFileRoute("/events")({
 });
 
 function EventsPage() {
-  const { isOwner } = useAuth();
+  const { isOwner, userId } = useAuth();
   const qc = useQueryClient();
-  const { data, isLoading } = useQuery({ queryKey: ["events"], queryFn: fetchEvents });
+  const { data, isLoading } = useQuery({ queryKey: ["events"], queryFn: fetchEvents, enabled: !!userId });
 
   async function onDelete(id: string) {
     if (!confirm("حذف هذه الفعالية؟")) return;

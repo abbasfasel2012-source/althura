@@ -428,47 +428,8 @@ button, a, [role="button"] {
 button:active, a:active, [role="button"]:active {
   opacity: 0.85;
 }
-/* انتقال سلس وسريع بين الصفحات (View Transitions API) — يمنع القطع
-   المفاجئ/الكرنج لما التنقل يصير فوري من الكاش. مدة قصيرة عمداً عشان يحس
-   خفيف وسريع، مو بطيء.
-
-   ⚠️ إصلاح مهم: التلاشي الافتراضي بالمتصفح يستخدم mix-blend-mode: plus-lighter
-   (تراكب ضوئي إضافي) — مع عناصر الزجاج الشفافة (glass/backdrop-blur) بهذا
-   الموقع، هذا يعطي "توهج/تشويش" غير مريح لحظة الانتقال (يوصف كإحساس مزعج
-   يتكرر كل تنقل، حتى لو أول مرة يمر بدون ملاحظة). الحل: تلاشي opacity بسيط
-   وواضح بدل التراكب الضوئي الافتراضي. */
-::view-transition-group(root) {
-  animation-duration: 140ms;
-}
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation: none;
-  mix-blend-mode: normal;
-  isolation: isolate;
-}
-::view-transition-old(root) {
-  animation: vt-fade-out 140ms ease-out both;
-  z-index: 0;
-}
-::view-transition-new(root) {
-  animation: vt-fade-in 140ms ease-out both;
-  z-index: 1;
-}
-@keyframes vt-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-@keyframes vt-fade-out {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-group(root),
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
-    animation: none !important;
-  }
-}
+/* View Transitions اتشالت نهائياً بعد عدة مشاكل بصرية متكررة — انتقال
+   مباشر بدون أي تأثير، أثبت وأبسط. */
 
 @media (hover: none), (pointer: coarse) {
   button, a, [role="button"], label, input, select, textarea {
