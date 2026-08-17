@@ -91,6 +91,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+      // بدون هذي الوسوم، تطبيق iOS المثبّت (Add to Home Screen) ما ياخذ
+      // مظهر تطبيق حقيقي (chrome كامل مع شريط عنوان Safari يبين، شريط
+      // الحالة بدون لون) — يحس "مو حقيقي" بالضبط زي ما ذكر عباس. هذي
+      // معايير Apple نفسها لتطبيقات الويب المثبّتة على الشاشة الرئيسية.
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "الذرى" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "theme-color", content: "#5b6b3a" },
       { title: "ثانوية الذرى الذكية للمتميزين | كربلاء المقدسة" },
       { name: "description", content: "موقع سويته لثانوية الذرى الذكية بكربلاء — تكدر تشوف جدولك وامتحاناتك وواجباتك وتساوي كل شي بمكان وحد. سويته بنفسي (عباس فاضل)، مو مشروع رسمي من إدارة المدرسة." },
       { name: "author", content: "ثانوية الذرى الذكية" },

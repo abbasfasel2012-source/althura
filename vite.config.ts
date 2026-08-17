@@ -33,6 +33,7 @@ export default defineConfig({
         workbox: {
           globDirectory: ".output/public",
           globPatterns: ["**/*.{js,css,woff2,png,svg,webmanifest,html}"],
+          navigateFallback: "/",
           navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//],
           cleanupOutdatedCaches: true,
           runtimeCaching: [
