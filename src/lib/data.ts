@@ -74,7 +74,7 @@ export interface Message {
 // ==================== ANNOUNCEMENTS ====================
 
 export async function fetchAnnouncements(): Promise<Announcement[]> {
-  const { data, error } = await supabase.from("announcements").select("*")
+  const { data, error } = await supabase.from("announcements").select("id, title, body, pinned, created_at")
     .order("pinned", { ascending: false }).order("created_at", { ascending: false });
   if (error) throw error;
   return data ?? [];
@@ -92,7 +92,7 @@ export async function deleteAnnouncement(id: string) {
 // ==================== NEWS ====================
 
 export async function fetchNews(): Promise<NewsItem[]> {
-  const { data, error } = await supabase.from("news").select("*").order("created_at", { ascending: false });
+  const { data, error } = await supabase.from("news").select("id, title, body, image_url, created_at").order("created_at", { ascending: false });
   if (error) throw error;
   return data ?? [];
 }
@@ -109,7 +109,7 @@ export async function deleteNews(id: string) {
 // ==================== EVENTS ====================
 
 export async function fetchEvents(): Promise<EventItem[]> {
-  const { data, error } = await supabase.from("events").select("*").order("starts_at", { ascending: true, nullsFirst: false });
+  const { data, error } = await supabase.from("events").select("id, title, description, location, starts_at, created_at").order("starts_at", { ascending: true, nullsFirst: false });
   if (error) throw error;
   return data ?? [];
 }
@@ -129,7 +129,7 @@ export async function deleteEvent(id: string) {
 // ==================== BOOKS ====================
 
 export async function fetchBooks(): Promise<BookItem[]> {
-  const { data, error } = await supabase.from("books").select("*").order("created_at", { ascending: false });
+  const { data, error } = await supabase.from("books").select("id, title, subject, grade, file_url, cover_url, created_at").order("created_at", { ascending: false });
   if (error) throw error;
   return data ?? [];
 }
@@ -390,7 +390,7 @@ export interface HomeworkItem {
 }
 
 export async function fetchExams(): Promise<ExamItem[]> {
-  const { data, error } = await supabase.from("exams").select("*").order("exam_date", { ascending: true });
+  const { data, error } = await supabase.from("exams").select("id, title, subject, exam_date, description, created_at").order("exam_date", { ascending: true });
   if (error) throw error;
   return (data ?? []) as ExamItem[];
 }
