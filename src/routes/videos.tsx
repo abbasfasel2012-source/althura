@@ -24,11 +24,11 @@ export const Route = createFileRoute("/videos")({
 const GRADES: Grade[] = ["1","2","3","4","5","6"];
 
 function VideosPage() {
-  const { isOwner } = useAuth();
+  const { isOwner, userId } = useAuth();
   const qc = useQueryClient();
   const [showAdd, setShowAdd] = useState(false);
   const [playing, setPlaying] = useState<string | null>(null);
-  const { data: videos = [], isLoading } = useQuery({ queryKey: ["videos"], queryFn: fetchVideos });
+  const { data: videos = [], isLoading } = useQuery({ queryKey: ["videos"], queryFn: fetchVideos, enabled: !!userId });
 
   const del = useMutation({
     mutationFn: (id: string) => deleteVideo(id),
