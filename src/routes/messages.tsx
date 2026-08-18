@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { useQuery } from "@tanstack/react-query";
 import { fetchConversations, ar } from "@/lib/data";
-import { useAuth } from "@/lib/auth";
 import { Loader2, MessageCircle, Users } from "lucide-react";
 
 export const Route = createFileRoute("/messages")({
@@ -20,13 +19,7 @@ export const Route = createFileRoute("/messages")({
 });
 
 function MessagesPage() {
-  const { userId } = useAuth();
-  const q = useQuery({
-    queryKey: ["conversations"],
-    queryFn: fetchConversations,
-    refetchInterval: 5000,
-    enabled: !!userId,
-  });
+  const q = useQuery({ queryKey: ["conversations"], queryFn: fetchConversations, refetchInterval: 5000 });
 
   return (
     <AppShell title="تواصل">

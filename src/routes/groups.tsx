@@ -23,7 +23,7 @@ export const Route = createFileRoute("/groups")({
 
 function GroupsPage() {
   const location = useLocation();
-  const { isOwner, userId, loading: authLoading } = useAuth();
+  const { isOwner } = useAuth();
   const queryClient = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState("");
@@ -35,15 +35,9 @@ function GroupsPage() {
     return <Outlet />;
   }
 
-  // ⚠️ بدون enabled هنا، الاستعلام كان ينطلق فوراً حتى قبل ما تتأكد الجلسة
-  // — لو صار سباق توقيت (خصوصاً لو انتقلت للصفحة بسرعة بعد فتح التطبيق)،
-  // كانت الدالة تفشل مرة وحدة بخطأ عابر يطلع كتنبيه، ثم تنجح بإعادة
-  // المحاولة التلقائية — وهذا بالضبط شكل "يطلع الخطأ ثم يختفي" اللي لاحظه
-  // عباس. الحين ما تنطلق أصلاً إلا بعد التأكد من وجود المستخدم.
   const { data: groups, isLoading, error } = useQuery({
     queryKey: ["groups"],
     queryFn: fetchGroups,
-    enabled: !authLoading && !!userId,
   });
 
   const createMutation = useMutation({
