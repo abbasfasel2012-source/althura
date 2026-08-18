@@ -20,9 +20,9 @@ export const Route = createFileRoute("/news")({
 });
 
 function NewsPage() {
-  const { isOwner, userId } = useAuth();
+  const { isOwner } = useAuth();
   const qc = useQueryClient();
-  const { data, isLoading } = useQuery({ queryKey: ["news"], queryFn: fetchNews, enabled: !!userId });
+  const { data, isLoading } = useQuery({ queryKey: ["news"], queryFn: fetchNews });
 
   async function onDelete(id: string) {
     if (!confirm("حذف هذا الخبر؟")) return;

@@ -33,10 +33,10 @@ const COLORS = [
 ];
 
 function LibraryPage() {
-  const { isOwner, userId } = useAuth();
+  const { isOwner } = useAuth();
   const [tab, setTab] = useState<"books" | "videos">("books");
-  const books = useQuery({ queryKey: ["books"], queryFn: fetchBooks, enabled: !!userId });
-  const videos = useQuery({ queryKey: ["videos"], queryFn: fetchVideos, enabled: !!userId });
+  const books = useQuery({ queryKey: ["books"], queryFn: fetchBooks });
+  const videos = useQuery({ queryKey: ["videos"], queryFn: fetchVideos });
 
   const booksList = books.data ?? [];
   const videosList = videos.data ?? [];

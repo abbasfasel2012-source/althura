@@ -40,7 +40,6 @@ function TeachersPage() {
   const { data: teachers = [], isLoading } = useQuery({
     queryKey: ["teacher-profiles", grade, section],
     queryFn: () => fetchTeacherProfiles({ grade, section }),
-    enabled: !!userId,
   });
 
   return (
