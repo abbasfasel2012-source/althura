@@ -120,8 +120,8 @@ function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col px-5 py-6">
       <div className="flex items-center gap-3 mb-8 animate-reveal">
-        <div className="size-12 rounded-2xl bg-accent text-accent-foreground grid place-items-center font-bold text-xl shadow-glass">
-          ذ
+        <div className="size-12 rounded-2xl overflow-hidden shadow-glass shrink-0">
+          <img src="/logo-classroom.jpg" alt="الذرى الذكية" className="size-full object-cover" />
         </div>
         <div>
           <div className="text-[11px] tracking-[0.2em] text-primary font-bold uppercase">كربلاء المقدسة</div>

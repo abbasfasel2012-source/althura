@@ -32,8 +32,8 @@ export function ProfileModal({ userId, onClose }: { userId: string; onClose: () 
         ) : (
           <>
             <div className="text-center">
-              <div className="size-20 mx-auto rounded-3xl bg-accent text-accent-foreground grid place-items-center text-2xl font-bold mb-3">
-                {p.full_name?.[0] ?? "؟"}
+              <div className="size-20 mx-auto rounded-3xl overflow-hidden bg-accent mb-3">
+                <img src="/avatar-default.jpg" alt={p.full_name ?? "مستخدم"} className="size-full object-cover" />
               </div>
               <h3 className="text-lg font-bold">{p.full_name}</h3>
               <div className="text-[11px] text-primary font-bold mt-1">

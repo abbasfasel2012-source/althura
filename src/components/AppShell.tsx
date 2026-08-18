@@ -149,8 +149,8 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
       {/* ============ الشريط الجانبي — كومبيوتر فقط (lg+) ============ */}
       <aside className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:end-0 lg:w-72 lg:border-s lg:border-border lg:bg-surface/80 lg:backdrop-blur-xl lg:px-5 lg:py-6 lg:z-40">
         <Link to="/" className="flex items-center gap-3 px-1 mb-8">
-          <div className="size-11 shrink-0 rounded-2xl bg-accent text-accent-foreground grid place-items-center font-bold text-lg">
-            ذ
+          <div className="size-11 shrink-0 rounded-2xl overflow-hidden">
+            <img src="/logo-classroom.jpg" alt="الذرى الذكية" className="size-full object-cover" />
           </div>
           <div className="min-w-0">
             <div className="text-xs text-muted-foreground -mb-0.5">{t("app.name")}</div>
@@ -238,8 +238,8 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
               </button>
             )}
             <Link to="/" className="flex items-center gap-2 min-w-0">
-              <div className="size-9 shrink-0 rounded-xl bg-accent text-accent-foreground grid place-items-center font-bold">
-                ذ
+              <div className="size-9 shrink-0 rounded-xl overflow-hidden">
+                <img src="/logo-classroom.jpg" alt="الذرى الذكية" className="size-full object-cover" />
               </div>
               <div className="min-w-0">
                 <div className="text-[11px] text-muted-foreground -mb-0.5">{t("app.name")}</div>
