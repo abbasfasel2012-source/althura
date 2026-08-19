@@ -73,19 +73,19 @@ export function InstallPrompt() {
 
   return (
     <div className="fixed inset-x-3 bottom-[calc(6.5rem+env(safe-area-inset-bottom))] z-[60] animate-pop">
-      <div className="glass-strong rounded-2xl p-3.5 shadow-glass flex items-start gap-3">
+      <div className="rounded-2xl p-3.5 shadow-glass flex items-start gap-3 bg-foreground text-background">
         <div className="size-10 shrink-0 rounded-xl bg-accent text-accent-foreground grid place-items-center font-bold">
           ذ
         </div>
         <div className="min-w-0 flex-1">
           <div className="text-sm font-bold">ثبّت تطبيق الذرى على هاتفك</div>
           {iosHint ? (
-            <p className="text-[12px] text-muted-foreground mt-0.5 leading-6">
+            <p className="text-[12px] opacity-70 mt-0.5 leading-6">
               اضغط <Share className="inline size-3.5 align--2" /> مشاركة ثم{" "}
               <Plus className="inline size-3.5 align--2" /> «إضافة إلى الشاشة الرئيسية».
             </p>
           ) : (
-            <p className="text-[12px] text-muted-foreground mt-0.5 leading-6">
+            <p className="text-[12px] opacity-70 mt-0.5 leading-6">
               فتح أسرع، أيقونة على الشاشة الرئيسية، ويعمل حتى بدون إنترنت.
             </p>
           )}
@@ -101,7 +101,7 @@ export function InstallPrompt() {
         <button
           onClick={dismiss}
           aria-label="إغلاق"
-          className="size-8 shrink-0 grid place-items-center rounded-lg text-muted-foreground"
+          className="size-8 shrink-0 grid place-items-center rounded-lg opacity-70"
         >
           <X className="size-4" />
         </button>

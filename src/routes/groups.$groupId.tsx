@@ -156,7 +156,12 @@ function GroupChatPage() {
           ) : !joinReady || isLoading ? (
             <div className="flex justify-center py-10"><Loader2 className="animate-spin text-primary" /></div>
           ) : error ? (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-2xl text-sm text-center">تعذّر تحميل الرسائل</div>
+            <div className="p-4 bg-destructive/10 text-destructive rounded-2xl text-sm text-center">
+              <div>تعذّر تحميل الرسائل</div>
+              <div className="text-[10px] opacity-70 mt-1 font-mono" dir="ltr">
+                {error instanceof Error ? error.message : String(error)}
+              </div>
+            </div>
           ) : messages?.length === 0 ? (
             <div className="text-center py-10 text-muted-foreground text-sm">ابدأ المحادثة الآن...</div>
           ) : (
