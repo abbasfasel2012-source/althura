@@ -9,6 +9,14 @@ import { useState } from "react";
 import { SkList } from "@/components/Skeletons";
 
 export const Route = createFileRoute("/groups/")({
+  // بدون loader، الصفحة تفتح فارغة أول شي وبعدين تنتظر جلب البيانات —
+  // هذا بالضبط الإحساس بـ"واجهة سريعة ثم تظهر الكروبات" اللي لاحظه
+  // عباس. اللودر يخلي التنقل (خصوصاً مع preload="intent" اللي يبدأ
+  // التحميل من لحظة لمس الإصبع للشاشة) ينتظر البيانات قبل ما يرسم
+  // الصفحة، فتظهر الكروبات مباشرة بانتقال واحد بس.
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData({ queryKey: ["groups"], queryFn: fetchGroups });
+  },
   head: () => ({
     meta: [
       { title: "الذرى الذكية | الكروبات" },
