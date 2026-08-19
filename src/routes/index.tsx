@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, SectionTitle } from "@/components/AppShell";
-import { useUser } from "@/lib/store";
+import { useUser, getUser } from "@/lib/store";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { fetchHomeSummary, ar } from "@/lib/data";
@@ -46,10 +46,13 @@ function HomePage() {
 
   useEffect(() => {
     // Redirect only when the real auth session is resolved AND there is no
-    // local (guest) user — otherwise a signed-in owner gets bounced to /login
-    // on the first render (local user state hydrates one tick later).
+    // local (guest) user. نستخدم getUser() (قراءة مباشرة من localStorage)
+    // مو حالة الـ hook (user) بس — لأن useUser() يبدأ بـ null دايماً أول
+    // رندر (لتفادي مشاكل الـ SSR)، وبما إن useAuth() ممكن يكون خلص فحصه
+    // (authLoading=false) من صفحة الدخول قبل لا نوصل هنا أصلاً، كان هذا
+    // يخلي وضع "زائر" يترفض فوراً قبل ما تتحدث حالة الـ hook من التخزين.
     if (authLoading) return;
-    if (!userId && user === null) navigate({ to: "/login" });
+    if (!userId && getUser() === null) navigate({ to: "/login" });
   }, [user, userId, authLoading, navigate]);
 
   const summary = homeQ.data;
