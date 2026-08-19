@@ -547,10 +547,8 @@ function TabStudents() {
         {list.map((s: any) => (
           <div key={s.id}>
             <Card className="!p-3 flex items-center gap-3">
-              <div className={`size-9 rounded-xl grid place-items-center font-bold text-sm shrink-0 ${
-                s.is_teacher ? "bg-accent/20 text-accent" : "bg-primary/10 text-primary"
-              }`}>
-                {s.full_name?.[0] ?? "؟"}
+              <div className="size-9 rounded-xl overflow-hidden shrink-0 bg-accent">
+                <img src="/avatar-default.jpg" alt={s.full_name ?? "مستخدم"} className="size-full object-cover" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-bold text-sm text-foreground truncate">

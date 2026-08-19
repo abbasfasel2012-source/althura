@@ -21,15 +21,6 @@ export const Route = createFileRoute("/teachers")({
   component: TeachersPage,
 });
 
-const COLORS = [
-  "from-amber-200 to-orange-300",
-  "from-sky-200 to-indigo-300",
-  "from-emerald-200 to-teal-300",
-  "from-rose-200 to-pink-300",
-  "from-violet-200 to-purple-300",
-  "from-yellow-200 to-amber-300",
-];
-
 function TeachersPage() {
   const { profile, isOwner, userId } = useAuth();
   const [openId, setOpenId] = useState<string | null>(null);
@@ -66,9 +57,9 @@ function TeachersPage() {
             <Card key={t.id} className="!p-4 text-center">
               <button
                 onClick={() => setOpenId(t.id)}
-                className={`size-14 mx-auto rounded-2xl bg-gradient-to-br ${COLORS[i % COLORS.length]} grid place-items-center text-xl font-bold mb-2 shadow-glass`}
+                className="size-14 mx-auto rounded-2xl overflow-hidden mb-2 shadow-glass bg-accent block"
               >
-                {t.full_name.split(" ")[1]?.[0] ?? t.full_name[0]}
+                <img src="/avatar-default.jpg" alt={t.full_name} className="size-full object-cover" />
               </button>
               <button onClick={() => setOpenId(t.id)} className="font-bold text-sm leading-tight block w-full">
                 {t.full_name}

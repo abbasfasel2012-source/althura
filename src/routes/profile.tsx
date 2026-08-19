@@ -58,13 +58,12 @@ function ProfilePage() {
   const section = profile?.section || localUser?.section;
   const role: "owner" | "student" | "guest" =
     isOwner ? "owner" : userId ? "student" : "guest";
-  const initial = fullName?.[0] ?? "ط";
 
   return (
     <AppShell title="حسابي">
       <Card className="animate-reveal text-center">
-        <div className="size-20 rounded-3xl bg-accent text-accent-foreground grid place-items-center text-3xl font-bold mx-auto mb-3 shadow-glass">
-          {initial}
+        <div className="size-20 rounded-3xl overflow-hidden bg-accent mx-auto mb-3 shadow-glass">
+          <img src="/avatar-default.jpg" alt={fullName} className="size-full object-cover" />
         </div>
         <div className="font-bold text-lg">{fullName}</div>
         <div className="text-[11px] tracking-[0.2em] text-primary font-bold uppercase mt-1">
