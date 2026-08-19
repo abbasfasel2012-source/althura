@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getErrorMessage } from "@/lib/utils";
 import {
   fetchMessages, sendMessage, fetchGroups, joinGroup,
   uploadChatMedia, detectAttachmentType,
@@ -159,7 +160,7 @@ function GroupChatPage() {
             <div className="p-4 bg-destructive/10 text-destructive rounded-2xl text-sm text-center">
               <div>تعذّر تحميل الرسائل</div>
               <div className="text-[10px] opacity-70 mt-1 font-mono" dir="ltr">
-                {error instanceof Error ? error.message : String(error)}
+                {getErrorMessage(error)}
               </div>
             </div>
           ) : messages?.length === 0 ? (

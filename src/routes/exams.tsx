@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, Card, SectionTitle } from "@/components/AppShell";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getErrorMessage } from "@/lib/utils";
 import {
   ar, fetchQuizzes, createQuiz, deleteQuiz, type QuestionType,
 } from "@/lib/data";
@@ -176,7 +177,7 @@ function CreateQuizModal({ onClose, onDone }: { onClose: () => void; onDone: () 
       });
       onDone();
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "فشل الإنشاء");
+      setErr(getErrorMessage(e, "فشل الإنشاء"));
     } finally { setBusy(false); }
   };
 
