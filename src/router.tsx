@@ -74,11 +74,8 @@ export const getRouter = () => {
     defaultPreload: "intent",
     defaultPreloadDelay: 30,
     defaultPreloadStaleTime: 30_000,
-    // لما الصفحة تكون محمّلة مسبقاً (preload="intent")، التنقل يصير فوري 0ms —
-    // وبدون أي انتقال يحس المستخدم بقطع مفاجئ/كرنج بين الصفحات. الـ View
-    // Transitions API تعطي تلاشي سلس تلقائياً بين اللقطتين (Chrome/Edge/Safari
-    // الحديثة، وتتجاهل بهدوء بالمتصفحات القديمة بدون أي كسر).
-    defaultViewTransition: true,
+    // View Transitions سبّبت أكثر من مشكلة بصرية متكررة بعد عدة محاولات
+    // إصلاح — أوقفتها نهائياً. انتقال مباشر بدون أي تأثير أثبت وأبسط.
   });
 
   return router;

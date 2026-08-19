@@ -139,8 +139,8 @@ function DMPage() {
           <ArrowRight className="size-4" />
         </button>
         
-        <div className="size-11 rounded-2xl bg-primary/10 text-primary grid place-items-center font-bold">
-          {name[0] ?? "؟"}
+        <div className="size-11 rounded-2xl overflow-hidden bg-accent">
+          <img src="/avatar-default.jpg" alt={name || "عضو"} className="size-full object-cover" />
         </div>
         <div className="min-w-0 flex-1">
           <div className="font-bold text-sm truncate">{name}</div>

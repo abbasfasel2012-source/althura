@@ -45,15 +45,31 @@ function GroupChatPage() {
   const group = groups?.find((g) => g.id === groupId);
   const allowMedia = group?.allow_media !== false;
 
+  // نجهّز العضوية بالكروب قبل ما نجيب الرسائل — لو صار العكس (نجيب
+  // الرسائل بنفس اللحظة اللي نحاول نصير فيها عضو)، وياسة الوقت ينضرب
+  // بعدنا مو عضو رسمي بعد فلا نكدر نشوف أسماء باقي الأعضاء (السياسة
+  // الأمنية تشترط العضوية)، فيطلع خطأ "تعذر تحميل الرسائل" مع أول
+  // فتح للكروب رغم أنه ما صار أي خطأ حقيقي.
+  const [joinReady, setJoinReady] = useState(false);
   useEffect(() => {
-    if (userId && groupId) joinGroup(groupId).catch(() => {});
+    setJoinReady(false);
+    if (!userId || !groupId) return;
+    let cancelled = false;
+    joinGroup(groupId)
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setJoinReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [userId, groupId]);
 
   const { data: messages, isLoading, error } = useQuery({
     queryKey: ["messages", groupId],
     queryFn: () => fetchMessages(groupId),
     refetchInterval: 3000,
-    enabled: !!userId,
+    enabled: !!userId && joinReady,
   });
 
   const ids = useMemo(() => (messages ?? []).map((m) => m.id), [messages]);
@@ -137,7 +153,7 @@ function GroupChatPage() {
 
           {!userId ? (
             <div className="text-center py-10 text-sm text-muted-foreground">يجب تسجيل الدخول</div>
-          ) : isLoading ? (
+          ) : !joinReady || isLoading ? (
             <div className="flex justify-center py-10"><Loader2 className="animate-spin text-primary" /></div>
           ) : error ? (
             <div className="p-4 bg-destructive/10 text-destructive rounded-2xl text-sm text-center">تعذّر تحميل الرسائل</div>

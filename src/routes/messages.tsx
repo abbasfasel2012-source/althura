@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { useQuery } from "@tanstack/react-query";
 import { fetchConversations, ar } from "@/lib/data";
+import { useAuth } from "@/lib/auth";
 import { Loader2, MessageCircle, Users } from "lucide-react";
 
 export const Route = createFileRoute("/messages")({
@@ -19,7 +20,13 @@ export const Route = createFileRoute("/messages")({
 });
 
 function MessagesPage() {
-  const q = useQuery({ queryKey: ["conversations"], queryFn: fetchConversations, refetchInterval: 5000 });
+  const { userId } = useAuth();
+  const q = useQuery({
+    queryKey: ["conversations", userId],
+    queryFn: fetchConversations,
+    refetchInterval: 5000,
+    enabled: !!userId,
+  });
 
   return (
     <AppShell title="تواصل">
@@ -49,8 +56,8 @@ function MessagesPage() {
           {(q.data ?? []).map((c) => (
             <Link key={c.other_id} to="/dm/$userId" params={{ userId: c.other_id }}
               className="glass rounded-2xl p-3 flex items-center gap-3">
-              <div className="size-11 rounded-2xl bg-primary/10 text-primary grid place-items-center font-bold">
-                {c.other_name?.[0] ?? "؟"}
+              <div className="size-11 rounded-2xl overflow-hidden bg-accent">
+                <img src="/avatar-default.jpg" alt={c.other_name ?? "عضو"} className="size-full object-cover" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="font-bold text-sm truncate">{c.other_name || "عضو"}</div>
