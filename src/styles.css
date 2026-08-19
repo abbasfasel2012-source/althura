@@ -40,6 +40,10 @@
   --shadow-soft: 0 1px 0 rgba(26, 26, 24, 0.04), 0 8px 24px -12px rgba(26, 26, 24, 0.12);
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  /* نفس فلسفة ease-out-expo بس بارتداد خفيف بالنهاية — نستخدمها بس
+     بمكان واحد محدود (مؤشر التبويب النشط) عشان تحس "استقرار" لطيف
+     بدون ما تصير حركة مبالغ فيها أو ملفتة. */
+  --ease-spring: cubic-bezier(0.34, 1.35, 0.64, 1);
 }
 
 :root {
@@ -134,6 +138,12 @@
 @utility bottom-bar {
   background: var(--surface-2);
   border: 1px solid color-mix(in oklab, var(--foreground) 12%, transparent);
+}
+
+/* مؤشر التبويب النشط: انتقال أبطأ شوي وبارتداد خفيف بدل القفزة الفورية
+   القديمة، بس يبقى محسوس وواضح بدون ما يصير بطيء أو "معوق". */
+@utility nav-pill {
+  transition: inset-inline-start 260ms var(--ease-spring);
 }
 
 @utility ink-watermark {
