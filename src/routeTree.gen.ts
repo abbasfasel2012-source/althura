@@ -52,7 +52,7 @@ const AiRoute = AiRouteImport.update({
   id: '/ai',
   path: '/ai',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/ai.lazy').then((d) => d.Route))
 const AnnouncementsRoute = AnnouncementsRouteImport.update({
   id: '/announcements',
   path: '/announcements',
