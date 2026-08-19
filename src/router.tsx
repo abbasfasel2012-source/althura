@@ -54,7 +54,14 @@ export const getRouter = () => {
         // Cached pages must paint instantly when the user comes back to them;
         // a refetch on every mount was what made navigation feel sticky.
         staleTime: 60_000,
-        gcTime: 24 * 60 * 60_000,
+        // ⚠️ كانت 24 ساعة — يعني كل استعلام تسويه بالجلسة (رسائل كل كروب
+        // فتحته، كل محادثة خاصة، كل صفحة فيديو...) يضل بالذاكرة كامل يوم،
+        // يتراكم بلا حدود بجلسة استخدام طويلة ويسبب بطء تدريجي وربما
+        // كرش على أجهزة بذاكرة محدودة. ١٠ دقائق كافية لإحساس "فوري" عند
+        // التنقل جيئة وذهاباً بجلسة عادية، وبعدها تتحرر البيانات المهجورة.
+        // هذا لا يأثر على الكاش المحفوظ بالتخزين المحلي (يرجع فوراً بفتح
+        // التطبيق من جديد بغض النظر عن هذا الرقم).
+        gcTime: 10 * 60_000,
         refetchOnMount: false,
         refetchOnWindowFocus: false,
         retry: 1,
