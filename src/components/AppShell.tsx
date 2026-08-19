@@ -312,13 +312,16 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
       <nav className="app-bottom-nav fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 right-4 z-50 lg:hidden">
         <div className="bottom-bar rounded-2xl px-2 py-2 shadow-glass relative">
           {/* خلفية التبويب النشط — ابن مباشر لنفس حاوية الأيقونات (نفس عرض
-              مرجعي بالضبط، بدون فرق padding). انتقال فوري بلا حركة بناءً
-              على طلب عباس — أبسط وأوضح من التحريك المتدرّج. */}
+              مرجعي بالضبط، بدون فرق padding). انتقال قصير جداً (150ms)
+              فقط لموقع هذا العنصر بالذات — مو انتقال صفحة كامل زي
+              View Transitions القديمة. بدون هذا، القفزة بين تبويبات
+              بعيدة (مثلاً الرئيسية → حسابي) تحس وكأنها "ترمي" العنصر
+              فجأة لمكان بعيد. */}
           <div className="relative flex items-stretch justify-between">
             {activeIndex >= 0 && (
               <span
                 aria-hidden
-                className="absolute top-0 bottom-0 rounded-xl bg-accent"
+                className="absolute top-0 bottom-0 rounded-xl bg-accent transition-[inset-inline-start] duration-150 ease-out"
                 style={{
                   width: `calc(${100 / NAV.length}% - 0.5rem)`,
                   insetInlineStart: `calc(${(activeIndex * 100) / NAV.length}% + 0.25rem)`,
