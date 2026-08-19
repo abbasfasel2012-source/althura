@@ -120,7 +120,11 @@ function AIPage() {
         <div ref={endRef} />
       </div>
 
-      <div className="fixed bottom-24 left-4 right-4 z-40">
+      {/* على الحاسوب: بدون تحديد عرض، الشريط يمتد لعرض الشاشة كاملة بينما
+          الرسائل فوقه محصورة بـ lg:max-w-5xl — يحس وكأنه "أوفر سايزد".
+          نفس القياس المستخدم بباقي الصفحة (AppShell) يخليه متناسق. */}
+      <div className="fixed bottom-24 left-4 right-4 z-40 lg:max-w-5xl lg:mx-auto lg:px-10">
+        <div className="lg:max-w-2xl lg:mx-auto">
         <form
           onSubmit={onSubmit}
           className="glass-strong rounded-2xl p-1.5 flex items-center gap-1.5 shadow-glass"
@@ -146,6 +150,7 @@ function AIPage() {
             )}
           </button>
         </form>
+        </div>
       </div>
     </AppShell>
   );

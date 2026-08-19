@@ -122,14 +122,17 @@
   }
 }
 
+/* شفافية .glass و.glass-strong كانت فاتحة وحسّها "خفيف" مقارنة بالبار
+   السفلي (اللي عاتم تماماً، var(--surface-2) بدون شفافية). رفعت النسبة
+   لتقارب نفس عتامة البار السفلي بأغلب الويدجت اللي تستخدمهما. */
 @utility glass {
-  background: color-mix(in oklab, var(--surface) 80%, transparent);
+  background: color-mix(in oklab, var(--surface) 96%, transparent);
   backdrop-filter: blur(18px) saturate(140%);
   border: 1px solid color-mix(in oklab, var(--foreground) 8%, transparent);
 }
 
 @utility glass-strong {
-  background: color-mix(in oklab, var(--surface) 92%, transparent);
+  background: color-mix(in oklab, var(--surface) 98%, transparent);
   backdrop-filter: blur(28px) saturate(160%);
   border: 1px solid color-mix(in oklab, var(--foreground) 10%, transparent);
 }
