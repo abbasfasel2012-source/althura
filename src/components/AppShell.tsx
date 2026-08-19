@@ -321,7 +321,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
             {activeIndex >= 0 && (
               <span
                 aria-hidden
-                className="absolute top-0 bottom-0 rounded-xl bg-accent transition-[inset-inline-start] duration-150 ease-out"
+                className="absolute top-0 bottom-0 rounded-xl bg-accent nav-pill"
                 style={{
                   width: `calc(${100 / NAV.length}% - 0.5rem)`,
                   insetInlineStart: `calc(${(activeIndex * 100) / NAV.length}% + 0.25rem)`,
@@ -343,7 +343,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
                   }`}
                 >
                   <Icon
-                    className={`size-[18px] transition-transform duration-300 ${active ? "scale-110 -translate-y-px" : ""}`}
+                    className={`size-[18px] transition-transform duration-[260ms] ease-[cubic-bezier(0.34,1.35,0.64,1)] ${active ? "scale-110 -translate-y-px" : ""}`}
                     strokeWidth={active ? 2.4 : 1.8}
                   />
                   <span className="text-[10px] font-bold">{t(n.key)}</span>
