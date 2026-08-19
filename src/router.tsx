@@ -3,6 +3,7 @@ import { createRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { routeTree } from "./routeTree.gen";
 import { getCachedAuthState } from "./lib/auth";
+import { getErrorMessage } from "./lib/utils";
 
 const bootedAt = typeof performance !== "undefined" ? performance.now() : 0;
 
@@ -19,7 +20,7 @@ function shouldSuppressErrorToast(error: unknown): boolean {
   const auth = getCachedAuthState();
   if (auth.loading || !auth.userId) return true;
 
-  const msg = error instanceof Error ? error.message : String(error ?? "");
+  const msg = getErrorMessage(error, "");
   if (/JWT|401|Unauthorized|not allowed|permission denied|row-level security|PGRST/i.test(msg)) return true;
 
   return false;
@@ -30,11 +31,12 @@ export const getRouter = () => {
     // شبكات الطلاب بالعراق مو دايماً مستقرة — بدون هذا، أي طلب فاشل كان
     // يترك سكيلتون عالق بصمت بدون أي تفسير للمستخدم (يحس التطبيق "معلّق"
     // أو "مو ثابت"). الحين أي فشل شبكة حقيقي (لمستخدم مسجّل دخول، بعد
-    // التهيئة الأولى) يطلع toast واضح بدل الصمت.
+    // التهيئة الأولى) يطلع toast واضح بدل الصمت — ويتضمّن السبب الفعلي
+    // مو بس رسالة عامة، عشان يصير التشخيص أسهل.
     queryCache: new QueryCache({
       onError: (error) => {
         if (shouldSuppressErrorToast(error)) return;
-        toast.error("صار خطأ بتحميل البيانات", { description: "جرّب تحدّث الصفحة" });
+        toast.error("صار خطأ بتحميل البيانات", { description: getErrorMessage(error) });
       },
     }),
     mutationCache: new MutationCache({
@@ -44,8 +46,7 @@ export const getRouter = () => {
           return;
         }
         if (shouldSuppressErrorToast(error)) return;
-        const msg = error instanceof Error ? error.message : "صار خطأ غير متوقع";
-        toast.error(msg);
+        toast.error(getErrorMessage(error));
       },
     }),
     defaultOptions: {

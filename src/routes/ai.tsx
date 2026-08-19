@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { AppShell } from "@/components/AppShell";
+import { getErrorMessage } from "@/lib/utils";
 import { Send, Sparkles, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -123,7 +124,8 @@ function AIPage() {
         )}
         {error && (
           <div className="bg-destructive/10 text-destructive p-3 rounded-2xl text-sm">
-            تعذّر الاتصال بعبوسي. حاول مرة أخرى.
+            <div>تعذّر الاتصال بعبوسي. حاول مرة أخرى.</div>
+            <div className="text-[10px] opacity-70 mt-1 font-mono" dir="ltr">{getErrorMessage(error)}</div>
           </div>
         )}
         <div ref={endRef} />

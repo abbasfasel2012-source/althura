@@ -3,6 +3,7 @@ import { AppShell, Card } from "@/components/AppShell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchGroups, createGroup, deleteGroup, ar } from "@/lib/data";
 import { useAuth } from "@/lib/auth";
+import { getErrorMessage } from "@/lib/utils";
 import { Users, MessageCircle, Loader2, Plus, Trash2, Lock, Globe } from "lucide-react";
 import { useState } from "react";
 import { SkList } from "@/components/Skeletons";
@@ -130,8 +131,9 @@ function GroupsListPage() {
       )}
 
       {error && (
-        <div className="p-4 bg-destructive/10 text-destructive rounded-2xl text-sm font-medium">
-          حدث خطأ أثناء تحميل الكروبات. تأكد من تسجيل الدخول.
+        <div className="p-4 bg-destructive/10 text-destructive rounded-2xl text-sm font-medium space-y-1">
+          <div>حدث خطأ أثناء تحميل الكروبات. تأكد من تسجيل الدخول.</div>
+          <div className="text-[10px] opacity-70 font-mono font-normal" dir="ltr">{getErrorMessage(error)}</div>
         </div>
       )}
 

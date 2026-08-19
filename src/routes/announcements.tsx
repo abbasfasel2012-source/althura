@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AppShell, Card } from "@/components/AppShell";
 import { fetchAnnouncements, deleteAnnouncement, formatDate } from "@/lib/data";
 import { useAuth } from "@/lib/auth";
+import { getErrorMessage } from "@/lib/utils";
 import { Loader2, Pin, Trash2 } from "lucide-react";
 import { SkList } from "@/components/Skeletons";
 
@@ -48,7 +49,10 @@ function AnnouncementsPage() {
       )}
 
       {error && (
-        <Card className="text-center text-sm text-destructive">تعذّر تحميل التبليغات.</Card>
+        <Card className="text-center text-sm text-destructive space-y-1">
+          <div>تعذّر تحميل التبليغات.</div>
+          <div className="text-[10px] opacity-70 font-mono" dir="ltr">{getErrorMessage(error)}</div>
+        </Card>
       )}
 
       {!isLoading && data && data.length === 0 && (

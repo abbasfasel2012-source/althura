@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, Card } from "@/components/AppShell";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getErrorMessage } from "@/lib/utils";
 import { ar, fetchVideos, createVideo, deleteVideo, youtubeEmbedUrl } from "@/lib/data";
 import { useAuth } from "@/lib/auth";
 import { useState } from "react";
@@ -136,7 +137,7 @@ function AddVideoModal({ onClose, onDone }: { onClose: () => void; onDone: () =>
       });
       onDone();
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "فشل الحفظ");
+      setErr(getErrorMessage(e, "فشل الحفظ"));
     } finally { setBusy(false); }
   };
 

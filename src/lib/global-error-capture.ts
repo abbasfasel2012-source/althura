@@ -8,6 +8,7 @@
 // of errors doesn't spam the screen.
 import { toast } from "sonner";
 import { reportLovableError } from "./lovable-error-reporting";
+import { getErrorMessage } from "./utils";
 
 let started = false;
 let lastToastAt = 0;
@@ -30,14 +31,14 @@ function isBenign(text: string) {
   return BENIGN_PATTERNS.some((re) => re.test(text));
 }
 
-function notifyOnce() {
+function notifyOnce(error?: unknown) {
   // أول ٣ ثواني من التحميل: تخطيط الصفحة لسا يستقر (رسوم/blur/تحريك)،
   // احتمال تحذيرات متصفح عابرة أعلى هنا تحديداً.
   if (typeof performance !== "undefined" && performance.now() - bootedAt < 3000) return;
   const now = Date.now();
   if (now - lastToastAt < TOAST_COOLDOWN_MS) return;
   lastToastAt = now;
-  toast.error("صار خطأ غير متوقع", { description: "جرّب مرة ثانية، ولو تكرر حدّث الصفحة" });
+  toast.error("صار خطأ غير متوقع", { description: getErrorMessage(error, "جرّب مرة ثانية، ولو تكرر حدّث الصفحة") });
 }
 
 export function setupGlobalErrorCapture() {
@@ -46,16 +47,16 @@ export function setupGlobalErrorCapture() {
 
   window.addEventListener("error", (event) => {
     const error = event.error ?? event.message;
-    const text = error instanceof Error ? error.message : String(error ?? "");
+    const text = getErrorMessage(error, "");
     if (isBenign(text)) return;
     reportLovableError(error, { mechanism: "onerror" });
-    notifyOnce();
+    notifyOnce(error);
   });
 
   window.addEventListener("unhandledrejection", (event) => {
-    const text = event.reason instanceof Error ? event.reason.message : String(event.reason ?? "");
+    const text = getErrorMessage(event.reason, "");
     if (isBenign(text)) return;
     reportLovableError(event.reason, { mechanism: "unhandledrejection" });
-    notifyOnce();
+    notifyOnce(event.reason);
   });
 }
