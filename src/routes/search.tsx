@@ -5,7 +5,7 @@ import { AppShell, Card } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchBooks, fetchExams, fetchAnnouncements } from "@/lib/data";
 import { useAuth } from "@/lib/auth";
-import { Search } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/search")({
   head: () => ({
@@ -90,6 +90,8 @@ function SearchPage() {
             ))}
           </div>
         </>
+      ) : (booksQ.isLoading || examsQ.isLoading || annsQ.isLoading || teachersQ.isLoading || homeworkQ.isLoading) ? (
+        <div className="flex justify-center py-10"><Loader2 className="size-5 animate-spin text-primary" /></div>
       ) : results.length === 0 ? (
         <Card className="text-center py-10">
           <p className="text-sm text-muted-foreground">لا توجد نتائج مطابقة.</p>

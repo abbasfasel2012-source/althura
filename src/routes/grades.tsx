@@ -4,6 +4,7 @@ import { AppShell, Card, SectionTitle } from "@/components/AppShell";
 import { useAuth } from "@/lib/auth";
 import { ar, fetchMyGrades } from "@/lib/data";
 import { TrendingUp } from "lucide-react";
+import { SkList } from "@/components/Skeletons";
 
 export const Route = createFileRoute("/grades")({
   head: () => ({
@@ -59,16 +60,21 @@ function GradesPage() {
       <Card className="bg-accent text-accent-foreground mb-5">
         <div className="text-[11px] opacity-70">المعدل العام</div>
         <div className="flex items-end gap-2 mt-1">
-          <div className="text-5xl font-mono font-bold">{list.length ? ar(avg.toFixed(1)) : "—"}</div>
-          {list.length > 0 && <div className="text-sm opacity-80 mb-2">٪</div>}
+          <div className="text-5xl font-mono font-bold">
+            {grades.isLoading ? "…" : list.length ? ar(avg.toFixed(1)) : "—"}
+          </div>
+          {!grades.isLoading && list.length > 0 && <div className="text-sm opacity-80 mb-2">٪</div>}
         </div>
         <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-white/15">
-          <Stat label="عدد المواد" value={ar(list.length)} />
-          <Stat label="أعلى درجة" value={list.length ? ar(Math.max(...list.map(g => Number(g.score)))) : "—"} />
+          <Stat label="عدد المواد" value={grades.isLoading ? "…" : ar(list.length)} />
+          <Stat label="أعلى درجة" value={grades.isLoading ? "…" : list.length ? ar(Math.max(...list.map(g => Number(g.score)))) : "—"} />
         </div>
       </Card>
 
       <SectionTitle eyebrow="حسب المادة" title="تفاصيل الدرجات" />
+      {grades.isLoading ? (
+        <SkList rows={3} />
+      ) : (
       <div className="space-y-2.5">
         {list.length === 0 && (
           <Card className="text-center text-xs text-muted-foreground py-8">
@@ -96,6 +102,7 @@ function GradesPage() {
           </Card>
         ))}
       </div>
+      )}
     </AppShell>
   );
 }
