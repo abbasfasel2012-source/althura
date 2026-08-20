@@ -120,8 +120,23 @@ function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col px-5 py-6">
       <div className="flex items-center gap-3 mb-8 animate-reveal">
-        <div className="size-12 rounded-2xl overflow-hidden shadow-glass shrink-0">
-          <img src="/logo-classroom.jpg" alt="الذرى الذكية" className="size-full object-cover" />
+        <div className="relative size-12 shrink-0">
+          {/* توهج خلفي هادئ خلف الشعار — يعطي إحساس "حيوية" بدون ما
+              يشغل حركة كبيرة أو يلفت النظر بشكل مزعج. */}
+          <div
+            aria-hidden
+            className="absolute -inset-1.5 rounded-3xl bg-primary blur-md"
+            style={{ animation: "logo-glow 4s ease-in-out infinite" }}
+          />
+          <div
+            className="relative size-12 rounded-2xl shadow-glass grid place-items-center text-2xl font-bold text-accent-foreground"
+            style={{
+              background: "linear-gradient(135deg, var(--primary), var(--accent))",
+              animation: "logo-breathe 4s ease-in-out infinite",
+            }}
+          >
+            ذ
+          </div>
         </div>
         <div>
           <div className="text-[11px] tracking-[0.2em] text-primary font-bold uppercase">كربلاء المقدسة</div>
