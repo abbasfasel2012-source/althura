@@ -146,7 +146,7 @@
 /* مؤشر التبويب النشط: انتقال أبطأ شوي وبارتداد خفيف بدل القفزة الفورية
    القديمة، بس يبقى محسوس وواضح بدون ما يصير بطيء أو "معوق". */
 @utility nav-pill {
-  transition: inset-inline-start 380ms var(--ease-spring);
+  transition: inset-inline-start 480ms var(--ease-spring);
 }
 
 @utility ink-watermark {
