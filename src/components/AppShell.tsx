@@ -61,6 +61,16 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
 
   const activeIndex = NAV.findIndex((n) => isActive(location.pathname, n.match));
 
+  // أول فتح للتطبيق: ما فيه "مكان سابق" ينتقل منه المؤشر أصلاً — تشغيل
+  // الانتقال بهذي اللحظة بالذات (المتصفح مشغول أقصى ما يكون بتحليل ورسم
+  // كل شي لأول مرة) يضيف عمل زايد وقت حرج بلا أي فايدة بصرية حقيقية.
+  // نأخّر تفعيل الانتقال لبعد أول رسم بس.
+  const [pillReady, setPillReady] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setPillReady(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
   // Top-level tabs keep their own scroll position (handled by the router);
   // inner pages always start at the top.
   //
@@ -321,7 +331,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
             {activeIndex >= 0 && (
               <span
                 aria-hidden
-                className="absolute top-0 bottom-0 rounded-xl bg-accent nav-pill"
+                className={`absolute top-0 bottom-0 rounded-xl bg-accent ${pillReady ? "nav-pill" : ""}`}
                 style={{
                   width: `calc(${100 / NAV.length}% - 0.5rem)`,
                   insetInlineStart: `calc(${(activeIndex * 100) / NAV.length}% + 0.25rem)`,
@@ -343,7 +353,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
                   }`}
                 >
                   <Icon
-                    className={`size-[18px] transition-transform duration-[260ms] ease-[cubic-bezier(0.34,1.35,0.64,1)] ${active ? "scale-110 -translate-y-px" : ""}`}
+                    className={`size-[18px] ${pillReady ? "transition-transform duration-[260ms] ease-[cubic-bezier(0.34,1.35,0.64,1)]" : ""} ${active ? "scale-110 -translate-y-px" : ""}`}
                     strokeWidth={active ? 2.4 : 1.8}
                   />
                   <span className="text-[10px] font-bold">{t(n.key)}</span>
