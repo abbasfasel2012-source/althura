@@ -353,7 +353,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
                   }`}
                 >
                   <Icon
-                    className={`size-[18px] ${pillReady ? "transition-transform duration-[380ms] ease-[cubic-bezier(0.34,1.35,0.64,1)]" : ""} ${active ? "scale-110 -translate-y-px" : ""}`}
+                    className={`size-[18px] ${pillReady ? "transition-transform duration-[480ms] ease-[cubic-bezier(0.34,1.35,0.64,1)]" : ""} ${active ? "scale-110 -translate-y-px" : ""}`}
                     strokeWidth={active ? 2.4 : 1.8}
                   />
                   <span className="text-[10px] font-bold">{t(n.key)}</span>
