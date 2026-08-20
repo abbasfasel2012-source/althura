@@ -80,9 +80,9 @@ function ProfilePage() {
 
         {role === "student" && (
           <div className="grid grid-cols-3 gap-3 mt-5 pt-5 border-t border-border">
-            <S label="المعدل" value={avg !== null ? ar(avg.toFixed(0)) + "٪" : "—"} />
-            <S label="المواد" value={ar(grades.data?.length ?? 0)} />
-            <S label="الحالة" value={avg !== null && avg >= 50 ? "ناجح" : avg !== null ? "متعثر" : "—"} />
+            <S label="المعدل" value={grades.isLoading ? "…" : avg !== null ? ar(avg.toFixed(0)) + "٪" : "—"} />
+            <S label="المواد" value={grades.isLoading ? "…" : ar(grades.data?.length ?? 0)} />
+            <S label="الحالة" value={grades.isLoading ? "…" : avg !== null && avg >= 50 ? "ناجح" : avg !== null ? "متعثر" : "—"} />
           </div>
         )}
       </Card>
