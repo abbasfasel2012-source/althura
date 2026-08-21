@@ -330,8 +330,9 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
           <div className="relative flex items-stretch justify-between">
             {activeIndex >= 0 && (
               <span
+                key={activeIndex}
                 aria-hidden
-                className={`absolute top-0 bottom-0 rounded-xl bg-accent ${pillReady ? "nav-pill" : ""}`}
+                className={`absolute top-0 bottom-0 rounded-xl bg-accent ${pillReady ? "nav-pill-teleport" : ""}`}
                 style={{
                   width: `calc(${100 / NAV.length}% - 0.5rem)`,
                   insetInlineStart: `calc(${(activeIndex * 100) / NAV.length}% + 0.25rem)`,
