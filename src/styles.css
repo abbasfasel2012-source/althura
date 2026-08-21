@@ -145,8 +145,16 @@
 
 /* مؤشر التبويب النشط: انتقال أبطأ شوي وبارتداد خفيف بدل القفزة الفورية
    القديمة، بس يبقى محسوس وواضح بدون ما يصير بطيء أو "معوق". */
-@utility nav-pill {
-  transition: inset-inline-start 1000ms var(--ease-spring);
+/* "تيليبورت": المؤشر ينتقل فوراً لمكانه الجديد بدون أي انزلاق أو عبور
+   عبر الشريط — يستخدم مع key={activeIndex} بالمكوّن (يخلي React يعيد
+   إنشاء العنصر بمكانه الجديد مباشرة، مو ينقله). الحركة هنا مجرد ظهور
+   خفيف (تلاشي + تكبير بسيط) بمكانه النهائي بس، مو انتقال موضع. */
+@utility nav-pill-teleport {
+  animation: nav-pill-appear 1000ms var(--ease-spring) both;
+}
+@keyframes nav-pill-appear {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 @utility ink-watermark {
