@@ -146,7 +146,7 @@
 /* مؤشر التبويب النشط: انتقال أبطأ شوي وبارتداد خفيف بدل القفزة الفورية
    القديمة، بس يبقى محسوس وواضح بدون ما يصير بطيء أو "معوق". */
 @utility nav-pill {
-  transition: inset-inline-start 480ms var(--ease-spring);
+  transition: inset-inline-start 1000ms var(--ease-spring);
 }
 
 @utility ink-watermark {
@@ -449,9 +449,12 @@ button:active, a:active, [role="button"]:active {
    (تراكب ضوئي إضافي) — مع عناصر الزجاج الشفافة (glass/backdrop-blur) بهذا
    الموقع، هذا يعطي "توهج/تشويش" غير مريح لحظة الانتقال (يوصف كإحساس مزعج
    يتكرر كل تنقل، حتى لو أول مرة يمر بدون ملاحظة). الحل: تلاشي opacity بسيط
-   وواضح بدل التراكب الضوئي الافتراضي. */
+   وواضح بدل التراكب الضوئي الافتراضي.
+
+   المدة (1 ثانية) قرار متعمّد من عباس: انتقال أبطأ يحس "مدروس ومتعمّد"
+   بدل خفيف/فوري، ويغطّي على أي عيوب بصرية صغيرة بدل ما تبرز. */
 ::view-transition-group(root) {
-  animation-duration: 140ms;
+  animation-duration: 1000ms;
 }
 ::view-transition-old(root),
 ::view-transition-new(root) {
@@ -460,11 +463,11 @@ button:active, a:active, [role="button"]:active {
   isolation: isolate;
 }
 ::view-transition-old(root) {
-  animation: vt-fade-out 140ms ease-out both;
+  animation: vt-fade-out 1000ms ease-out both;
   z-index: 0;
 }
 ::view-transition-new(root) {
-  animation: vt-fade-in 140ms ease-out both;
+  animation: vt-fade-in 1000ms ease-out both;
   z-index: 1;
 }
 @keyframes vt-fade-in {
