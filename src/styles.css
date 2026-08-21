@@ -150,7 +150,7 @@
    إنشاء العنصر بمكانه الجديد مباشرة، مو ينقله). الحركة هنا مجرد ظهور
    خفيف (تلاشي + تكبير بسيط) بمكانه النهائي بس، مو انتقال موضع. */
 @utility nav-pill-teleport {
-  animation: nav-pill-appear 1000ms var(--ease-spring) both;
+  animation: nav-pill-appear 200ms var(--ease-spring) both;
 }
 @keyframes nav-pill-appear {
   from { opacity: 0; transform: scale(0.85); }
@@ -459,10 +459,10 @@ button:active, a:active, [role="button"]:active {
    يتكرر كل تنقل، حتى لو أول مرة يمر بدون ملاحظة). الحل: تلاشي opacity بسيط
    وواضح بدل التراكب الضوئي الافتراضي.
 
-   المدة (1 ثانية) قرار متعمّد من عباس: انتقال أبطأ يحس "مدروس ومتعمّد"
-   بدل خفيف/فوري، ويغطّي على أي عيوب بصرية صغيرة بدل ما تبرز. */
+   المدة (200ms) اختارها عباس بنفسه بعد تجربة عدة قيم (كانت 140ms، ثم
+   1000ms، والآن 200ms — أسرع من عرض "بطيء" السابق). */
 ::view-transition-group(root) {
-  animation-duration: 1000ms;
+  animation-duration: 200ms;
 }
 ::view-transition-old(root),
 ::view-transition-new(root) {
@@ -471,11 +471,11 @@ button:active, a:active, [role="button"]:active {
   isolation: isolate;
 }
 ::view-transition-old(root) {
-  animation: vt-fade-out 1000ms ease-out both;
+  animation: vt-fade-out 200ms ease-out both;
   z-index: 0;
 }
 ::view-transition-new(root) {
-  animation: vt-fade-in 1000ms ease-out both;
+  animation: vt-fade-in 200ms ease-out both;
   z-index: 1;
 }
 @keyframes vt-fade-in {
