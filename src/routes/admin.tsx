@@ -933,8 +933,8 @@ function TabSchools() {
       </div>
 
       {showForm && (
-        <div className="fixed inset-0 z-[100] bg-foreground/40 flex items-end sm:items-center justify-center p-3" onClick={() => setShowForm(false)}>
-          <div className="glass-strong rounded-3xl p-5 w-full max-w-md max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm grid place-items-center p-4 animate-in fade-in duration-200" onClick={() => setShowForm(false)}>
+          <div className="glass-strong rounded-3xl p-5 w-full max-w-md max-h-[85vh] overflow-y-auto shadow-glass" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <div className="font-bold text-base">{editing ? "تعديل مدرسة" : "إضافة مدرسة"}</div>
               <button onClick={() => setShowForm(false)} className="size-8 grid place-items-center rounded-lg text-muted-foreground">
