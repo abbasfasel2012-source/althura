@@ -8,14 +8,15 @@ import {
   fetchPendingRegistrations, approveRegistration, rejectRegistration, deleteRegistration,
   fetchWeekSchedule, fetchDayPeriods, upsertPeriod, deletePeriod, setDayHoliday,
   fetchAdmins, setAdminLabel, deleteUser,
-  type PendingRegistration,
+  fetchSchools, createSchool, updateSchool, fetchManagerCandidates, uploadSchoolLogo, fetchSchoolLogoUrl,
+  type PendingRegistration, type School, type ManagerCandidate,
 } from "@/lib/data";
 import { useAuth, signOut } from "@/lib/auth";
 import {
   BookPlus, CalendarPlus, Check, ChevronDown, GraduationCap,
   Loader2, LogOut, Megaphone, Newspaper, Palmtree, Pin,
   Plus, Shield, Trash2, UserCheck, UserX, Users, X, Tag,
-  CalendarDays,
+  CalendarDays, School as SchoolIcon, Pencil, Image as ImageIcon,
 } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
@@ -33,10 +34,10 @@ export const Route = createFileRoute("/admin")({
 });
 
 // ========== TABS ==========
-type AdminTab = "overview" | "requests" | "schedule" | "students" | "content" | "admins" | "tools";
+type AdminTab = "overview" | "requests" | "schedule" | "students" | "content" | "admins" | "tools" | "schools";
 
 function AdminPage() {
-  const { isOwner, loading } = useAuth();
+  const { isOwner, isSuperOwner, loading } = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState<AdminTab>("overview");
 
@@ -62,6 +63,7 @@ function AdminPage() {
     { id: "content",   label: "المحتوى" },
     { id: "admins",    label: "الإداريون" },
     { id: "tools",     label: "أدوات المالك" },
+    ...(isSuperOwner ? [{ id: "schools" as AdminTab, label: "المدارس" }] : []),
   ];
 
   return (
@@ -106,6 +108,7 @@ function AdminPage() {
       {tab === "content"   && <TabContent />}
       {tab === "admins"    && <TabAdmins />}
       {tab === "tools"     && <TabTools />}
+      {tab === "schools"   && isSuperOwner && <TabSchools />}
     </AppShell>
   );
 }
@@ -817,6 +820,196 @@ function TabAdmins() {
         ))}
       </div>
     </>
+  );
+}
+
+// ========== SCHOOLS (super owner only) ==========
+const EMPTY_SCHOOL_FORM = {
+  code: "", name: "", subtitle: "", governorate: "", location: "",
+  contact_numbers: "", admin_user_id: "",
+};
+
+function TabSchools() {
+  const qc = useQueryClient();
+  const schoolsQ = useQuery({ queryKey: ["schools-admin"], queryFn: fetchSchools });
+  const managersQ = useQuery({ queryKey: ["manager-candidates"], queryFn: fetchManagerCandidates });
+  const [showForm, setShowForm] = useState(false);
+  const [editing, setEditing] = useState<School | null>(null);
+  const [form, setForm] = useState(EMPTY_SCHOOL_FORM);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  const managers: ManagerCandidate[] = managersQ.data ?? [];
+
+  function openCreate() {
+    setEditing(null);
+    setForm(EMPTY_SCHOOL_FORM);
+    setLogoFile(null);
+    setErr("");
+    setShowForm(true);
+  }
+
+  function openEdit(s: School) {
+    setEditing(s);
+    setForm({
+      code: s.code, name: s.name, subtitle: s.subtitle, governorate: s.governorate,
+      location: s.location ?? "", contact_numbers: (s.contact_numbers ?? []).join("، "),
+      admin_user_id: s.admin_user_id ?? "",
+    });
+    setLogoFile(null);
+    setErr("");
+    setShowForm(true);
+  }
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setErr("");
+    if (!/^\d{4}$/.test(form.code)) { setErr("رمز المدرسة لازم يكون ٤ أرقام بالضبط"); return; }
+    setBusy(true);
+    try {
+      let logo_url: string | undefined;
+      if (logoFile) logo_url = await uploadSchoolLogo(logoFile);
+
+      const payload = {
+        code: form.code,
+        name: form.name,
+        subtitle: form.subtitle,
+        governorate: form.governorate,
+        location: form.location || undefined,
+        contact_numbers: form.contact_numbers.split(/[،,]/).map((s) => s.trim()).filter(Boolean),
+        admin_user_id: form.admin_user_id || undefined,
+        ...(logo_url ? { logo_url } : {}),
+      };
+
+      if (editing) {
+        await updateSchool(editing.id, payload as never);
+      } else {
+        await createSchool(payload as never);
+      }
+      qc.invalidateQueries({ queryKey: ["schools-admin"] });
+      setShowForm(false);
+    } catch (e: any) {
+      setErr(e?.message?.includes("duplicate") ? "رمز المدرسة مستخدم مسبقاً" : (e?.message || "صار خطأ"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (schoolsQ.isLoading) return <Spinner />;
+
+  return (
+    <>
+      <SectionTitle eyebrow="المدارس" title="إدارة المدارس" />
+      <button
+        onClick={openCreate}
+        className="w-full mb-4 py-3 rounded-xl bg-accent text-accent-foreground font-bold text-sm flex items-center justify-center gap-2"
+      >
+        <Plus className="size-4" /> إضافة مدرسة جديدة
+      </button>
+
+      <div className="space-y-3">
+        {(schoolsQ.data ?? []).map((s) => (
+          <Card key={s.id} className="!p-4">
+            <div className="flex items-center gap-3">
+              <div className="size-11 rounded-xl bg-accent/10 text-accent grid place-items-center shrink-0">
+                <SchoolIcon className="size-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-bold text-sm truncate">{s.name}</div>
+                <div className="text-[10px] text-muted-foreground truncate mt-0.5">
+                  رمز {ar(s.code)} · {s.governorate || "—"}
+                </div>
+              </div>
+              <button
+                onClick={() => openEdit(s)}
+                className="size-9 grid place-items-center rounded-xl bg-primary/10 text-primary shrink-0"
+              >
+                <Pencil className="size-3.5" />
+              </button>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      {showForm && (
+        <div className="fixed inset-0 z-[100] bg-foreground/40 flex items-end sm:items-center justify-center p-3" onClick={() => setShowForm(false)}>
+          <div className="glass-strong rounded-3xl p-5 w-full max-w-md max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="font-bold text-base">{editing ? "تعديل مدرسة" : "إضافة مدرسة"}</div>
+              <button onClick={() => setShowForm(false)} className="size-8 grid place-items-center rounded-lg text-muted-foreground">
+                <X className="size-4" />
+              </button>
+            </div>
+            <form onSubmit={submit} className="space-y-3">
+              <FormField label="اسم المدرسة">
+                <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  placeholder="مثال: ثانوية النور للمتميزين"
+                  className="w-full px-3 py-2.5 rounded-xl bg-surface-2 border border-border text-sm text-foreground" />
+              </FormField>
+              <FormField label="رمز المدرسة (٤ أرقام)">
+                <input required value={form.code} maxLength={4} inputMode="numeric"
+                  onChange={(e) => setForm({ ...form, code: e.target.value.replace(/\D/g, "").slice(0, 4) })}
+                  placeholder="0002"
+                  className="w-full px-3 py-2.5 rounded-xl bg-surface-2 border border-border text-sm font-mono text-foreground" />
+              </FormField>
+              <FormField label="المحافظة">
+                <input required value={form.governorate} onChange={(e) => setForm({ ...form, governorate: e.target.value })}
+                  placeholder="مثال: بابل"
+                  className="w-full px-3 py-2.5 rounded-xl bg-surface-2 border border-border text-sm text-foreground" />
+              </FormField>
+              <FormField label="الموقع (اختياري)">
+                <input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })}
+                  placeholder="مثال: حي الجامعة"
+                  className="w-full px-3 py-2.5 rounded-xl bg-surface-2 border border-border text-sm text-foreground" />
+              </FormField>
+              <FormField label="النص الفرعي بصفحة الدخول">
+                <input value={form.subtitle} onChange={(e) => setForm({ ...form, subtitle: e.target.value })}
+                  placeholder="مثال: تم إعدادها بواسطة..."
+                  className="w-full px-3 py-2.5 rounded-xl bg-surface-2 border border-border text-sm text-foreground" />
+              </FormField>
+              <FormField label="أرقام التواصل (افصل بينها بفاصلة)">
+                <input value={form.contact_numbers} onChange={(e) => setForm({ ...form, contact_numbers: e.target.value })}
+                  placeholder="07701234567، 07709876543"
+                  className="w-full px-3 py-2.5 rounded-xl bg-surface-2 border border-border text-sm font-mono text-foreground" dir="ltr" />
+              </FormField>
+              <FormField label="مدير المدرسة">
+                <select value={form.admin_user_id} onChange={(e) => setForm({ ...form, admin_user_id: e.target.value })}
+                  className="w-full px-3 py-2.5 rounded-xl bg-surface-2 border border-border text-sm text-foreground">
+                  <option value="">— بدون —</option>
+                  {managers.map((m) => (
+                    <option key={m.id} value={m.id}>{m.full_name} {m.email ? `(${m.email})` : ""}</option>
+                  ))}
+                </select>
+              </FormField>
+              <FormField label="شعار المدرسة (اختياري)">
+                <label className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-surface-2 border border-border text-sm text-muted-foreground cursor-pointer">
+                  <ImageIcon className="size-4 shrink-0" />
+                  {logoFile ? logoFile.name : "اختر صورة"}
+                  <input type="file" accept="image/*" className="hidden"
+                    onChange={(e) => setLogoFile(e.target.files?.[0] ?? null)} />
+                </label>
+              </FormField>
+              {err && <div className="text-[11px] text-destructive bg-destructive/10 rounded-xl px-3 py-2 text-center font-bold">{err}</div>}
+              <button type="submit" disabled={busy}
+                className="w-full py-3 rounded-xl bg-accent text-accent-foreground font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60 mt-2">
+                {busy && <Loader2 className="size-4 animate-spin" />}
+                {editing ? "حفظ التعديلات" : "إضافة المدرسة"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+function FormField({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="text-[11px] font-bold text-muted-foreground mb-1.5 block">{label}</label>
+      {children}
+    </div>
   );
 }
 

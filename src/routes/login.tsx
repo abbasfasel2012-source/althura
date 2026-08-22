@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { setUser, GRADE_NAMES, type Grade, type Section } from "@/lib/store";
 import { fetchSchoolByCode, type SchoolLookup } from "@/lib/data";
 import {
-  OWNER_EMAIL,
   signInOwner,
   signInStudent,
   signUpOwner,
@@ -42,7 +41,7 @@ function LoginPage() {
   const [grade, setGrade] = useState<Grade>("6");
   const [section, setSection] = useState<Section>("أ");
 
-  const [email, setEmail] = useState(OWNER_EMAIL);
+  const [email, setEmail] = useState("");
   const [ownerPass, setOwnerPass] = useState("");
 
   const [busy, setBusy] = useState(false);
