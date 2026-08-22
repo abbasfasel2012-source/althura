@@ -24,6 +24,8 @@ export interface AuthState {
   } | null;
   role: "admin" | "student" | null;
   isOwner: boolean;
+  isSuperOwner: boolean;
+  schoolId: string | null;
 }
 
 const initial: AuthState = {
@@ -33,6 +35,8 @@ const initial: AuthState = {
   profile: null,
   role: null,
   isOwner: false,
+  isSuperOwner: false,
+  schoolId: null,
 };
 
 let cached: AuthState = initial;
@@ -66,7 +70,7 @@ async function loadProfileAndRole(userId: string, email: string | null, force = 
     const [{ data: profile }, { data: roles }] = await Promise.all([
       supabase
         .from("profiles")
-        .select("full_name, student_id, grade, section, admin_label")
+        .select("full_name, student_id, grade, section, admin_label, is_super_owner, school_id")
         .eq("id", userId)
         .maybeSingle(),
       supabase.from("user_roles").select("role").eq("user_id", userId),
@@ -85,6 +89,8 @@ async function loadProfileAndRole(userId: string, email: string | null, force = 
       profile: profile ?? null,
       role,
       isOwner: role === "admin",
+      isSuperOwner: !!(profile as { is_super_owner?: boolean } | null)?.is_super_owner,
+      schoolId: (profile as { school_id?: string } | null)?.school_id ?? null,
     };
 
     if (profile) {

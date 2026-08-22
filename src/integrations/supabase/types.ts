@@ -526,8 +526,10 @@ export type Database = {
           full_name: string
           grade: string
           id: string
+          is_super_owner: boolean
           is_teacher: boolean
           phone: string | null
+          school_id: string
           section: string | null
           student_id: string | null
           teaching_grade: string | null
@@ -543,8 +545,10 @@ export type Database = {
           full_name?: string
           grade?: string
           id: string
+          is_super_owner?: boolean
           is_teacher?: boolean
           phone?: string | null
+          school_id?: string
           section?: string | null
           student_id?: string | null
           teaching_grade?: string | null
@@ -560,8 +564,10 @@ export type Database = {
           full_name?: string
           grade?: string
           id?: string
+          is_super_owner?: boolean
           is_teacher?: boolean
           phone?: string | null
+          school_id?: string
           section?: string | null
           student_id?: string | null
           teaching_grade?: string | null
@@ -569,7 +575,15 @@ export type Database = {
           teaching_subject?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quiz_answers: {
         Row: {

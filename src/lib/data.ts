@@ -324,6 +324,84 @@ export async function fetchSchoolByCode(code: string): Promise<SchoolLookup | nu
   return data as SchoolLookup | null;
 }
 
+export type School = {
+  id: string;
+  code: string;
+  name: string;
+  subtitle: string;
+  governorate: string;
+  location: string | null;
+  logo_url: string | null;
+  contact_numbers: string[];
+  admin_user_id: string | null;
+  is_active: boolean;
+  created_at: string;
+};
+
+export async function fetchSchools(): Promise<School[]> {
+  const { data, error } = await supabase.from("schools").select("*").order("created_at");
+  if (error) throw error;
+  return (data ?? []) as School[];
+}
+
+export async function fetchSchoolLogoUrl(path: string): Promise<string | null> {
+  const { data, error } = await supabase.storage.from("site-images").createSignedUrl(path, 60 * 60 * 24);
+  if (error) return null;
+  return data.signedUrl;
+}
+
+export async function uploadSchoolLogo(file: File): Promise<string> {
+  const ext = file.name.split(".").pop() || "jpg";
+  const path = `schools/${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage.from("site-images").upload(path, file);
+  if (error) throw error;
+  return path;
+}
+
+export async function createSchool(input: {
+  code: string;
+  name: string;
+  subtitle: string;
+  governorate: string;
+  location?: string;
+  logo_url?: string;
+  contact_numbers: string[];
+  admin_user_id?: string;
+}): Promise<School> {
+  const { data, error } = await supabase.from("schools").insert(input).select("*").single();
+  if (error) throw error;
+  return data as School;
+}
+
+export async function updateSchool(id: string, patch: Partial<{
+  code: string;
+  name: string;
+  subtitle: string;
+  governorate: string;
+  location: string;
+  logo_url: string;
+  contact_numbers: string[];
+  admin_user_id: string | null;
+  is_active: boolean;
+}>): Promise<void> {
+  const { error } = await supabase.from("schools").update(patch).eq("id", id);
+  if (error) throw error;
+}
+
+export type ManagerCandidate = { id: string; full_name: string; email: string | null };
+
+// حسابات عندها دور admin — تُستخدم بقائمة "اختيار مدير" عند إضافة/تعديل
+// مدرسة. لاحقاً (مرحلة رفع المديرين) هذي القائمة تتوسع تلقائياً.
+export async function fetchManagerCandidates(): Promise<ManagerCandidate[]> {
+  const { data: roles, error: rErr } = await supabase.from("user_roles").select("user_id").eq("role", "admin");
+  if (rErr) throw rErr;
+  const ids = (roles ?? []).map((r) => r.user_id);
+  if (ids.length === 0) return [];
+  const { data, error } = await supabase.from("profiles").select("id, full_name, email").in("id", ids);
+  if (error) throw error;
+  return (data ?? []) as ManagerCandidate[];
+}
+
 export async function fetchMessages(groupId: string): Promise<Message[]> {
   const { data, error } = await supabase
     .from("messages")
