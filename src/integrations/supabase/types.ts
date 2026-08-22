@@ -787,6 +787,59 @@ export type Database = {
           },
         ]
       }
+      schools: {
+        Row: {
+          admin_user_id: string | null
+          code: string
+          contact_numbers: string[]
+          created_at: string
+          governorate: string
+          id: string
+          is_active: boolean
+          location: string | null
+          logo_url: string | null
+          name: string
+          subtitle: string
+          updated_at: string
+        }
+        Insert: {
+          admin_user_id?: string | null
+          code: string
+          contact_numbers?: string[]
+          created_at?: string
+          governorate?: string
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          logo_url?: string | null
+          name: string
+          subtitle?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_user_id?: string | null
+          code?: string
+          contact_numbers?: string[]
+          created_at?: string
+          governorate?: string
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          logo_url?: string | null
+          name?: string
+          subtitle?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schools_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_images: {
         Row: {
           id: string

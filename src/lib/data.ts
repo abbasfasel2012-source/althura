@@ -311,6 +311,19 @@ export async function fetchHomeSummary(): Promise<HomeSummary> {
 }
 
 
+export type SchoolLookup = { id: string; code: string; name: string; logo_url: string | null };
+
+export async function fetchSchoolByCode(code: string): Promise<SchoolLookup | null> {
+  const { data, error } = await supabase
+    .from("schools")
+    .select("id, code, name, logo_url")
+    .eq("code", code)
+    .eq("is_active", true)
+    .maybeSingle();
+  if (error) throw error;
+  return data as SchoolLookup | null;
+}
+
 export async function fetchMessages(groupId: string): Promise<Message[]> {
   const { data, error } = await supabase
     .from("messages")
