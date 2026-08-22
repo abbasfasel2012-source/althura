@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { setUser, GRADE_NAMES, type Grade, type Section } from "@/lib/store";
+import { fetchSchoolByCode, type SchoolLookup } from "@/lib/data";
 import {
   OWNER_EMAIL,
   signInOwner,
@@ -11,7 +12,7 @@ import {
   waitForAuthReady,
 } from "@/lib/auth";
 
-import { CheckCircle, Clock, Loader2, Shield, XCircle } from "lucide-react";
+import { CheckCircle, Clock, Loader2, Shield, XCircle, School as SchoolIcon } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -48,6 +49,39 @@ function LoginPage() {
   const [err, setErr] = useState("");
   const [success, setSuccess] = useState("");
   const [statusResult, setStatusResult] = useState<{ status: string; rejection_reason?: string | null; created_at?: string } | null>(null);
+
+  // ===== خطوة رمز المدرسة =====
+  const [schoolCode, setSchoolCode] = useState("");
+  const [schoolStatus, setSchoolStatus] = useState<"idle" | "checking" | "found" | "not-found">("idle");
+  const [foundSchool, setFoundSchool] = useState<SchoolLookup | null>(null);
+  const [schoolConfirmed, setSchoolConfirmed] = useState(false);
+
+  useEffect(() => {
+    const code = schoolCode.trim();
+    if (code.length !== 4) {
+      setSchoolStatus("idle");
+      setFoundSchool(null);
+      return;
+    }
+    setSchoolStatus("checking");
+    let cancelled = false;
+    const id = setTimeout(async () => {
+      try {
+        const school = await fetchSchoolByCode(code);
+        if (cancelled) return;
+        if (school) {
+          setFoundSchool(school);
+          setSchoolStatus("found");
+        } else {
+          setFoundSchool(null);
+          setSchoolStatus("not-found");
+        }
+      } catch {
+        if (!cancelled) setSchoolStatus("not-found");
+      }
+    }, 350);
+    return () => { cancelled = true; clearTimeout(id); };
+  }, [schoolCode]);
 
   async function submitStudent(e: React.FormEvent) {
     e.preventDefault();
@@ -136,6 +170,51 @@ function LoginPage() {
           <span className="text-accent">للتميّز الدراسي</span>
         </h1>
       </div>
+
+      {/* ===== رمز المدرسة — خطوة أولى قبل أي تسجيل دخول ===== */}
+      {!schoolConfirmed ? (
+        <div className="mt-7 glass-strong rounded-3xl p-5 shadow-soft animate-reveal [animation-delay:50ms]">
+          <div className="text-center mb-4">
+            <SchoolIcon className="size-8 text-primary mx-auto mb-2" />
+            <div className="text-base font-bold">رمز المدرسة</div>
+            <p className="text-[11px] text-muted-foreground mt-1">أدخل رمز مدرستك المكوّن من ٤ أرقام للمتابعة.</p>
+          </div>
+          <input
+            value={schoolCode}
+            onChange={(e) => setSchoolCode(e.target.value.replace(/\D/g, "").slice(0, 4))}
+            inputMode="numeric"
+            maxLength={4}
+            placeholder="0000"
+            autoFocus
+            className="w-full text-center tracking-[0.5em] text-2xl font-mono px-4 py-3.5 rounded-xl bg-surface-2 border border-border text-foreground"
+          />
+          <div className="min-h-[2.5rem] mt-2 text-center">
+            {schoolStatus === "checking" && (
+              <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+                <Loader2 className="size-3.5 animate-spin" /> جاري التحقق…
+              </div>
+            )}
+            {schoolStatus === "found" && foundSchool && (
+              <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-primary">
+                <CheckCircle className="size-4" /> {foundSchool.name}
+              </div>
+            )}
+            {schoolStatus === "not-found" && (
+              <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-destructive">
+                <XCircle className="size-4" /> لا توجد مدرسة بهذا الرمز
+              </div>
+            )}
+          </div>
+          <button
+            onClick={() => setSchoolConfirmed(true)}
+            disabled={schoolStatus !== "found"}
+            className="w-full py-3 rounded-xl bg-accent text-accent-foreground font-bold text-sm disabled:opacity-40 mt-2"
+          >
+            متابعة
+          </button>
+        </div>
+      ) : (
+      <>
 
       {/* Tabs */}
       <div className="mt-7 glass-strong rounded-2xl p-1.5 grid grid-cols-3 gap-1 animate-reveal [animation-delay:50ms]">
@@ -405,6 +484,8 @@ function LoginPage() {
           </>
         )}
       </div>
+      </>
+      )}
 
       <div className="mt-auto pt-8 text-center text-[11px] text-muted-foreground">
         تم إعداد المنصة بحب • كربلاء المقدسة
