@@ -532,6 +532,7 @@ export type Database = {
           password_hash: string
           rejection_reason: string | null
           reviewed_at: string | null
+          school_id: string | null
           section: string | null
           status: string
           student_id: string
@@ -544,6 +545,7 @@ export type Database = {
           password_hash: string
           rejection_reason?: string | null
           reviewed_at?: string | null
+          school_id?: string | null
           section?: string | null
           status?: string
           student_id: string
@@ -556,11 +558,20 @@ export type Database = {
           password_hash?: string
           rejection_reason?: string | null
           reviewed_at?: string | null
+          school_id?: string | null
           section?: string | null
           status?: string
           student_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "pending_registrations_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {

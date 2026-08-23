@@ -62,6 +62,7 @@ export const approvePendingRegistration = createServerFn({ method: "POST" })
         student_id: reg.student_id,
         grade: reg.grade,
         section: reg.section,
+        school_id: reg.school_id,
       },
     });
     if (createErr && !/already registered|already exists/i.test(createErr.message ?? "")) {
