@@ -194,6 +194,7 @@ export async function requestStudentRegistration(args: {
   fullName: string;
   grade: string;
   section?: string;
+  schoolId: string;
 }) {
   // نتحقق أولاً إن في طلب قديم لنفس الرقم
   const { data: existing } = await supabase
@@ -215,6 +216,7 @@ export async function requestStudentRegistration(args: {
     grade: args.grade,
     section: args.section ?? null,
     password_hash: args.password, // في production يجب تشفيره
+    school_id: args.schoolId,
   });
   if (error) throw error;
 }
