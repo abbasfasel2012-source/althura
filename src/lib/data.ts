@@ -402,6 +402,38 @@ export async function fetchManagerCandidates(): Promise<ManagerCandidate[]> {
   return (data ?? []) as ManagerCandidate[];
 }
 
+export type ManagerInvite = {
+  id: string;
+  email: string;
+  full_name: string | null;
+  school_id: string | null;
+  used_at: string | null;
+  created_at: string;
+};
+
+export async function fetchManagerInvites(): Promise<ManagerInvite[]> {
+  const { data, error } = await supabase.from("manager_invites").select("*").order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as ManagerInvite[];
+}
+
+export async function createManagerInvite(input: { email: string; full_name?: string; school_id?: string }): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  const { error } = await supabase.from("manager_invites").insert({
+    email: input.email.trim().toLowerCase(),
+    full_name: input.full_name || null,
+    school_id: input.school_id || null,
+    invited_by: user?.id,
+  });
+  if (error) throw error;
+}
+
+export async function deleteManagerInvite(id: string): Promise<void> {
+  const { error } = await supabase.from("manager_invites").delete().eq("id", id);
+  if (error) throw error;
+}
+
+
 export async function fetchMessages(groupId: string): Promise<Message[]> {
   const { data, error } = await supabase
     .from("messages")

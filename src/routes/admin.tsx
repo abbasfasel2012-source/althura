@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { AppShell, Card, SectionTitle } from "@/components/AppShell";
 import {
@@ -9,7 +9,8 @@ import {
   fetchWeekSchedule, fetchDayPeriods, upsertPeriod, deletePeriod, setDayHoliday,
   fetchAdmins, setAdminLabel, deleteUser,
   fetchSchools, createSchool, updateSchool, fetchManagerCandidates, uploadSchoolLogo, fetchSchoolLogoUrl,
-  type PendingRegistration, type School, type ManagerCandidate,
+  fetchManagerInvites, createManagerInvite, deleteManagerInvite,
+  type PendingRegistration, type School, type ManagerCandidate, type ManagerInvite,
 } from "@/lib/data";
 import { useAuth, signOut } from "@/lib/auth";
 import {
@@ -833,6 +834,34 @@ function TabSchools() {
   const qc = useQueryClient();
   const schoolsQ = useQuery({ queryKey: ["schools-admin"], queryFn: fetchSchools });
   const managersQ = useQuery({ queryKey: ["manager-candidates"], queryFn: fetchManagerCandidates });
+  const invitesQ = useQuery({ queryKey: ["manager-invites"], queryFn: fetchManagerInvites });
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteName, setInviteName] = useState("");
+  const [inviteSchool, setInviteSchool] = useState("");
+  const [inviteBusy, setInviteBusy] = useState(false);
+  const [inviteErr, setInviteErr] = useState("");
+  const deleteInviteMut = useMutation({
+    mutationFn: (id: string) => deleteManagerInvite(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["manager-invites"] }),
+  });
+
+  async function submitInvite(e: React.FormEvent) {
+    e.preventDefault();
+    setInviteErr("");
+    setInviteBusy(true);
+    try {
+      await createManagerInvite({ email: inviteEmail, full_name: inviteName || undefined, school_id: inviteSchool || undefined });
+      qc.invalidateQueries({ queryKey: ["manager-invites"] });
+      setInviteEmail("");
+      setInviteName("");
+      setInviteSchool("");
+    } catch (e: any) {
+      setInviteErr(e?.message?.includes("duplicate") ? "هذا الإيميل مدعو مسبقاً" : (e?.message || "صار خطأ"));
+    } finally {
+      setInviteBusy(false);
+    }
+  }
+
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<School | null>(null);
   const [form, setForm] = useState(EMPTY_SCHOOL_FORM);
@@ -931,6 +960,63 @@ function TabSchools() {
           </Card>
         ))}
       </div>
+
+      <SectionTitle eyebrow="المديرون" title="دعوة مدير جديد" />
+      <div className="text-[11px] text-muted-foreground mb-4 glass rounded-2xl px-4 py-3 leading-relaxed">
+        أدخل إيميل المدير الجديد — لما يسجّل حساب بنفس الإيميل من تبويب "مالك" بصفحة الدخول، يصير تلقائياً مدير بالمدرسة المحدّدة.
+      </div>
+      <form onSubmit={submitInvite} className="space-y-3 mb-5">
+        <div className="grid grid-cols-2 gap-2">
+          <input
+            required type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)}
+            placeholder="الإيميل" dir="ltr"
+            className="px-3 py-2.5 rounded-xl bg-surface-2 border border-border text-sm text-foreground"
+          />
+          <input
+            value={inviteName} onChange={(e) => setInviteName(e.target.value)}
+            placeholder="الاسم (اختياري)"
+            className="px-3 py-2.5 rounded-xl bg-surface-2 border border-border text-sm text-foreground"
+          />
+        </div>
+        <select
+          value={inviteSchool} onChange={(e) => setInviteSchool(e.target.value)}
+          className="w-full px-3 py-2.5 rounded-xl bg-surface-2 border border-border text-sm text-foreground"
+        >
+          <option value="">— بدون مدرسة محدّدة —</option>
+          {(schoolsQ.data ?? []).map((s) => (
+            <option key={s.id} value={s.id}>{s.name}</option>
+          ))}
+        </select>
+        {inviteErr && <div className="text-[11px] text-destructive bg-destructive/10 rounded-xl px-3 py-2 text-center font-bold">{inviteErr}</div>}
+        <button type="submit" disabled={inviteBusy}
+          className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-60">
+          {inviteBusy && <Loader2 className="size-4 animate-spin" />}
+          إرسال الدعوة
+        </button>
+      </form>
+
+      {(invitesQ.data ?? []).length > 0 && (
+        <div className="space-y-2 mb-5">
+          {(invitesQ.data ?? []).map((inv) => (
+            <div key={inv.id} className="glass rounded-2xl px-4 py-3 flex items-center gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-bold truncate" dir="ltr">{inv.email}</div>
+                <div className="text-[10px] text-muted-foreground mt-0.5">
+                  {inv.used_at ? "✅ فعّل حسابه" : "⏳ بانتظار التسجيل"}
+                </div>
+              </div>
+              {!inv.used_at && (
+                <button
+                  onClick={() => deleteInviteMut.mutate(inv.id)}
+                  className="size-8 grid place-items-center rounded-lg bg-destructive/10 text-destructive shrink-0"
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       {showForm && (
         <div className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm grid place-items-center p-4 animate-in fade-in duration-200" onClick={() => setShowForm(false)}>
