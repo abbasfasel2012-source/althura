@@ -1,0 +1,12 @@
+-- إصلاح حرج: البحث عن مدرسة برمزها بصفحة الدخول كان يفشل دايماً لأي
+-- زائر غير مسجّل دخول (anon) — رغم إن سياسة schools_public_lookup
+-- كانت صحيحة تماماً (USING (is_active = true)).
+--
+-- السبب: بوستغرس يقيّم كل السياسات المسموحة (permissive) على نفس
+-- الجدول، حتى لو وحدة بس كافية. سياسة schools_admin_manage الثانية
+-- تستخدم app_hidden.has_role(auth.uid(), 'admin') — وهذي الدالة كانت
+-- ممنوحة تنفيذها (EXECUTE) بس لـ authenticated وservice_role، مو anon.
+-- فأي محاولة قراءة من زائر غير مسجّل دخول كانت تفشل بـ"permission
+-- denied for function has_role" قبل حتى ما توصل لسياسة is_active
+-- البسيطة — يعني "لا توجد مدرسة" كانت تطلع دايماً بغض النظر عن الرمز.
+GRANT EXECUTE ON FUNCTION app_hidden.has_role(uuid, app_role) TO anon;
