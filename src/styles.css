@@ -122,6 +122,41 @@
   }
 }
 
+/* شاشة البداية تطابق خلفية الشعار، وتتبع المظهر قبل تشغيل React. */
+.app-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  background-color: #f0ece0;
+  pointer-events: none;
+  animation: splash-exit 260ms var(--ease-out-expo) 620ms both;
+}
+.app-splash img {
+  width: min(58vw, 280px);
+  aspect-ratio: 1;
+  object-fit: contain;
+  animation: splash-logo-in 520ms var(--ease-out-expo) both;
+}
+.dark .app-splash {
+  background-color: #0f0e0b;
+}
+@media (prefers-color-scheme: dark) {
+  html:not(.light) .app-splash { background-color: #0f0e0b; }
+}
+@keyframes splash-logo-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes splash-exit {
+  to { opacity: 0; visibility: hidden; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-splash { animation-duration: 1ms; animation-delay: 180ms; }
+  .app-splash img { animation: none; }
+}
+
 /* شفافية .glass و.glass-strong كانت فاتحة وحسّها "خفيف" مقارنة بالبار
    السفلي (اللي عاتم تماماً، var(--surface-2) بدون شفافية). رفعت النسبة
    لتقارب نفس عتامة البار السفلي بأغلب الويدجت اللي تستخدمهما. */
