@@ -90,10 +90,12 @@ export const themeBootstrapScript = `
   var t = localStorage.getItem(${JSON.stringify(STORAGE_KEY)});
   if(t){ try{ t = JSON.parse(t); }catch(e){} }
   var sys = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  var r = (t === 'light' || t === 'dark') ? t : sys;
+  var r = (t === 'light' || t === 'dark') ? t : (t === 'system' ? sys : 'light');
   var el = document.documentElement;
   if(r === 'dark') el.classList.add('dark'); else el.classList.remove('dark');
   el.style.colorScheme = r;
+  var m = document.querySelector('meta[name="theme-color"]');
+  if(m) m.setAttribute('content', r === 'dark' ? '#0f0e0b' : '#f0ece0');
   // Enable smooth transitions only after first paint to avoid flicker on load.
   requestAnimationFrame(function(){ requestAnimationFrame(function(){ el.classList.add('theme-ready'); }); });
 }catch(e){}})();
