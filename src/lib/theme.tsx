@@ -21,11 +21,14 @@ function applyClass(resolved: "light" | "dark") {
   const root = document.documentElement;
   root.classList.toggle("dark", resolved === "dark");
   root.style.colorScheme = resolved;
+  // لون شريط الحالة/الواجهة يتبع مظهر التطبيق نفسه، مو إعداد الجهاز.
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute("content", resolved === "dark" ? "#0f0e0b" : "#f0ece0");
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  // Start with "system" so SSR markup matches the pre-hydration script default.
-  const [theme, setThemeState] = useState<Theme>("system");
+  // Start with "light" (brand color) so SSR markup matches the pre-hydration script default.
+  const [theme, setThemeState] = useState<Theme>("light");
   const [resolved, setResolved] = useState<"light" | "dark">("light");
 
   // Read persisted choice after mount (avoids SSR/CSR mismatch — React #418).
@@ -87,10 +90,12 @@ export const themeBootstrapScript = `
   var t = localStorage.getItem(${JSON.stringify(STORAGE_KEY)});
   if(t){ try{ t = JSON.parse(t); }catch(e){} }
   var sys = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  var r = (t === 'light' || t === 'dark') ? t : sys;
+  var r = (t === 'light' || t === 'dark') ? t : (t === 'system' ? sys : 'light');
   var el = document.documentElement;
   if(r === 'dark') el.classList.add('dark'); else el.classList.remove('dark');
   el.style.colorScheme = r;
+  var m = document.querySelector('meta[name="theme-color"]');
+  if(m) m.setAttribute('content', r === 'dark' ? '#0f0e0b' : '#f0ece0');
   // Enable smooth transitions only after first paint to avoid flicker on load.
   requestAnimationFrame(function(){ requestAnimationFrame(function(){ el.classList.add('theme-ready'); }); });
 }catch(e){}})();
