@@ -99,8 +99,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "apple-mobile-web-app-title", content: "الذرى" },
       { name: "mobile-web-app-capable", content: "yes" },
-      { name: "theme-color", content: "#f0ece0", media: "(prefers-color-scheme: light)" },
-      { name: "theme-color", content: "#0f0e0b", media: "(prefers-color-scheme: dark)" },
+      // لون واحد فقط — يحدّثه سكربت الثيم حسب مظهر التطبيق المحفوظ،
+      // مو حسب إعداد الجهاز.
+      { name: "theme-color", content: "#f0ece0" },
       { title: "ثانوية الذرى الذكية للمتميزين | كربلاء المقدسة" },
       { name: "description", content: "موقع سويته لثانوية الذرى الذكية بكربلاء — تكدر تشوف جدولك وامتحاناتك وواجباتك وتساوي كل شي بمكان وحد. سويته بنفسي (عباس فاضل)، مو مشروع رسمي من إدارة المدرسة." },
       { name: "author", content: "ثانوية الذرى الذكية" },
