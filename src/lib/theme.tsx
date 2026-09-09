@@ -21,11 +21,14 @@ function applyClass(resolved: "light" | "dark") {
   const root = document.documentElement;
   root.classList.toggle("dark", resolved === "dark");
   root.style.colorScheme = resolved;
+  // لون شريط الحالة/الواجهة يتبع مظهر التطبيق نفسه، مو إعداد الجهاز.
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute("content", resolved === "dark" ? "#0f0e0b" : "#f0ece0");
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  // Start with "system" so SSR markup matches the pre-hydration script default.
-  const [theme, setThemeState] = useState<Theme>("system");
+  // Start with "light" (brand color) so SSR markup matches the pre-hydration script default.
+  const [theme, setThemeState] = useState<Theme>("light");
   const [resolved, setResolved] = useState<"light" | "dark">("light");
 
   // Read persisted choice after mount (avoids SSR/CSR mismatch — React #418).
