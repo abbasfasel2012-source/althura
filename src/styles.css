@@ -143,6 +143,11 @@
   object-fit: contain;
   animation: splash-logo-in 520ms var(--ease-out-expo) both;
 }
+/* النسخة المثبّتة يعرض نظام الهاتف شاشة البداية الأصلية أولاً؛ نخفي نسخة
+   الويب فيها حتى لا يظهر الشعار مرتين. المتصفح العادي يبقي شاشة الويب. */
+.native-splash .app-splash {
+  display: none;
+}
 .dark .app-splash {
   background: linear-gradient(145deg, var(--splash-start) 0 50%, var(--splash-end) 50% 100%);
 }
