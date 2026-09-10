@@ -92,8 +92,6 @@ export const themeBootstrapScript = `
   var sys = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   var r = (t === 'light' || t === 'dark') ? t : (t === 'system' ? sys : 'light');
   var el = document.documentElement;
-  var standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
-  if(standalone) el.classList.add('native-splash');
   if(r === 'dark') el.classList.add('dark'); else el.classList.remove('dark');
   el.style.colorScheme = r;
   var m = document.querySelector('meta[name="theme-color"]');
