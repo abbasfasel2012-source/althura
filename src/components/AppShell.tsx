@@ -6,7 +6,7 @@ import { useHasUnreadNotifications, markNotificationsSeen } from "@/lib/notifica
 import { useTheme } from "@/lib/theme";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect, useLayoutEffect, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
 const NAV = [
   { to: "/", key: "nav.home", icon: Home, match: ["/"] },
@@ -59,6 +59,27 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
     return () => clearTimeout(id);
   }, [isNavigating]);
   const [offline, setOffline] = useState(false);
+
+  const lastReportedError = useRef("");
+  useEffect(() => {
+    const reportError = async (message: string) => {
+      const normalized = message.trim().slice(0, 5000);
+      if (!normalized || normalized === lastReportedError.current) return;
+      lastReportedError.current = normalized;
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) return;
+      await fetch("/api/ai/report", {
+        method: "POST",
+        headers: { "content-type": "application/json", Authorization: `Bearer ${data.session.access_token}` },
+        body: JSON.stringify({ title: "خطأ تلقائي في التطبيق", description: normalized, messages: [] }),
+      }).catch(() => {});
+    };
+    const onError = (event: ErrorEvent) => { void reportError(event.error?.stack ?? event.message); };
+    const onRejection = (event: PromiseRejectionEvent) => { void reportError(event.reason instanceof Error ? event.reason.stack ?? event.reason.message : String(event.reason)); };
+    window.addEventListener("error", onError);
+    window.addEventListener("unhandledrejection", onRejection);
+    return () => { window.removeEventListener("error", onError); window.removeEventListener("unhandledrejection", onRejection); };
+  }, []);
 
   useEffect(() => {
     let stopped = false;
