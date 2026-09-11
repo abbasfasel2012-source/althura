@@ -66,6 +66,17 @@ export async function subscribeToPush(userId: string): Promise<PushPermission> {
   }
 }
 
+/** فعّل إشعارات الجهاز للمستخدم الحالي (يستخدم في الإعدادات) */
+export async function enableDeviceNotifications(): Promise<PushPermission> {
+  if (typeof window === "undefined" || !("Notification" in window)) return "unsupported";
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    const permission = await Notification.requestPermission();
+    return permission as PushPermission;
+  }
+  return subscribeToPush(user.id);
+}
+
 /** إلغاء الاشتراك وحذفه من Supabase */
 export async function unsubscribeFromPush(userId: string): Promise<void> {
   if (!("serviceWorker" in navigator)) return;
