@@ -31,6 +31,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as TeachersRouteImport } from './routes/teachers'
 import { Route as ToolsRouteImport } from './routes/tools'
 import { Route as VideosRouteImport } from './routes/videos'
+import { Route as ApiAgentRouteImport } from './routes/api/agent'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiGradeTextRouteImport } from './routes/api/grade-text'
 import { Route as DmUserIdRouteImport } from './routes/dm.$userId'
@@ -152,6 +153,11 @@ const VideosRoute = VideosRouteImport.update({
   path: '/videos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAgentRoute = ApiAgentRouteImport.update({
+  id: '/api/agent',
+  path: '/api/agent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -226,6 +232,7 @@ export interface FileRoutesByFullPath {
   '/teachers': typeof TeachersRoute
   '/tools': typeof ToolsRoute
   '/videos': typeof VideosRoute
+  '/api/agent': typeof ApiAgentRoute
   '/api/chat': typeof ApiChatRoute
   '/api/grade-text': typeof ApiGradeTextRoute
   '/dm/$userId': typeof DmUserIdRoute
@@ -259,6 +266,7 @@ export interface FileRoutesByTo {
   '/teachers': typeof TeachersRoute
   '/tools': typeof ToolsRoute
   '/videos': typeof VideosRoute
+  '/api/agent': typeof ApiAgentRoute
   '/api/chat': typeof ApiChatRoute
   '/api/grade-text': typeof ApiGradeTextRoute
   '/dm/$userId': typeof DmUserIdRoute
@@ -294,6 +302,7 @@ export interface FileRoutesById {
   '/teachers': typeof TeachersRoute
   '/tools': typeof ToolsRoute
   '/videos': typeof VideosRoute
+  '/api/agent': typeof ApiAgentRoute
   '/api/chat': typeof ApiChatRoute
   '/api/grade-text': typeof ApiGradeTextRoute
   '/dm/$userId': typeof DmUserIdRoute
@@ -330,6 +339,7 @@ export interface FileRouteTypes {
     | '/teachers'
     | '/tools'
     | '/videos'
+    | '/api/agent'
     | '/api/chat'
     | '/api/grade-text'
     | '/dm/$userId'
@@ -363,6 +373,7 @@ export interface FileRouteTypes {
     | '/teachers'
     | '/tools'
     | '/videos'
+    | '/api/agent'
     | '/api/chat'
     | '/api/grade-text'
     | '/dm/$userId'
@@ -397,6 +408,7 @@ export interface FileRouteTypes {
     | '/teachers'
     | '/tools'
     | '/videos'
+    | '/api/agent'
     | '/api/chat'
     | '/api/grade-text'
     | '/dm/$userId'
@@ -432,6 +444,7 @@ export interface RootRouteChildren {
   TeachersRoute: typeof TeachersRoute
   ToolsRoute: typeof ToolsRoute
   VideosRoute: typeof VideosRoute
+  ApiAgentRoute: typeof ApiAgentRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiGradeTextRoute: typeof ApiGradeTextRoute
   DmUserIdRoute: typeof DmUserIdRoute
@@ -597,6 +610,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VideosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/agent': {
+      id: '/api/agent'
+      path: '/api/agent'
+      fullPath: '/api/agent'
+      preLoaderRoute: typeof ApiAgentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -716,6 +736,7 @@ const rootRouteChildren: RootRouteChildren = {
   TeachersRoute: TeachersRoute,
   ToolsRoute: ToolsRoute,
   VideosRoute: VideosRoute,
+  ApiAgentRoute: ApiAgentRoute,
   ApiChatRoute: ApiChatRoute,
   ApiGradeTextRoute: ApiGradeTextRoute,
   DmUserIdRoute: DmUserIdRoute,
