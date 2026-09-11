@@ -47,6 +47,11 @@ function AIPage() {
     if (response.ok) setHistory(await response.json());
   }
   useEffect(() => { void loadHistory(); }, []);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const shared = [params.get("title"), params.get("text"), params.get("url")].filter(Boolean).join("\n");
+    if (shared) setInput((current) => current || `راجع هذا المحتوى:\n${shared}`);
+  }, []);
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, status]);
 
   useEffect(() => {

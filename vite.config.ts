@@ -17,7 +17,9 @@ export default defineConfig({
     plugins: [
       VitePWA({
         registerType: "autoUpdate",
-        injectRegister: null,
+        // أضف التسجيل التلقائي داخل HTML المنشور، مع بقاء التسجيل اليدوي
+        // كحماية إضافية داخل التطبيق للبيئات التي تمنع سكربتات PWA.
+        injectRegister: "script",
         devOptions: { enabled: false },
         filename: "sw.js",
         manifest: false,
