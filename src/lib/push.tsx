@@ -178,6 +178,59 @@ export function LiveNotifications() {
     return () => { supabase.removeChannel(channel); };
   }, []);
 
+  // واجبات جديدة تخص المستخدم الحالي.
+  useEffect(() => {
+    if (!userId) return;
+    const tr = (k: string) => tRef.current(k);
+    const channel = supabase
+      .channel(`live-homework-${userId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "homework", filter: `user_id=eq.${userId}` },
+        (p) => {
+          const row = p.new as { title?: string; subject?: string };
+          notify(tr("push.homework"), [row.subject, row.title].filter(Boolean).join(" — "));
+          window.dispatchEvent(new Event("aladhra:notif-new"));
+        },
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [userId]);
+
+  // رسائل الكروبات التي ينتمي إليها المستخدم (تجاهل رسائله ورسائل الكروب المفتوح حالياً).
+  useEffect(() => {
+    if (!userId) return;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let cancelled = false;
+
+    (async () => {
+      const { data } = await supabase.from("group_members").select("group_id").eq("user_id", userId);
+      if (cancelled) return;
+      const groupIds = new Set((data ?? []).map((r) => r.group_id));
+      if (groupIds.size === 0) return;
+      const tr = (k: string) => tRef.current(k);
+      channel = supabase
+        .channel(`live-group-messages-${userId}`)
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "messages" },
+          (p) => {
+            const row = p.new as { content?: string; group_id?: string; user_id?: string };
+            if (!row.group_id || !groupIds.has(row.group_id)) return;
+            if (row.user_id === userId) return;
+            if (location.pathname === `/groups/${row.group_id}`) return;
+            notify(tr("push.message"), row.content?.slice(0, 120) ?? "");
+          },
+        )
+        .subscribe();
+    })();
+
+    return () => {
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, [userId]);
+
   // Direct messages addressed to the signed-in user.
   useEffect(() => {
     if (!userId) return;
