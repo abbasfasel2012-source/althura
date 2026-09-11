@@ -12,8 +12,8 @@ export const Route = createFileRoute("/api/ai/report")({
   server: { handlers: {
     POST: async ({ request }) => {
       const userId = await authUser(request);
-      if (!userId) return new Response("غير مصرح", { status: 401 });
-      const body = await request.json() as { conversationId?: string; title?: string; description?: string; messages?: unknown[] };
+      const body = await request.json() as { conversationId?: string; title?: string; description?: string; messages?: unknown[]; automatic?: boolean };
+      if (!userId && !body.automatic) return new Response("غير مصرح", { status: 401 });
       if (!body.title?.trim() || !body.description?.trim()) return new Response("عنوان المشكلة ووصفها مطلوبان", { status: 400 });
       const { error } = await (supabaseAdmin as any).from("ai_reports").insert({
         user_id: userId,

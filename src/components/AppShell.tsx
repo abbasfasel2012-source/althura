@@ -67,11 +67,10 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
       if (!normalized || normalized === lastReportedError.current) return;
       lastReportedError.current = normalized;
       const { data } = await supabase.auth.getSession();
-      if (!data.session) return;
       await fetch("/api/ai/report", {
         method: "POST",
-        headers: { "content-type": "application/json", Authorization: `Bearer ${data.session.access_token}` },
-        body: JSON.stringify({ title: "خطأ تلقائي في التطبيق", description: normalized, messages: [] }),
+        headers: { "content-type": "application/json", ...(data.session ? { Authorization: `Bearer ${data.session.access_token}` } : {}) },
+        body: JSON.stringify({ title: "خطأ تلقائي في التطبيق", description: normalized, messages: [], automatic: true }),
       }).catch(() => {});
     };
     const onError = (event: ErrorEvent) => { void reportError(event.error?.stack ?? event.message); };

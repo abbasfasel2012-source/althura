@@ -50,8 +50,7 @@ function AIPage() {
     if (!error) return;
     void (async () => {
       const headers = await authHeaders();
-      if (!headers.Authorization) return;
-      await fetch("/api/ai/report", { method: "POST", headers: { "content-type": "application/json", ...headers }, body: JSON.stringify({ title: "خطأ في عبوسي", description: getErrorMessage(error), messages: [] }) }).catch(() => {});
+      await fetch("/api/ai/report", { method: "POST", headers: { "content-type": "application/json", ...headers }, body: JSON.stringify({ title: "خطأ في عبوسي", description: getErrorMessage(error), messages: [], automatic: true }) }).catch(() => {});
     })();
   }, [error]);
 
