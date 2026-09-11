@@ -179,6 +179,35 @@
   border: 1px solid color-mix(in oklab, var(--foreground) 12%, transparent);
 }
 
+/* ===== ستارة الهيدر العلوي: تدرّج ضبابي بدل حافة قاطعة ===== */
+/* السابق: الهيدر كان طبقة واحدة (bg-background/70 + backdrop-blur-xl) تنتهي
+   بحافة سفلية مستقيمة، فتنعكس بصرياً كـ"خط" تحت الشريط. الآن طبقتان تذوبان
+   تدريجياً وممتدتان 1.25rem تحت الهيدر عشان التلاشي يكمل داخل الصفحة:
+   1) .top-veil-blur — بلور مقنّع بـmask-image: يبدأ قوياً فوق ويخفت حتى
+      يختفي، فما فيه حدّ يقطع البلور (بعكس backdrop-filter العادي).
+   2) .top-veil — scrim متدرّج من لون خلفية التطبيق إلى شفاف بالكامل؛ يشتغل
+      على كل الأجهزة، بما فيها الجوال اللي عطّلنا فيه backdrop-filter للسرعة. */
+.top-veil-blur {
+  position: absolute;
+  inset: 0 0 -1.25rem;
+  pointer-events: none;
+  backdrop-filter: blur(22px) saturate(140%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 20%, rgba(0, 0, 0, 0.55) 55%, transparent 100%);
+}
+.top-veil {
+  position: absolute;
+  inset: 0 0 -1.25rem;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in oklab, var(--background) 92%, transparent) 0%,
+    color-mix(in oklab, var(--background) 78%, transparent) 28%,
+    color-mix(in oklab, var(--background) 48%, transparent) 58%,
+    color-mix(in oklab, var(--background) 18%, transparent) 82%,
+    transparent 100%
+  );
+}
+
 /* مؤشر التبويب النشط: انتقال أبطأ شوي وبارتداد خفيف بدل القفزة الفورية
    القديمة، بس يبقى محسوس وواضح بدون ما يصير بطيء أو "معوق". */
 /* "تيليبورت": المؤشر ينتقل فوراً لمكانه الجديد بدون أي انزلاق أو عبور
@@ -450,9 +479,9 @@ select {
     background-attachment: scroll;
   }
   .glass,
-  .glass-strong {
+  .glass-strong,
+  .top-veil-blur {
     backdrop-filter: none;
-    -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
   }
   .animate-reveal,
