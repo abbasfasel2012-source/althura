@@ -75,43 +75,10 @@ function AIPage() {
   const getText = (m: (typeof messages)[number]) => m.parts.map((p) => p.type === "text" ? p.text : "").join("");
   const getImageParts = (m: (typeof messages)[number]) => m.parts.filter((p): p is Extract<(typeof m.parts)[number], { type: "file" }> => p.type === "file" && p.mediaType.startsWith("image/"));
   const attachmentMimeType = (name: string) => ({ pdf: "application/pdf", txt: "text/plain", doc: "application/msword", docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", mp4: "video/mp4", webm: "video/webm", mp3: "audio/mpeg", wav: "audio/wav" } as Record<string, string>)[name.split(".").pop()?.toLowerCase() ?? ""] ?? "application/octet-stream";
-  const textToImage = async (text: string): Promise<Blob> => {
-    const width = 1400;
-    const padding = 72;
-    const font = "34px Arial, sans-serif";
-    const measure = document.createElement("canvas").getContext("2d");
-    if (!measure) throw new Error("تعذّر إنشاء صورة الرسالة");
-    measure.font = font;
-    const words = text.split(/\s+/);
-    const lines: string[] = [];
-    let line = "";
-    for (const word of words) {
-      const candidate = line ? `${line} ${word}` : word;
-      if (measure.measureText(candidate).width > width - padding * 2 && line) {
-        lines.push(line);
-        line = word;
-      } else line = candidate;
-    }
-    if (line) lines.push(line);
-    const lineHeight = 58;
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = Math.max(180, padding * 2 + lines.length * lineHeight);
-    const context = canvas.getContext("2d");
-    if (!context) throw new Error("تعذّر إنشاء صورة الرسالة");
-    context.fillStyle = "#ffffff";
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.fillStyle = "#111827";
-    context.font = font;
-    context.textAlign = "right";
-    context.textBaseline = "top";
-    context.direction = "rtl";
-    lines.forEach((current, index) => context.fillText(current, width - padding, padding + index * lineHeight));
-    return new Promise((resolve, reject) => canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("تعذّر حفظ صورة الرسالة")), "image/png"));
-  };
+  const imageMimeType = (name: string) => ({ jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp", gif: "image/gif", heic: "image/heic" } as Record<string, string>)[name.split(".").pop()?.toLowerCase() ?? ""] ?? "image/jpeg";
   const isTouchDevice = () => typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
   const onFile = async (file: File | undefined) => { if (!file) return; setUploading(true); try { const uploaded = await uploadChatMedia(file, { quality: "high" }); setAttachment({ ...uploaded, type: detectAttachmentType(file) }); } finally { setUploading(false); } };
-  const onSubmit = async (e: React.FormEvent) => { e.preventDefault(); const t = input.trim() || (attachment ? `اقرأ هذا المرفق` : ""); if (!t || isLoading || uploading) return; setInput(""); const planResponse = await fetch("/api/agent", { method: "POST", headers: { "content-type": "application/json", ...(await authHeaders()) }, body: JSON.stringify({ request: t, conversationId, attachment }) }); if (planResponse.ok) { const planned = await planResponse.json(); if (planned.plan?.needsConfirmation) { setPendingPlan({ runId: planned.runId, summary: planned.plan.summary, steps: planned.plan.steps }); return; } } const messageImage = await uploadChatMedia(await textToImage(t), { filename: "رسالة-الطالب.png", quality: "high" }); const files = [{ type: "file" as const, mediaType: "image/png", url: messageImage.url }, ...(attachment ? [{ type: "file" as const, mediaType: attachmentMimeType(attachment.name), url: attachment.url }] : [])]; await sendMessage({ text: "اقرأ صورة رسالة الطالب وأجب عنها.", files }); setAttachment(null); if (!isTouchDevice()) inputRef.current?.focus(); };
+  const onSubmit = async (e: React.FormEvent) => { e.preventDefault(); const t = input.trim() || (attachment ? `اقرأ هذا المرفق` : ""); if (!t || isLoading || uploading) return; setInput(""); const looksLikeCommand = /^(أرسل|ارسل|احذف|حذف|غيّر|غير|عدّل|عدل|أنشئ|انشئ|ذكّرني|ذكرني|نفّذ|نفذ|غيّر الثيم|غير الثيم|شارك|بلّغ|بلغ)/u.test(t); if (looksLikeCommand) { const planResponse = await fetch("/api/agent", { method: "POST", headers: { "content-type": "application/json", ...(await authHeaders()) }, body: JSON.stringify({ request: t, conversationId, attachment }) }); if (planResponse.ok) { const planned = await planResponse.json(); if (planned.plan?.needsConfirmation) { setPendingPlan({ runId: planned.runId, summary: planned.plan.summary, steps: planned.plan.steps }); return; } } } const files = attachment ? [{ type: "file" as const, mediaType: attachment.type === "image" ? imageMimeType(attachment.name) : attachmentMimeType(attachment.name), url: attachment.url }] : undefined; await sendMessage({ text: t, ...(files ? { files } : {}) }); setAttachment(null); if (!isTouchDevice()) inputRef.current?.focus(); };
   const confirmPlan = async () => { if (!pendingPlan) return; setExecutionState("running"); setExecutionMessage("جاري تنفيذ الخطوات..."); const response = await fetch("/api/agent", { method: "PATCH", headers: { "content-type": "application/json", ...(await authHeaders()) }, body: JSON.stringify({ runId: pendingPlan.runId, confirmed: true }) }); setPendingPlan(null); setAttachment(null); if (response.ok) { setExecutionState("completed"); setExecutionMessage("اكتمل تنفيذ الخطة"); await sendMessage({ text: "تم التأكيد. نُفذت الخطة، وأخبرني بالنتيجة." }); } else { setExecutionState("failed"); setExecutionMessage("تعذّر تنفيذ الخطة"); } };
   const confirmAction = async () => { if (!pendingAction) return; const response = await fetch("/api/ai/actions", { method: "POST", headers: { "content-type": "application/json", ...(await authHeaders()) }, body: JSON.stringify({ action: "send_message", confirmed: true, ...pendingAction }) }); if (response.ok) { setPendingAction(null); window.alert("تم إرسال الرسالة"); } else window.alert("تعذّر تنفيذ الأمر"); };
   const closeSidebar = () => { setSideVisible(false); window.setTimeout(() => setSideOpen(false), 180); };
