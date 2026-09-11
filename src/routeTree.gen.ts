@@ -24,6 +24,7 @@ import { Route as HomeworkRouteImport } from './routes/homework'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as NewsRouteImport } from './routes/news'
+import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ScheduleRouteImport } from './routes/schedule'
 import { Route as SearchRouteImport } from './routes/search'
@@ -119,6 +120,11 @@ const MessagesRoute = MessagesRouteImport.update({
 const NewsRoute = NewsRouteImport.update({
   id: '/news',
   path: '/news',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
+  id: '/privacy-policy',
+  path: '/privacy-policy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileRoute = ProfileRouteImport.update({
@@ -243,6 +249,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/messages': typeof MessagesRoute
   '/news': typeof NewsRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
   '/profile': typeof ProfileRoute
   '/schedule': typeof ScheduleRoute
   '/search': typeof SearchRoute
@@ -280,6 +287,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/messages': typeof MessagesRoute
   '/news': typeof NewsRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
   '/profile': typeof ProfileRoute
   '/schedule': typeof ScheduleRoute
   '/search': typeof SearchRoute
@@ -319,6 +327,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/messages': typeof MessagesRoute
   '/news': typeof NewsRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
   '/profile': typeof ProfileRoute
   '/schedule': typeof ScheduleRoute
   '/search': typeof SearchRoute
@@ -359,6 +368,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/messages'
     | '/news'
+    | '/privacy-policy'
     | '/profile'
     | '/schedule'
     | '/search'
@@ -396,6 +406,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/messages'
     | '/news'
+    | '/privacy-policy'
     | '/profile'
     | '/schedule'
     | '/search'
@@ -434,6 +445,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/messages'
     | '/news'
+    | '/privacy-policy'
     | '/profile'
     | '/schedule'
     | '/search'
@@ -473,6 +485,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   MessagesRoute: typeof MessagesRoute
   NewsRoute: typeof NewsRoute
+  PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   ProfileRoute: typeof ProfileRoute
   ScheduleRoute: typeof ScheduleRoute
   SearchRoute: typeof SearchRoute
@@ -598,6 +611,13 @@ declare module '@tanstack/react-router' {
       path: '/news'
       fullPath: '/news'
       preLoaderRoute: typeof NewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy-policy': {
+      id: '/privacy-policy'
+      path: '/privacy-policy'
+      fullPath: '/privacy-policy'
+      preLoaderRoute: typeof PrivacyPolicyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile': {
@@ -789,6 +809,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   MessagesRoute: MessagesRoute,
   NewsRoute: NewsRoute,
+  PrivacyPolicyRoute: PrivacyPolicyRoute,
   ProfileRoute: ProfileRoute,
   ScheduleRoute: ScheduleRoute,
   SearchRoute: SearchRoute,
