@@ -15,6 +15,7 @@ import {
 import { useAuth, signOut } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { AiReports } from "@/components/AiReports";
+import { AgentAdmin } from "@/components/AgentAdmin";
 import {
   BookPlus, CalendarPlus, Check, ChevronDown, GraduationCap,
   Loader2, LogOut, Megaphone, Newspaper, Palmtree, Pin,
@@ -37,7 +38,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 // ========== TABS ==========
-type AdminTab = "overview" | "requests" | "schedule" | "students" | "content" | "admins" | "tools" | "schools" | "ai-reports";
+type AdminTab = "overview" | "requests" | "schedule" | "students" | "content" | "admins" | "tools" | "schools" | "ai-reports" | "agent";
 
 function AdminPage() {
   const { isOwner, isSuperOwner, loading } = useAuth();
@@ -68,6 +69,7 @@ function AdminPage() {
     { id: "tools",     label: "أدوات المالك" },
     ...(isSuperOwner ? [{ id: "schools" as AdminTab, label: "المدارس" }] : []),
     ...(isSuperOwner ? [{ id: "ai-reports" as AdminTab, label: "تبليغات عبوسي" }] : []),
+    ...(isSuperOwner ? [{ id: "agent" as AdminTab, label: "الوكيل" }] : []),
   ];
 
   return (
@@ -114,6 +116,7 @@ function AdminPage() {
       {tab === "tools"     && <TabTools />}
       {tab === "schools"   && isSuperOwner && <TabSchools />}
       {tab === "ai-reports" && isSuperOwner && <AiReports />}
+      {tab === "agent" && isSuperOwner && <AgentAdmin />}
     </AppShell>
   );
 }

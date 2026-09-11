@@ -19,6 +19,8 @@ export async function planAgentRequest(request: string, context: string) {
   const key = process.env.LOVABLE_API_KEY;
   if (!key) throw new Error("LOVABLE_API_KEY غير مهيأ");
   const gateway = createLovableAiGatewayProvider(key);
+  const { data: promptRows } = await (supabaseAdmin as any).from("agent_prompts").select("prompt").eq("is_active", true).order("created_at", { ascending: false }).limit(10);
+  const ownerRules = (promptRows ?? []).map((row: { prompt: string }) => `- ${row.prompt}`).join("\n");
   const result = await generateObject({
     model: gateway("google/gemini-3-flash-preview"),
     schema: planSchema,
@@ -28,7 +30,9 @@ export async function planAgentRequest(request: string, context: string) {
 إذا كان الطلب مجرد سؤال معرفي، أعد action=read_only وneedsConfirmation=false.
 إذا طلب المستخدم إرسال صورة/ملف ولم توجد ملفات مرفقة، اذكر في label أن عليه اختيار الملفات أولًا ولا تنفذ شيئًا.
 سياق المستخدم:
-${context.slice(0, 12000)}`,
+${context.slice(0, 12000)}
+تعليمات المالك الأعلى الإضافية:
+${ownerRules || "لا توجد تعليمات إضافية."}`,
     prompt: request,
   });
   return result.object;
@@ -44,7 +48,7 @@ export async function createAgentRun(userId: string, request: string, plan: z.in
 
 export async function executeAgentRun(userId: string, runId: string) {
   const db = supabaseAdmin as any;
-  const { data: run, error } = await db.from("agent_runs").select("id,plan,status").eq("id", runId).eq("user_id", userId).single();
+  const { data: run, error } = await db.from("agent_runs").select("id,plan,status,conversation_id").eq("id", runId).eq("user_id", userId).single();
   if (error || !run) throw new Error("خطة الوكيل غير موجودة");
   if (run.status !== "awaiting_confirmation") throw new Error("لا يمكن تنفيذ هذه الخطة");
   await db.from("agent_runs").update({ status: "running", updated_at: new Date().toISOString() }).eq("id", runId).eq("user_id", userId);
@@ -73,7 +77,8 @@ export async function executeAgentRun(userId: string, runId: string) {
         const { data: recipients } = await db.from("profiles").select("id,full_name").ilike("full_name", `%${recipientName}%`).limit(5);
         const recipient = recipients?.[0];
         if (!recipient || recipient.id === userId) throw new Error("لم أجد مستلمًا واضحًا");
-        const { error: messageError } = await db.from("direct_messages").insert({ sender_id: userId, receiver_id: recipient.id, content });
+        const attachment = step.payload?.attachment as { url?: string; type?: string; name?: string; size?: number } | undefined;
+        const { error: messageError } = await db.from("direct_messages").insert({ sender_id: userId, receiver_id: recipient.id, content, attachment_url: attachment?.url ?? null, attachment_type: attachment?.type ?? null, attachment_name: attachment?.name ?? null, attachment_size: attachment?.size ?? null });
         if (messageError) throw messageError;
         result = { ok: true, message: `تم إرسال الرسالة إلى ${recipient.full_name}` };
       } else if (step.action === "delete_conversation") {
@@ -92,6 +97,7 @@ export async function executeAgentRun(userId: string, runId: string) {
         result = { ok: true, message: "تمت قراءة البيانات المطلوبة" };
       }
       results.push(result);
+      await db.from("agent_audit_log").insert({ user_id: userId, action: step.action, details: { label: step.label, result }, conversation_id: run.conversation_id ?? null });
       await db.from("agent_steps").update({ status: "completed", result }).eq("run_id", runId).eq("step_index", i);
     }
     await db.from("agent_runs").update({ status: "completed", updated_at: new Date().toISOString() }).eq("id", runId).eq("user_id", userId);

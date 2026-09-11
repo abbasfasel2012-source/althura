@@ -7,10 +7,13 @@ export const Route = createFileRoute("/api/agent")({ server: { handlers: {
   POST: async ({ request }) => {
     const userId = await authenticatedUser(request);
     if (!userId) return new Response("غير مصرح", { status: 401 });
-    const body = await request.json() as { request?: string; conversationId?: string };
+    const body = await request.json() as { request?: string; conversationId?: string; attachment?: { url: string; path: string; name: string; size: number; type: string } };
     if (!body.request?.trim()) return new Response("الطلب مطلوب", { status: 400 });
     const context = await loadStudentContext(userId).catch(() => "");
     const plan = await planAgentRequest(body.request.trim(), context);
+    if (body.attachment) {
+      for (const step of plan.steps) if (step.action === "send_message") step.payload = { ...step.payload, attachment: body.attachment };
+    }
     const runId = await createAgentRun(userId, body.request.trim(), plan, body.conversationId ?? null);
     return Response.json({ runId, plan });
   },

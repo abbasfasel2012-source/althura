@@ -13,7 +13,7 @@ export const Route = createFileRoute("/api/ai/conversations")({
     GET: async ({ request }) => {
       const userId = await authUser(request);
       if (!userId) return new Response("غير مصرح", { status: 401 });
-      const { data, error } = await (supabaseAdmin as any).from("ai_conversations").select("id,title,created_at,updated_at").eq("user_id", userId).order("updated_at", { ascending: false }).limit(100);
+      const { data, error } = await (supabaseAdmin as any).from("ai_conversations").select("id,title,created_at,updated_at").eq("user_id", userId).is("user_deleted_at", null).order("updated_at", { ascending: false }).limit(100);
       if (error) return new Response(error.message, { status: 500 });
       return Response.json(data ?? []);
     },
@@ -52,7 +52,7 @@ export const Route = createFileRoute("/api/ai/conversations")({
       if (!userId) return new Response("غير مصرح", { status: 401 });
       const id = new URL(request.url).searchParams.get("id");
       if (!id) return new Response("المحادثة غير محددة", { status: 400 });
-      const { error } = await (supabaseAdmin as any).from("ai_conversations").delete().eq("id", id).eq("user_id", userId);
+      const { error } = await (supabaseAdmin as any).from("ai_conversations").update({ user_deleted_at: new Date().toISOString() }).eq("id", id).eq("user_id", userId);
       if (error) return new Response(error.message, { status: 500 });
       return Response.json({ ok: true });
     },

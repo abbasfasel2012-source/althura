@@ -39,6 +39,7 @@ import { Route as ExamsQuizIdRouteImport } from './routes/exams.$quizId'
 import { Route as GroupsIndexRouteImport } from './routes/groups.index'
 import { Route as GroupsGroupIdRouteImport } from './routes/groups.$groupId'
 import { Route as ApiAiActionsRouteImport } from './routes/api/ai/actions'
+import { Route as ApiAiAdminRouteImport } from './routes/api/ai/admin'
 import { Route as ApiAiConversationsRouteImport } from './routes/api/ai/conversations'
 import { Route as ApiAiReportRouteImport } from './routes/api/ai/report'
 import { Route as ApiBooksIndexRouteImport } from './routes/api/books/index'
@@ -193,6 +194,11 @@ const ApiAiActionsRoute = ApiAiActionsRouteImport.update({
   path: '/api/ai/actions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAiAdminRoute = ApiAiAdminRouteImport.update({
+  id: '/api/ai/admin',
+  path: '/api/ai/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAiConversationsRoute = ApiAiConversationsRouteImport.update({
   id: '/api/ai/conversations',
   path: '/api/ai/conversations',
@@ -240,6 +246,7 @@ export interface FileRoutesByFullPath {
   '/groups/$groupId': typeof GroupsGroupIdRoute
   '/groups/': typeof GroupsIndexRoute
   '/api/ai/actions': typeof ApiAiActionsRoute
+  '/api/ai/admin': typeof ApiAiAdminRoute
   '/api/ai/conversations': typeof ApiAiConversationsRoute
   '/api/ai/report': typeof ApiAiReportRoute
   '/api/books/': typeof ApiBooksIndexRoute
@@ -274,6 +281,7 @@ export interface FileRoutesByTo {
   '/groups/$groupId': typeof GroupsGroupIdRoute
   '/groups': typeof GroupsIndexRoute
   '/api/ai/actions': typeof ApiAiActionsRoute
+  '/api/ai/admin': typeof ApiAiAdminRoute
   '/api/ai/conversations': typeof ApiAiConversationsRoute
   '/api/ai/report': typeof ApiAiReportRoute
   '/api/books': typeof ApiBooksIndexRoute
@@ -310,6 +318,7 @@ export interface FileRoutesById {
   '/groups/$groupId': typeof GroupsGroupIdRoute
   '/groups/': typeof GroupsIndexRoute
   '/api/ai/actions': typeof ApiAiActionsRoute
+  '/api/ai/admin': typeof ApiAiAdminRoute
   '/api/ai/conversations': typeof ApiAiConversationsRoute
   '/api/ai/report': typeof ApiAiReportRoute
   '/api/books/': typeof ApiBooksIndexRoute
@@ -347,6 +356,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId'
     | '/groups/'
     | '/api/ai/actions'
+    | '/api/ai/admin'
     | '/api/ai/conversations'
     | '/api/ai/report'
     | '/api/books/'
@@ -381,6 +391,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId'
     | '/groups'
     | '/api/ai/actions'
+    | '/api/ai/admin'
     | '/api/ai/conversations'
     | '/api/ai/report'
     | '/api/books'
@@ -416,6 +427,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId'
     | '/groups/'
     | '/api/ai/actions'
+    | '/api/ai/admin'
     | '/api/ai/conversations'
     | '/api/ai/report'
     | '/api/books/'
@@ -449,6 +461,7 @@ export interface RootRouteChildren {
   ApiGradeTextRoute: typeof ApiGradeTextRoute
   DmUserIdRoute: typeof DmUserIdRoute
   ApiAiActionsRoute: typeof ApiAiActionsRoute
+  ApiAiAdminRoute: typeof ApiAiAdminRoute
   ApiAiConversationsRoute: typeof ApiAiConversationsRoute
   ApiAiReportRoute: typeof ApiAiReportRoute
   ApiBooksIndexRoute: typeof ApiBooksIndexRoute
@@ -666,6 +679,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAiActionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/ai/admin': {
+      id: '/api/ai/admin'
+      path: '/api/ai/admin'
+      fullPath: '/api/ai/admin'
+      preLoaderRoute: typeof ApiAiAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/ai/conversations': {
       id: '/api/ai/conversations'
       path: '/api/ai/conversations'
@@ -741,6 +761,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGradeTextRoute: ApiGradeTextRoute,
   DmUserIdRoute: DmUserIdRoute,
   ApiAiActionsRoute: ApiAiActionsRoute,
+  ApiAiAdminRoute: ApiAiAdminRoute,
   ApiAiConversationsRoute: ApiAiConversationsRoute,
   ApiAiReportRoute: ApiAiReportRoute,
   ApiBooksIndexRoute: ApiBooksIndexRoute,
