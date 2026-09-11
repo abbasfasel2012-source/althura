@@ -20,7 +20,7 @@ export function getPushPermission(): PushPermission {
 // ── Subscription management ────────────────────────────────────────────────
 
 /** حوّل base64url → Uint8Array (مطلوب لـ pushManager.subscribe) */
-function urlBase64ToUint8Array(base64String: string): Uint8Array {
+function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
   const raw = atob(base64);
@@ -64,6 +64,17 @@ export async function subscribeToPush(userId: string): Promise<PushPermission> {
   } catch {
     return "denied";
   }
+}
+
+/** فعّل إشعارات الجهاز للمستخدم الحالي (يستخدم في الإعدادات) */
+export async function enableDeviceNotifications(): Promise<PushPermission> {
+  if (typeof window === "undefined" || !("Notification" in window)) return "unsupported";
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    const permission = await Notification.requestPermission();
+    return permission as PushPermission;
+  }
+  return subscribeToPush(user.id);
 }
 
 /** إلغاء الاشتراك وحذفه من Supabase */
