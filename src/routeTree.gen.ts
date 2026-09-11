@@ -37,6 +37,9 @@ import { Route as DmUserIdRouteImport } from './routes/dm.$userId'
 import { Route as ExamsQuizIdRouteImport } from './routes/exams.$quizId'
 import { Route as GroupsIndexRouteImport } from './routes/groups.index'
 import { Route as GroupsGroupIdRouteImport } from './routes/groups.$groupId'
+import { Route as ApiAiActionsRouteImport } from './routes/api/ai/actions'
+import { Route as ApiAiConversationsRouteImport } from './routes/api/ai/conversations'
+import { Route as ApiAiReportRouteImport } from './routes/api/ai/report'
 import { Route as ApiBooksIndexRouteImport } from './routes/api/books/index'
 
 const IndexRoute = IndexRouteImport.update({
@@ -179,6 +182,21 @@ const GroupsGroupIdRoute = GroupsGroupIdRouteImport.update({
   path: '/$groupId',
   getParentRoute: () => GroupsRoute,
 } as any)
+const ApiAiActionsRoute = ApiAiActionsRouteImport.update({
+  id: '/api/ai/actions',
+  path: '/api/ai/actions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAiConversationsRoute = ApiAiConversationsRouteImport.update({
+  id: '/api/ai/conversations',
+  path: '/api/ai/conversations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAiReportRoute = ApiAiReportRouteImport.update({
+  id: '/api/ai/report',
+  path: '/api/ai/report',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiBooksIndexRoute = ApiBooksIndexRouteImport.update({
   id: '/api/books/',
   path: '/api/books/',
@@ -214,6 +232,9 @@ export interface FileRoutesByFullPath {
   '/exams/$quizId': typeof ExamsQuizIdRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
   '/groups/': typeof GroupsIndexRoute
+  '/api/ai/actions': typeof ApiAiActionsRoute
+  '/api/ai/conversations': typeof ApiAiConversationsRoute
+  '/api/ai/report': typeof ApiAiReportRoute
   '/api/books/': typeof ApiBooksIndexRoute
 }
 export interface FileRoutesByTo {
@@ -244,6 +265,9 @@ export interface FileRoutesByTo {
   '/exams/$quizId': typeof ExamsQuizIdRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
   '/groups': typeof GroupsIndexRoute
+  '/api/ai/actions': typeof ApiAiActionsRoute
+  '/api/ai/conversations': typeof ApiAiConversationsRoute
+  '/api/ai/report': typeof ApiAiReportRoute
   '/api/books': typeof ApiBooksIndexRoute
 }
 export interface FileRoutesById {
@@ -276,6 +300,9 @@ export interface FileRoutesById {
   '/exams/$quizId': typeof ExamsQuizIdRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
   '/groups/': typeof GroupsIndexRoute
+  '/api/ai/actions': typeof ApiAiActionsRoute
+  '/api/ai/conversations': typeof ApiAiConversationsRoute
+  '/api/ai/report': typeof ApiAiReportRoute
   '/api/books/': typeof ApiBooksIndexRoute
 }
 export interface FileRouteTypes {
@@ -309,6 +336,9 @@ export interface FileRouteTypes {
     | '/exams/$quizId'
     | '/groups/$groupId'
     | '/groups/'
+    | '/api/ai/actions'
+    | '/api/ai/conversations'
+    | '/api/ai/report'
     | '/api/books/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -339,6 +369,9 @@ export interface FileRouteTypes {
     | '/exams/$quizId'
     | '/groups/$groupId'
     | '/groups'
+    | '/api/ai/actions'
+    | '/api/ai/conversations'
+    | '/api/ai/report'
     | '/api/books'
   id:
     | '__root__'
@@ -370,6 +403,9 @@ export interface FileRouteTypes {
     | '/exams/$quizId'
     | '/groups/$groupId'
     | '/groups/'
+    | '/api/ai/actions'
+    | '/api/ai/conversations'
+    | '/api/ai/report'
     | '/api/books/'
   fileRoutesById: FileRoutesById
 }
@@ -399,6 +435,9 @@ export interface RootRouteChildren {
   ApiChatRoute: typeof ApiChatRoute
   ApiGradeTextRoute: typeof ApiGradeTextRoute
   DmUserIdRoute: typeof DmUserIdRoute
+  ApiAiActionsRoute: typeof ApiAiActionsRoute
+  ApiAiConversationsRoute: typeof ApiAiConversationsRoute
+  ApiAiReportRoute: typeof ApiAiReportRoute
   ApiBooksIndexRoute: typeof ApiBooksIndexRoute
 }
 
@@ -600,6 +639,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GroupsGroupIdRouteImport
       parentRoute: typeof GroupsRoute
     }
+    '/api/ai/actions': {
+      id: '/api/ai/actions'
+      path: '/api/ai/actions'
+      fullPath: '/api/ai/actions'
+      preLoaderRoute: typeof ApiAiActionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ai/conversations': {
+      id: '/api/ai/conversations'
+      path: '/api/ai/conversations'
+      fullPath: '/api/ai/conversations'
+      preLoaderRoute: typeof ApiAiConversationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ai/report': {
+      id: '/api/ai/report'
+      path: '/api/ai/report'
+      fullPath: '/api/ai/report'
+      preLoaderRoute: typeof ApiAiReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/books/': {
       id: '/api/books/'
       path: '/api/books'
@@ -659,6 +719,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatRoute: ApiChatRoute,
   ApiGradeTextRoute: ApiGradeTextRoute,
   DmUserIdRoute: DmUserIdRoute,
+  ApiAiActionsRoute: ApiAiActionsRoute,
+  ApiAiConversationsRoute: ApiAiConversationsRoute,
+  ApiAiReportRoute: ApiAiReportRoute,
   ApiBooksIndexRoute: ApiBooksIndexRoute,
 }
 export const routeTree = rootRouteImport

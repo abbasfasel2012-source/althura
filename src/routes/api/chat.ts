@@ -3,6 +3,7 @@ import { convertToModelMessages, streamText, type UIMessage } from "ai";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import { bookContext, searchBooks } from "@/lib/book-rag.server";
 import { loadStudentContext } from "@/lib/student-context.server";
+import { webSearchWithGemini } from "@/lib/ai-workspace.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 async function authenticatedUserId(request: Request) {
@@ -35,6 +36,7 @@ export const Route = createFileRoute("/api/chat")({
         const question = lastUserQuestion(messages);
         let books = "";
         let student = "";
+        let web = "";
         try {
           [student, books] = await Promise.all([
             loadStudentContext(userId),
@@ -43,6 +45,12 @@ export const Route = createFileRoute("/api/chat")({
               return "";
             }) : "",
           ]);
+          if (/ابحث في الويب|ابحث بالانترنت|من الانترنت|من الإنترنت|مصدر حديث|تأكد من الأخبار/i.test(question)) {
+            web = await webSearchWithGemini(question).catch((error) => {
+              console.error("فشل البحث في الويب:", error);
+              return "";
+            });
+          }
         } catch (error) {
           console.error("فشل تحميل سياق الطالب:", error);
         }
@@ -68,6 +76,10 @@ ${student || "لا تتوفر بيانات الطالب الآن."}
 ${books ? `مقاطع من الكتب المرفوعة:
 ${books}
 اذكر اسم الكتاب ورقم الصفحة عند الاعتماد على هذه المقاطع.` : "لم يُعثر على مقاطع مناسبة من الكتب المرفوعة. لا تخترع مصدرًا أو رقم صفحة."}
+
+${web ? `نتيجة بحث حديثة من الويب:
+${web}
+اذكر أن هذه المعلومة من الويب، وحافظ على روابط المصادر التي ظهرت في النتيجة.` : "لا تستخدم الويب إلا عند طلب الطالب ذلك صراحة."}
 
 إذا لم تجد الإجابة في الكتب أو بيانات الطالب، قل ذلك بوضوح.
 لا تخترع درجات أو واجبات أو مصادر.
