@@ -4,7 +4,7 @@ import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const actionSchema = z.object({
-  action: z.enum(["read_only", "send_message", "update_preferences", "mark_homework_done", "delete_conversation", "report_conversation"]),
+  action: z.enum(["read_only", "send_message", "update_preferences", "update_theme", "create_homework", "mark_homework_done", "create_reminder", "delete_conversation", "report_conversation"]),
   label: z.string().min(1).max(180),
   requiresConfirmation: z.boolean(),
   payload: z.record(z.string(), z.unknown()).default({}),
@@ -64,12 +64,33 @@ export async function executeAgentRun(userId: string, runId: string) {
         const { error: prefError } = await db.from("user_preferences").upsert({ user_id: userId, preferences, updated_at: new Date().toISOString() });
         if (prefError) throw prefError;
         result = { ok: true, message: "تم تحديث التفضيلات" };
+      } else if (step.action === "update_theme") {
+        const theme = String(step.payload?.theme ?? "");
+        if (!["light", "dark", "system"].includes(theme)) throw new Error("الثيم غير صالح");
+        const { data: existing } = await db.from("user_preferences").select("preferences").eq("user_id", userId).maybeSingle();
+        const { error: themeError } = await db.from("user_preferences").upsert({ user_id: userId, preferences: { ...(existing?.preferences ?? {}), theme }, updated_at: new Date().toISOString() });
+        if (themeError) throw themeError;
+        result = { ok: true, message: `تم تغيير المظهر إلى ${theme}` };
+      } else if (step.action === "create_homework") {
+        const title = String(step.payload?.title ?? "").trim();
+        const subject = String(step.payload?.subject ?? "").trim();
+        if (!title || !subject) throw new Error("عنوان الواجب والمادة مطلوبان");
+        const { data: homework, error: homeworkError } = await db.from("homework").insert({ user_id: userId, title, subject, due_date: step.payload?.dueDate ?? null }).select("id,title,subject,due_date").single();
+        if (homeworkError) throw homeworkError;
+        result = { ok: true, message: "تم إنشاء الواجب", homework };
       } else if (step.action === "mark_homework_done") {
         const homeworkId = String(step.payload?.homeworkId ?? "");
         if (!homeworkId) throw new Error("معرّف الواجب غير موجود");
         const { error: hwError } = await db.from("homework").update({ done: true }).eq("id", homeworkId).eq("user_id", userId);
         if (hwError) throw hwError;
         result = { ok: true, message: "تم تعليم الواجب كمنجز" };
+      } else if (step.action === "create_reminder") {
+        const title = String(step.payload?.title ?? "").trim();
+        const remindAt = String(step.payload?.remindAt ?? "").trim();
+        if (!title || !remindAt || Number.isNaN(Date.parse(remindAt))) throw new Error("عنوان التذكير وموعده مطلوبان");
+        const { data: reminder, error: reminderError } = await db.from("agent_reminders").insert({ user_id: userId, title, remind_at: new Date(remindAt).toISOString(), note: step.payload?.note ?? null }).select("id,title,remind_at").single();
+        if (reminderError) throw reminderError;
+        result = { ok: true, message: "تم إنشاء التذكير", reminder };
       } else if (step.action === "send_message") {
         const recipientName = String(step.payload?.recipientName ?? "").trim();
         const content = String(step.payload?.content ?? "").trim();

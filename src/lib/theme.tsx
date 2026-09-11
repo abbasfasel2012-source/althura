@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export type Theme = "light" | "dark" | "system";
 const STORAGE_KEY = "aladhra.theme";
@@ -41,6 +42,18 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     } catch { /* noop */ }
   }, []);
 
+  useEffect(() => {
+    let active = true;
+    void (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from("user_preferences").select("preferences").eq("user_id", user.id).maybeSingle();
+      const saved = (data?.preferences as { theme?: Theme } | null)?.theme;
+      if (active && (saved === "light" || saved === "dark" || saved === "system")) setThemeState(saved);
+    })();
+    return () => { active = false; };
+  }, []);
+
   // Compute & apply resolved theme.
   useEffect(() => {
     const r = theme === "system" ? getSystem() : theme;
@@ -64,6 +77,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const setTheme = useCallback((t: Theme) => {
     setThemeState(t);
     try { localStorage.setItem(STORAGE_KEY, t); } catch { /* noop */ }
+    void supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      void supabase.from("user_preferences").select("preferences").eq("user_id", user.id).maybeSingle().then(({ data }) => {
+        const preferences = { ...((data?.preferences as Record<string, unknown> | null) ?? {}), theme: t };
+        void supabase.from("user_preferences").upsert({ user_id: user.id, preferences, updated_at: new Date().toISOString() });
+      });
+    });
   }, []);
 
   const toggle = useCallback(() => {
