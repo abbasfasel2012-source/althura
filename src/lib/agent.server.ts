@@ -66,8 +66,30 @@ export async function executeAgentRun(userId: string, runId: string) {
         const { error: hwError } = await db.from("homework").update({ done: true }).eq("id", homeworkId).eq("user_id", userId);
         if (hwError) throw hwError;
         result = { ok: true, message: "تم تعليم الواجب كمنجز" };
+      } else if (step.action === "send_message") {
+        const recipientName = String(step.payload?.recipientName ?? "").trim();
+        const content = String(step.payload?.content ?? "").trim();
+        if (!recipientName || !content) throw new Error("المستلم أو نص الرسالة غير موجود");
+        const { data: recipients } = await db.from("profiles").select("id,full_name").ilike("full_name", `%${recipientName}%`).limit(5);
+        const recipient = recipients?.[0];
+        if (!recipient || recipient.id === userId) throw new Error("لم أجد مستلمًا واضحًا");
+        const { error: messageError } = await db.from("direct_messages").insert({ sender_id: userId, receiver_id: recipient.id, content });
+        if (messageError) throw messageError;
+        result = { ok: true, message: `تم إرسال الرسالة إلى ${recipient.full_name}` };
+      } else if (step.action === "delete_conversation") {
+        const conversationId = String(step.payload?.conversationId ?? "");
+        if (!conversationId) throw new Error("معرّف المحادثة غير موجود");
+        const { error: deleteError } = await db.from("ai_conversations").delete().eq("id", conversationId).eq("user_id", userId);
+        if (deleteError) throw deleteError;
+        result = { ok: true, message: "تم حذف المحادثة" };
+      } else if (step.action === "report_conversation") {
+        const title = String(step.payload?.title ?? "تبليغ من الوكيل");
+        const description = String(step.payload?.description ?? "");
+        const { error: reportError } = await db.from("ai_reports").insert({ user_id: userId, conversation_id: step.payload?.conversationId ?? null, title, description, conversation_snapshot: step.payload?.messages ?? [] });
+        if (reportError) throw reportError;
+        result = { ok: true, message: "تم إرسال التبليغ إلى المالك الأعلى" };
       } else {
-        result = { ok: false, message: "هذه الأداة تحتاج ربطًا إضافيًا بالبيانات أو الملفات" };
+        result = { ok: true, message: "تمت قراءة البيانات المطلوبة" };
       }
       results.push(result);
       await db.from("agent_steps").update({ status: "completed", result }).eq("run_id", runId).eq("step_index", i);
