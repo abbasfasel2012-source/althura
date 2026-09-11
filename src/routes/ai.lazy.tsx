@@ -73,9 +73,44 @@ function AIPage() {
   }, [messages.length, isLoading]);
 
   const getText = (m: (typeof messages)[number]) => m.parts.map((p) => p.type === "text" ? p.text : "").join("");
+  const getImageParts = (m: (typeof messages)[number]) => m.parts.filter((p): p is Extract<(typeof m.parts)[number], { type: "file" }> => p.type === "file" && p.mediaType.startsWith("image/"));
+  const textToImage = async (text: string): Promise<Blob> => {
+    const width = 1400;
+    const padding = 72;
+    const font = "34px Arial, sans-serif";
+    const measure = document.createElement("canvas").getContext("2d");
+    if (!measure) throw new Error("تعذّر إنشاء صورة الرسالة");
+    measure.font = font;
+    const words = text.split(/\s+/);
+    const lines: string[] = [];
+    let line = "";
+    for (const word of words) {
+      const candidate = line ? `${line} ${word}` : word;
+      if (measure.measureText(candidate).width > width - padding * 2 && line) {
+        lines.push(line);
+        line = word;
+      } else line = candidate;
+    }
+    if (line) lines.push(line);
+    const lineHeight = 58;
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = Math.max(180, padding * 2 + lines.length * lineHeight);
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("تعذّر إنشاء صورة الرسالة");
+    context.fillStyle = "#ffffff";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.fillStyle = "#111827";
+    context.font = font;
+    context.textAlign = "right";
+    context.textBaseline = "top";
+    context.direction = "rtl";
+    lines.forEach((current, index) => context.fillText(current, width - padding, padding + index * lineHeight));
+    return new Promise((resolve, reject) => canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("تعذّر حفظ صورة الرسالة")), "image/png"));
+  };
   const isTouchDevice = () => typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
   const onFile = async (file: File | undefined) => { if (!file) return; setUploading(true); try { const uploaded = await uploadChatMedia(file, { quality: "high" }); setAttachment({ ...uploaded, type: detectAttachmentType(file) }); } finally { setUploading(false); } };
-  const onSubmit = async (e: React.FormEvent) => { e.preventDefault(); const t = input.trim() || (attachment ? `اقرأ هذا المرفق` : ""); if (!t || isLoading || uploading) return; setInput(""); const planResponse = await fetch("/api/agent", { method: "POST", headers: { "content-type": "application/json", ...(await authHeaders()) }, body: JSON.stringify({ request: t, conversationId, attachment }) }); if (planResponse.ok) { const planned = await planResponse.json(); if (planned.plan?.needsConfirmation) { setPendingPlan({ runId: planned.runId, summary: planned.plan.summary, steps: planned.plan.steps }); return; } } let message = t; if (attachment?.type === "image") { const vision = await fetch("/api/ai/vision", { method: "POST", headers: { "content-type": "application/json", ...(await authHeaders()) }, body: JSON.stringify({ url: attachment.url, mimeType: `image/${attachment.name.split(".").pop() || "jpeg"}` }) }); if (vision.ok) { const data = await vision.json(); message += `\n\nنص الصورة المستخرج:\n${data.text}`; } } await sendMessage({ text: message }); setAttachment(null); if (!isTouchDevice()) inputRef.current?.focus(); };
+  const onSubmit = async (e: React.FormEvent) => { e.preventDefault(); const t = input.trim() || (attachment ? `اقرأ هذا المرفق` : ""); if (!t || isLoading || uploading) return; setInput(""); const planResponse = await fetch("/api/agent", { method: "POST", headers: { "content-type": "application/json", ...(await authHeaders()) }, body: JSON.stringify({ request: t, conversationId, attachment }) }); if (planResponse.ok) { const planned = await planResponse.json(); if (planned.plan?.needsConfirmation) { setPendingPlan({ runId: planned.runId, summary: planned.plan.summary, steps: planned.plan.steps }); return; } } const messageImage = await uploadChatMedia(await textToImage(t), { filename: "رسالة-الطالب.png", quality: "high" }); const files = [{ type: "file" as const, mediaType: "image/png", url: messageImage.url }, ...(attachment ? [{ type: "file" as const, mediaType: `image/${attachment.name.split(".").pop() || "jpeg"}`, url: attachment.url }] : [])]; await sendMessage({ text: "اقرأ صورة رسالة الطالب وأجب عنها.", files }); setAttachment(null); if (!isTouchDevice()) inputRef.current?.focus(); };
   const confirmPlan = async () => { if (!pendingPlan) return; setExecutionState("running"); setExecutionMessage("جاري تنفيذ الخطوات..."); const response = await fetch("/api/agent", { method: "PATCH", headers: { "content-type": "application/json", ...(await authHeaders()) }, body: JSON.stringify({ runId: pendingPlan.runId, confirmed: true }) }); setPendingPlan(null); setAttachment(null); if (response.ok) { setExecutionState("completed"); setExecutionMessage("اكتمل تنفيذ الخطة"); await sendMessage({ text: "تم التأكيد. نُفذت الخطة، وأخبرني بالنتيجة." }); } else { setExecutionState("failed"); setExecutionMessage("تعذّر تنفيذ الخطة"); } };
   const confirmAction = async () => { if (!pendingAction) return; const response = await fetch("/api/ai/actions", { method: "POST", headers: { "content-type": "application/json", ...(await authHeaders()) }, body: JSON.stringify({ action: "send_message", confirmed: true, ...pendingAction }) }); if (response.ok) { setPendingAction(null); window.alert("تم إرسال الرسالة"); } else window.alert("تعذّر تنفيذ الأمر"); };
   const closeSidebar = () => { setSideVisible(false); window.setTimeout(() => setSideOpen(false), 180); };
@@ -96,7 +131,7 @@ function AIPage() {
     {executionState !== "idle" && <div className="glass rounded-2xl p-3 mb-4 text-sm" dir="rtl"><div className="font-bold">سجل تنفيذ الوكيل</div><div className="mt-1">{executionState === "running" ? "⏳" : executionState === "completed" ? "✓" : "!"} {executionMessage}</div></div>}
     <div className="space-y-3 pb-32">
       {!messages.length && <div className="glass p-4 rounded-2xl text-sm leading-relaxed">أهلاً، أنا عبوسي. اسألني عن أي درس، وسأشرحه لك بكل بساطة.</div>}
-      {messages.map((m) => <div key={m.id} className={`max-w-[85%] p-3.5 rounded-2xl text-sm leading-relaxed animate-reveal ${m.role === "assistant" ? "glass mr-0 ml-auto rounded-tr-md" : "bg-accent text-accent-foreground ml-0 mr-auto rounded-tl-md"}`}>{m.role === "assistant" ? <div className="prose prose-sm prose-invert max-w-none [&_p]:my-1.5 [&_ul]:list-disc [&_ul]:pr-5 [&_ol]:list-decimal [&_ol]:pr-5 [&_strong]:font-bold"><ReactMarkdown remarkPlugins={[remarkGfm]} components={{ a: ({ href, children }) => <a href={href} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-full bg-accent/15 text-accent px-2 py-0.5 no-underline text-xs"><span className="size-1.5 rounded-full bg-current" />{children}</a> }}>{getText(m)}</ReactMarkdown></div> : <span className="whitespace-pre-wrap">{getText(m)}</span>}</div>)}
+      {messages.map((m) => <div key={m.id} className={`max-w-[85%] p-3.5 rounded-2xl text-sm leading-relaxed animate-reveal ${m.role === "assistant" ? "glass mr-0 ml-auto rounded-tr-md" : "bg-accent text-accent-foreground ml-0 mr-auto rounded-tl-md"}`}>{getImageParts(m).map((part, index) => <img key={index} src={part.url} alt="رسالة الطالب" className="max-w-full rounded-xl mb-2" />)}{m.role === "assistant" ? <div className="prose prose-sm prose-invert max-w-none [&_p]:my-1.5 [&_ul]:list-disc [&_ul]:pr-5 [&_ol]:list-decimal [&_ol]:pr-5 [&_strong]:font-bold"><ReactMarkdown remarkPlugins={[remarkGfm]} components={{ a: ({ href, children }) => <a href={href} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-full bg-accent/15 text-accent px-2 py-0.5 no-underline text-xs"><span className="size-1.5 rounded-full bg-current" />{children}</a> }}>{getText(m)}</ReactMarkdown></div> : getText(m) && <span className="whitespace-pre-wrap">{getText(m)}</span>}</div>)}
       {status === "submitted" && <div className="glass max-w-[60%] p-3.5 rounded-2xl mr-0 ml-auto flex items-center gap-2 text-sm"><Loader2 className="size-4 animate-spin" />يفكر…</div>}
       {error && <div className="bg-destructive/10 text-destructive p-3 rounded-2xl text-sm">تعذّر الاتصال بعبوسي. حاول مرة أخرى.<div className="text-[10px] opacity-70 mt-1 font-mono" dir="ltr">{getErrorMessage(error)}</div></div>}
       <div ref={endRef} />
