@@ -59,8 +59,23 @@ function DMPage() {
 
   const messagesQ = useQuery({
     queryKey: ["dm", otherId], queryFn: () => fetchDirectMessages(otherId),
-    refetchInterval: 3000, enabled: !!userId,
+    enabled: !!userId,
   });
+
+  useEffect(() => {
+    if (!userId || !otherId) return;
+    const channel = supabase.channel(`dm:${[userId, otherId].sort().join(":")}`);
+    channel
+      .on("postgres_changes", { event: "*", schema: "public", table: "direct_messages" }, (payload) => {
+        const row = (payload.new ?? payload.old) as { sender_id?: string; receiver_id?: string };
+        if ((row.sender_id === userId && row.receiver_id === otherId) || (row.sender_id === otherId && row.receiver_id === userId)) {
+          void qc.invalidateQueries({ queryKey: ["dm", otherId] });
+          void qc.invalidateQueries({ queryKey: ["conversations"] });
+        }
+      })
+      .subscribe();
+    return () => { void supabase.removeChannel(channel); };
+  }, [userId, otherId, qc]);
 
   const ids = useMemo(() => (messagesQ.data ?? []).map((m) => m.id), [messagesQ.data]);
   const reactionsQ = useQuery({
@@ -241,7 +256,7 @@ function DMPage() {
   };
 
   return (
-    <AppShell title="تواصل">
+    <AppShell title={name} eyebrow="تواصل">
       <div className="flex items-center gap-3 mb-3 glass rounded-2xl p-3">
         <button onClick={() => navigate({ to: "/messages" })} className="size-9 grid place-items-center rounded-xl bg-surface-2">
           <ArrowRight className="size-4" />

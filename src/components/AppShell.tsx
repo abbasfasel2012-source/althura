@@ -37,7 +37,7 @@ function tap() {
   }
 }
 
-export function AppShell({ children, title }: { children: ReactNode; title?: string }) {
+export function AppShell({ children, title, eyebrow }: { children: ReactNode; title?: string; eyebrow?: string }) {
   const user = useUser();
   const navigate = useNavigate();
   const router = useRouter();
@@ -294,7 +294,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
                 <img src="/logo-classroom.jpg" alt="الذرى الذكية" className="size-full object-cover" />
               </div>
               <div className="min-w-0">
-                <div className="text-[11px] text-muted-foreground -mb-0.5">{t("app.name")}</div>
+                <div className="text-[11px] text-muted-foreground -mb-0.5">{eyebrow ?? t("app.name")}</div>
                 <div className="text-sm font-bold truncate whitespace-nowrap">{title ?? t("nav.home")}</div>
               </div>
             </Link>
