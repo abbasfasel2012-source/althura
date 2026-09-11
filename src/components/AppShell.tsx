@@ -230,7 +230,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
       </aside>
 
       {/* ============ الهيدر — نفسه بالجوال، مضغوط ومركزي بالكومبيوتر ============ */}
-      <header className="sticky top-0 z-30 px-4 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-2 lg:hidden">
+      <header className="fixed top-0 inset-x-0 z-40 px-4 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-2 bg-background/70 backdrop-blur-xl lg:hidden">
         <div className="glass-strong rounded-2xl px-3 py-2 flex items-center justify-between shadow-soft">
           <div className="flex items-center gap-2 min-w-0">
             {!isTab && (
@@ -317,7 +317,7 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
         )}
       </div>
 
-      <main className="min-w-0 px-4 pt-2 lg:px-10 lg:pt-4 lg:pb-16 lg:max-w-5xl lg:mx-auto">{children}</main>
+      <main className="min-w-0 px-4 pt-[calc(4.5rem+env(safe-area-inset-top))] lg:pt-4 lg:px-10 lg:pb-16 lg:max-w-5xl lg:mx-auto">{children}</main>
 
       <nav className="app-bottom-nav fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 right-4 z-50 lg:hidden">
         <div className="bottom-bar rounded-2xl px-2 py-2 shadow-glass relative">
