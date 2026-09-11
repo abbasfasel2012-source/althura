@@ -8,9 +8,10 @@ import {
   blockUser, unblockUser, isBlocked,
 } from "@/lib/data";
 import { useState, useEffect, useMemo, useRef } from "react";
-import { Send, Loader2, ArrowRight, Paperclip, Mic, StopCircle, X, Ban, ShieldOff } from "lucide-react";
+import { Send, Loader2, ArrowRight, Paperclip, Mic, StopCircle, X, Ban, ShieldOff, Phone, Video, PhoneOff } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { ChatMessage, AttachmentPreview } from "@/components/ChatMessage";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/dm/$userId")({
   head: () => ({
@@ -33,13 +34,21 @@ function DMPage() {
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const localVideoRef = useRef<HTMLVideoElement>(null);
   const [content, setContent] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [quality, setQuality] = useState<"high" | "medium" | "low">("medium");
   const [editing, setEditing] = useState<{ id: string; content: string } | null>(null);
   const [recording, setRecording] = useState(false);
+  const [call, setCall] = useState<{ type: "audio" | "video"; incoming: boolean; active: boolean } | null>(null);
+  const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const recRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const peerRef = useRef<RTCPeerConnection | null>(null);
+  const localStreamRef = useRef<MediaStream | null>(null);
+  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const pendingOfferRef = useRef<{ type: "audio" | "video"; offer: RTCSessionDescriptionInit } | null>(null);
 
   const profileQ = useQuery({ queryKey: ["profile", otherId], queryFn: () => fetchProfileById(otherId) });
   const blockedQ = useQuery({ queryKey: ["blocked", otherId], queryFn: () => isBlocked(otherId), enabled: !!userId });
@@ -122,6 +131,75 @@ function DMPage() {
   const label = profileQ.data?.teaching_subject || profileQ.data?.admin_label || (profileQ.data?.is_teacher ? "مدرّس" : "طالب");
   const isBlockedNow = !!blockedQ.data;
 
+  function cleanupCall() {
+    peerRef.current?.close();
+    peerRef.current = null;
+    localStreamRef.current?.getTracks().forEach((track) => track.stop());
+    localStreamRef.current = null;
+    setRemoteStream(null);
+    setCall(null);
+  }
+
+  async function createPeer(type: "audio" | "video") {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: type === "video" });
+    const peer = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
+    stream.getTracks().forEach((track) => peer.addTrack(track, stream));
+    peer.ontrack = (event) => setRemoteStream(event.streams[0] ?? null);
+    peer.onicecandidate = (event) => { if (event.candidate) void channelRef.current?.send({ type: "broadcast", event: "call-signal", payload: { from: userId, kind: "ice", candidate: event.candidate } }); };
+    localStreamRef.current = stream;
+    peerRef.current = peer;
+    return peer;
+  }
+
+  async function startCall(type: "audio" | "video") {
+    try {
+      const peer = await createPeer(type);
+      const offer = await peer.createOffer();
+      await peer.setLocalDescription(offer);
+      setCall({ type, incoming: false, active: true });
+      await channelRef.current?.send({ type: "broadcast", event: "call-signal", payload: { from: userId, kind: "offer", callType: type, offer } });
+    } catch { cleanupCall(); alert("تعذّر تشغيل المكالمة. تحقق من صلاحية الكاميرا والميكروفون."); }
+  }
+
+  async function answerCall(type: "audio" | "video", offer: RTCSessionDescriptionInit) {
+    try {
+      const peer = await createPeer(type);
+      await peer.setRemoteDescription(offer);
+      const answer = await peer.createAnswer();
+      await peer.setLocalDescription(answer);
+      setCall({ type, incoming: false, active: true });
+      await channelRef.current?.send({ type: "broadcast", event: "call-signal", payload: { from: userId, kind: "answer", answer } });
+    } catch { cleanupCall(); alert("تعذّر قبول المكالمة."); }
+  }
+
+  function acceptIncomingCall() {
+    const pending = pendingOfferRef.current;
+    if (!pending) return;
+    pendingOfferRef.current = null;
+    void answerCall(pending.type, pending.offer);
+  }
+
+  useEffect(() => {
+    if (!userId || !otherId) return;
+    const channel = supabase.channel(`call:${[userId, otherId].sort().join(":")}`);
+    channelRef.current = channel;
+    channel.on("broadcast", { event: "call-signal" }, async ({ payload }) => {
+      if (payload.from === userId) return;
+      if (payload.kind === "offer" && !peerRef.current) { pendingOfferRef.current = { type: payload.callType, offer: payload.offer }; setCall({ type: payload.callType, incoming: true, active: false }); }
+      if (payload.kind === "answer" && peerRef.current) await peerRef.current.setRemoteDescription(payload.answer);
+      if (payload.kind === "ice" && peerRef.current && payload.candidate) await peerRef.current.addIceCandidate(payload.candidate);
+      if (payload.kind === "hangup") cleanupCall();
+    }).subscribe();
+    return () => { void supabase.removeChannel(channel); channelRef.current = null; cleanupCall(); };
+  }, [userId, otherId]);
+
+  function hangUp() { void channelRef.current?.send({ type: "broadcast", event: "call-signal", payload: { from: userId, kind: "hangup" } }); cleanupCall(); }
+
+  useEffect(() => {
+    if (remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStream;
+    if (localVideoRef.current) localVideoRef.current.srcObject = localStreamRef.current;
+  }, [remoteStream, call]);
+
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editing) {
@@ -146,6 +224,12 @@ function DMPage() {
           <div className="font-bold text-sm truncate">{name}</div>
           <div className="text-[11px] text-muted-foreground truncate">{label}</div>
         </div>
+        <button type="button" onClick={() => void startCall("audio")} className="size-9 grid place-items-center rounded-xl bg-surface-2 text-primary" aria-label="مكالمة صوتية" title="مكالمة صوتية">
+          <Phone className="size-4" />
+        </button>
+        <button type="button" onClick={() => void startCall("video")} className="size-9 grid place-items-center rounded-xl bg-surface-2 text-primary" aria-label="مكالمة مرئية" title="مكالمة مرئية">
+          <Video className="size-4" />
+        </button>
         <button
           onClick={() => blockMut.mutate()}
           className={`size-9 grid place-items-center rounded-xl ${isBlockedNow ? "bg-destructive/10 text-destructive" : "bg-surface-2"}`}
@@ -155,6 +239,23 @@ function DMPage() {
           {isBlockedNow ? <ShieldOff className="size-4" /> : <Ban className="size-4" />}
         </button>
       </div>
+
+      {call && (
+        <div className="mb-3 rounded-2xl glass-strong p-3" dir="rtl">
+          {call.incoming ? (
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-sm font-bold">مكالمة {call.type === "video" ? "مرئية" : "صوتية"} واردة من {name}</span>
+              <div className="flex gap-2"><button type="button" onClick={acceptIncomingCall} className="rounded-xl bg-primary px-3 py-2 text-xs font-bold text-primary-foreground">قبول</button><button type="button" onClick={hangUp} className="rounded-xl bg-destructive px-3 py-2 text-xs font-bold text-white">رفض</button></div>
+            </div>
+          ) : (
+            <div className="relative overflow-hidden rounded-xl bg-black/10">
+              {call.type === "video" && <><video ref={remoteVideoRef} autoPlay playsInline className="min-h-48 w-full rounded-xl object-cover" /><video ref={localVideoRef} autoPlay muted playsInline className="absolute bottom-2 end-2 h-24 w-20 rounded-lg object-cover" /></>}
+              {call.type === "audio" && <div className="p-6 text-center text-sm">مكالمة صوتية مع {name}</div>}
+              <button type="button" onClick={hangUp} className="mx-auto my-2 flex size-10 items-center justify-center rounded-full bg-destructive text-white" aria-label="إنهاء المكالمة"><PhoneOff className="size-4" /></button>
+            </div>
+          )}
+        </div>
+      )}
 
       {isBlockedNow && (
         <div className="mb-2 p-3 rounded-2xl bg-destructive/10 text-destructive text-xs text-center">
