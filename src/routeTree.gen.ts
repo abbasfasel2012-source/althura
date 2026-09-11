@@ -37,6 +37,7 @@ import { Route as DmUserIdRouteImport } from './routes/dm.$userId'
 import { Route as ExamsQuizIdRouteImport } from './routes/exams.$quizId'
 import { Route as GroupsIndexRouteImport } from './routes/groups.index'
 import { Route as GroupsGroupIdRouteImport } from './routes/groups.$groupId'
+import { Route as ApiBooksIndexRouteImport } from './routes/api/books/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -178,6 +179,11 @@ const GroupsGroupIdRoute = GroupsGroupIdRouteImport.update({
   path: '/$groupId',
   getParentRoute: () => GroupsRoute,
 } as any)
+const ApiBooksIndexRoute = ApiBooksIndexRouteImport.update({
+  id: '/api/books/',
+  path: '/api/books/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -208,6 +214,7 @@ export interface FileRoutesByFullPath {
   '/exams/$quizId': typeof ExamsQuizIdRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
   '/groups/': typeof GroupsIndexRoute
+  '/api/books/': typeof ApiBooksIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -237,6 +244,7 @@ export interface FileRoutesByTo {
   '/exams/$quizId': typeof ExamsQuizIdRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
   '/groups': typeof GroupsIndexRoute
+  '/api/books': typeof ApiBooksIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -268,6 +276,7 @@ export interface FileRoutesById {
   '/exams/$quizId': typeof ExamsQuizIdRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
   '/groups/': typeof GroupsIndexRoute
+  '/api/books/': typeof ApiBooksIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -300,6 +309,7 @@ export interface FileRouteTypes {
     | '/exams/$quizId'
     | '/groups/$groupId'
     | '/groups/'
+    | '/api/books/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -329,6 +339,7 @@ export interface FileRouteTypes {
     | '/exams/$quizId'
     | '/groups/$groupId'
     | '/groups'
+    | '/api/books'
   id:
     | '__root__'
     | '/'
@@ -359,6 +370,7 @@ export interface FileRouteTypes {
     | '/exams/$quizId'
     | '/groups/$groupId'
     | '/groups/'
+    | '/api/books/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -387,6 +399,7 @@ export interface RootRouteChildren {
   ApiChatRoute: typeof ApiChatRoute
   ApiGradeTextRoute: typeof ApiGradeTextRoute
   DmUserIdRoute: typeof DmUserIdRoute
+  ApiBooksIndexRoute: typeof ApiBooksIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -587,6 +600,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GroupsGroupIdRouteImport
       parentRoute: typeof GroupsRoute
     }
+    '/api/books/': {
+      id: '/api/books/'
+      path: '/api/books'
+      fullPath: '/api/books/'
+      preLoaderRoute: typeof ApiBooksIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -639,6 +659,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatRoute: ApiChatRoute,
   ApiGradeTextRoute: ApiGradeTextRoute,
   DmUserIdRoute: DmUserIdRoute,
+  ApiBooksIndexRoute: ApiBooksIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

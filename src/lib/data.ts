@@ -144,11 +144,22 @@ export async function uploadBook(p: { file: File; title: string; subject?: strin
   const path = `${Date.now()}_${safe}`;
   const up = await supabase.storage.from("books").upload(path, p.file);
   if (up.error) throw up.error;
-  const { error } = await supabase.from("books").insert({
+  const { data: book, error } = await supabase.from("books").insert({
     title: p.title, subject: p.subject ?? null, grade: p.grade ?? null,
     file_url: path, created_by: user?.id,
-  });
+  }).select("id").single();
   if (error) throw error;
+  const { data: session } = await supabase.auth.getSession();
+  if (book?.id && session.session?.access_token) {
+    void fetch("/api/books/index", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${session.session.access_token}`,
+      },
+      body: JSON.stringify({ bookId: book.id }),
+    });
+  }
 }
 export async function deleteBook(b: BookItem) {
   await supabase.storage.from("books").remove([b.file_url]).catch(() => {});
@@ -1017,4 +1028,3 @@ export async function fetchConversations(): Promise<ConversationSummary[]> {
   }
   return [...map.values()];
 }
-
