@@ -2,6 +2,27 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export type ChatRecord = { role: "user" | "assistant"; content: string };
 
+export async function shouldUseWebSearch(question: string, bookContext = "") {
+  const key = process.env.GOOGLE_API_KEY;
+  if (!key || !question.trim()) return false;
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ role: "user", parts: [{ text: `قرر هل يحتاج السؤال إلى بحث حديث في الويب قبل الإجابة. أجب بكلمة واحدة فقط: نعم أو لا.
+ابحث إذا كان السؤال عن حدث جارٍ، أخبار، شخص أو معلومة قديمة/متغيرة، أو إذا كان صعبًا ولا تكفيه المعرفة العامة أو سياق الكتب.
+لا تبحث إذا كان سؤالًا تعليميًا عاديًا تكفيه الكتب أو المعرفة الثابتة.
+السؤال: ${question}
+سياق الكتب المتاح: ${bookContext.slice(0, 2500)}` }] }],
+      generationConfig: { temperature: 0, maxOutputTokens: 4 },
+    }),
+  });
+  if (!response.ok) return false;
+  const body = await response.json() as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
+  const answer = body.candidates?.[0]?.content?.parts?.map((part) => part.text ?? "").join("").trim().toLowerCase();
+  return answer?.includes("نعم") || answer?.includes("yes") || answer?.includes("true") || false;
+}
+
 export async function webSearchWithGemini(question: string) {
   const key = process.env.GOOGLE_API_KEY;
   if (!key) return "";

@@ -3,7 +3,7 @@ import { convertToModelMessages, streamText, type UIMessage } from "ai";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import { bookContext, searchBooks } from "@/lib/book-rag.server";
 import { loadStudentContext } from "@/lib/student-context.server";
-import { webSearchWithGemini } from "@/lib/ai-workspace.server";
+import { shouldUseWebSearch, webSearchWithGemini } from "@/lib/ai-workspace.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 async function authenticatedUserId(request: Request) {
@@ -45,7 +45,7 @@ export const Route = createFileRoute("/api/chat")({
               return "";
             }) : "",
           ]);
-          if (/ابحث في الويب|ابحث بالانترنت|من الانترنت|من الإنترنت|مصدر حديث|تأكد من الأخبار/i.test(question)) {
+          if (await shouldUseWebSearch(question, books)) {
             web = await webSearchWithGemini(question).catch((error) => {
               console.error("فشل البحث في الويب:", error);
               return "";
@@ -79,7 +79,7 @@ ${books}
 
 ${web ? `نتيجة بحث حديثة من الويب:
 ${web}
-اذكر أن هذه المعلومة من الويب، وحافظ على روابط المصادر التي ظهرت في النتيجة.` : "لا تستخدم الويب إلا عند طلب الطالب ذلك صراحة."}
+اذكر أن هذه المعلومة من الويب، وحافظ على روابط المصادر التي ظهرت في النتيجة.` : "لم تكن هناك حاجة إلى البحث في الويب لهذا السؤال."}
 
 إذا لم تجد الإجابة في الكتب أو بيانات الطالب، قل ذلك بوضوح.
 لا تخترع درجات أو واجبات أو مصادر.
