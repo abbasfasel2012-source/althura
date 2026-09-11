@@ -6,7 +6,11 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "display_override": [
+    "standalone",
+    "minimal-ui",
+    "browser"
+  ],
   "orientation": "portrait",
   "background_color": "#f0ece0",
   "theme_color": "#f0ece0",
@@ -37,10 +41,6 @@
     "productivity"
   ],
   "prefer_related_applications": false,
-  "launch_handler": {
-    "client_mode": "navigate-existing"
-  },
-  "handle_links": "preferred",
   "share_target": {
     "action": "/ai",
     "method": "GET",
@@ -51,22 +51,6 @@
       "url": "url"
     }
   },
-  "file_handlers": [
-    {
-      "action": "/ai",
-      "accept": {
-        "image/*": [".png", ".jpg", ".jpeg", ".webp"],
-        "application/pdf": [".pdf"],
-        "text/plain": [".txt"]
-      }
-    }
-  ],
-  "protocol_handlers": [
-    {
-      "protocol": "web+althura",
-      "url": "/ai?text=%s"
-    }
-  ],
   "shortcuts": [
     {
       "name": "الجدول",
