@@ -6,6 +6,7 @@ import { useI18n, LANGS, type Lang } from "@/lib/i18n";
 import { Bell, BellRing, Globe, Languages, Monitor, Moon, Sun, Vibrate, Volume2, WifiOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { enableDeviceNotifications, getPushPermission, type PushPermission } from "@/lib/push";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -27,7 +28,14 @@ function SettingsPage() {
   const [vibrate, setVibrate] = useLocalStorage("aladhra.vibrate", false);
   const [perm, setPerm] = useState<PushPermission>("default");
 
-  useEffect(() => { setPerm(getPushPermission()); }, []);
+  const savePreference = async (key: string, value: unknown) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data } = await supabase.from("user_preferences").select("preferences").eq("user_id", user.id).maybeSingle();
+    await supabase.from("user_preferences").upsert({ user_id: user.id, preferences: { ...((data?.preferences as Record<string, unknown> | null) ?? {}), [key]: value }, updated_at: new Date().toISOString() });
+  };
+
+  useEffect(() => { setPerm(getPushPermission()); void (async () => { const { data: { user } } = await supabase.auth.getUser(); if (!user) return; const { data } = await supabase.from("user_preferences").select("preferences").eq("user_id", user.id).maybeSingle(); const p = (data?.preferences ?? {}) as Record<string, unknown>; if (typeof p.notif === "boolean") setNotif(p.notif); if (typeof p.sound === "boolean") setSound(p.sound); if (typeof p.vibrate === "boolean") setVibrate(p.vibrate); })(); }, []);
 
   const options: { value: Theme; label: string; icon: typeof Sun }[] = [
     { value: "light", label: t("settings.light"), icon: Sun },
@@ -74,7 +82,7 @@ function SettingsPage() {
             return (
               <button
                 key={l.value}
-                onClick={() => setLang(l.value as Lang)}
+                onClick={() => { setLang(l.value as Lang); void savePreference("lang", l.value); }}
                 className={`rounded-xl p-3 flex flex-col items-center gap-2 transition active:scale-95 ${
                   active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
                 }`}
@@ -89,7 +97,7 @@ function SettingsPage() {
 
       <SectionTitle eyebrow={t("settings.alerts")} title={t("settings.notifications")} />
       <div className="space-y-2 mb-5">
-        <Toggle icon={<Bell className="size-4" />} label={t("settings.adminNotif")} value={notif} onChange={setNotif} />
+        <Toggle icon={<Bell className="size-4" />} label={t("settings.adminNotif")} value={notif} onChange={(value) => { setNotif(value); void savePreference("notif", value); }} />
         <div className="w-full glass rounded-2xl px-4 py-3.5 flex items-center gap-3">
           <span className="text-primary"><BellRing className="size-4" /></span>
           <span className="font-bold text-sm flex-1 text-start">{t("settings.device")}</span>
@@ -108,8 +116,8 @@ function SettingsPage() {
             </button>
           )}
         </div>
-        <Toggle icon={<Volume2 className="size-4" />} label={t("settings.sound")} value={sound} onChange={setSound} />
-        <Toggle icon={<Vibrate className="size-4" />} label={t("settings.vibrate")} value={vibrate} onChange={setVibrate} />
+        <Toggle icon={<Volume2 className="size-4" />} label={t("settings.sound")} value={sound} onChange={(value) => { setSound(value); void savePreference("sound", value); }} />
+        <Toggle icon={<Vibrate className="size-4" />} label={t("settings.vibrate")} value={vibrate} onChange={(value) => { setVibrate(value); void savePreference("vibrate", value); }} />
       </div>
 
       <Card className="!p-4 mb-5">

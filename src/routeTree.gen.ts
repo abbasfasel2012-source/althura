@@ -34,6 +34,7 @@ import { Route as VideosRouteImport } from './routes/videos'
 import { Route as ApiAgentRouteImport } from './routes/api/agent'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiGradeTextRouteImport } from './routes/api/grade-text'
+import { Route as ApiRemindersRouteImport } from './routes/api/reminders'
 import { Route as DmUserIdRouteImport } from './routes/dm.$userId'
 import { Route as ExamsQuizIdRouteImport } from './routes/exams.$quizId'
 import { Route as GroupsIndexRouteImport } from './routes/groups.index'
@@ -42,6 +43,7 @@ import { Route as ApiAiActionsRouteImport } from './routes/api/ai/actions'
 import { Route as ApiAiAdminRouteImport } from './routes/api/ai/admin'
 import { Route as ApiAiConversationsRouteImport } from './routes/api/ai/conversations'
 import { Route as ApiAiReportRouteImport } from './routes/api/ai/report'
+import { Route as ApiAiVisionRouteImport } from './routes/api/ai/vision'
 import { Route as ApiBooksIndexRouteImport } from './routes/api/books/index'
 
 const IndexRoute = IndexRouteImport.update({
@@ -169,6 +171,11 @@ const ApiGradeTextRoute = ApiGradeTextRouteImport.update({
   path: '/api/grade-text',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiRemindersRoute = ApiRemindersRouteImport.update({
+  id: '/api/reminders',
+  path: '/api/reminders',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DmUserIdRoute = DmUserIdRouteImport.update({
   id: '/dm/$userId',
   path: '/dm/$userId',
@@ -209,6 +216,11 @@ const ApiAiReportRoute = ApiAiReportRouteImport.update({
   path: '/api/ai/report',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAiVisionRoute = ApiAiVisionRouteImport.update({
+  id: '/api/ai/vision',
+  path: '/api/ai/vision',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiBooksIndexRoute = ApiBooksIndexRouteImport.update({
   id: '/api/books/',
   path: '/api/books/',
@@ -241,6 +253,7 @@ export interface FileRoutesByFullPath {
   '/api/agent': typeof ApiAgentRoute
   '/api/chat': typeof ApiChatRoute
   '/api/grade-text': typeof ApiGradeTextRoute
+  '/api/reminders': typeof ApiRemindersRoute
   '/dm/$userId': typeof DmUserIdRoute
   '/exams/$quizId': typeof ExamsQuizIdRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
@@ -249,6 +262,7 @@ export interface FileRoutesByFullPath {
   '/api/ai/admin': typeof ApiAiAdminRoute
   '/api/ai/conversations': typeof ApiAiConversationsRoute
   '/api/ai/report': typeof ApiAiReportRoute
+  '/api/ai/vision': typeof ApiAiVisionRoute
   '/api/books/': typeof ApiBooksIndexRoute
 }
 export interface FileRoutesByTo {
@@ -276,6 +290,7 @@ export interface FileRoutesByTo {
   '/api/agent': typeof ApiAgentRoute
   '/api/chat': typeof ApiChatRoute
   '/api/grade-text': typeof ApiGradeTextRoute
+  '/api/reminders': typeof ApiRemindersRoute
   '/dm/$userId': typeof DmUserIdRoute
   '/exams/$quizId': typeof ExamsQuizIdRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
@@ -284,6 +299,7 @@ export interface FileRoutesByTo {
   '/api/ai/admin': typeof ApiAiAdminRoute
   '/api/ai/conversations': typeof ApiAiConversationsRoute
   '/api/ai/report': typeof ApiAiReportRoute
+  '/api/ai/vision': typeof ApiAiVisionRoute
   '/api/books': typeof ApiBooksIndexRoute
 }
 export interface FileRoutesById {
@@ -313,6 +329,7 @@ export interface FileRoutesById {
   '/api/agent': typeof ApiAgentRoute
   '/api/chat': typeof ApiChatRoute
   '/api/grade-text': typeof ApiGradeTextRoute
+  '/api/reminders': typeof ApiRemindersRoute
   '/dm/$userId': typeof DmUserIdRoute
   '/exams/$quizId': typeof ExamsQuizIdRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
@@ -321,6 +338,7 @@ export interface FileRoutesById {
   '/api/ai/admin': typeof ApiAiAdminRoute
   '/api/ai/conversations': typeof ApiAiConversationsRoute
   '/api/ai/report': typeof ApiAiReportRoute
+  '/api/ai/vision': typeof ApiAiVisionRoute
   '/api/books/': typeof ApiBooksIndexRoute
 }
 export interface FileRouteTypes {
@@ -351,6 +369,7 @@ export interface FileRouteTypes {
     | '/api/agent'
     | '/api/chat'
     | '/api/grade-text'
+    | '/api/reminders'
     | '/dm/$userId'
     | '/exams/$quizId'
     | '/groups/$groupId'
@@ -359,6 +378,7 @@ export interface FileRouteTypes {
     | '/api/ai/admin'
     | '/api/ai/conversations'
     | '/api/ai/report'
+    | '/api/ai/vision'
     | '/api/books/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -386,6 +406,7 @@ export interface FileRouteTypes {
     | '/api/agent'
     | '/api/chat'
     | '/api/grade-text'
+    | '/api/reminders'
     | '/dm/$userId'
     | '/exams/$quizId'
     | '/groups/$groupId'
@@ -394,6 +415,7 @@ export interface FileRouteTypes {
     | '/api/ai/admin'
     | '/api/ai/conversations'
     | '/api/ai/report'
+    | '/api/ai/vision'
     | '/api/books'
   id:
     | '__root__'
@@ -422,6 +444,7 @@ export interface FileRouteTypes {
     | '/api/agent'
     | '/api/chat'
     | '/api/grade-text'
+    | '/api/reminders'
     | '/dm/$userId'
     | '/exams/$quizId'
     | '/groups/$groupId'
@@ -430,6 +453,7 @@ export interface FileRouteTypes {
     | '/api/ai/admin'
     | '/api/ai/conversations'
     | '/api/ai/report'
+    | '/api/ai/vision'
     | '/api/books/'
   fileRoutesById: FileRoutesById
 }
@@ -459,11 +483,13 @@ export interface RootRouteChildren {
   ApiAgentRoute: typeof ApiAgentRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiGradeTextRoute: typeof ApiGradeTextRoute
+  ApiRemindersRoute: typeof ApiRemindersRoute
   DmUserIdRoute: typeof DmUserIdRoute
   ApiAiActionsRoute: typeof ApiAiActionsRoute
   ApiAiAdminRoute: typeof ApiAiAdminRoute
   ApiAiConversationsRoute: typeof ApiAiConversationsRoute
   ApiAiReportRoute: typeof ApiAiReportRoute
+  ApiAiVisionRoute: typeof ApiAiVisionRoute
   ApiBooksIndexRoute: typeof ApiBooksIndexRoute
 }
 
@@ -644,6 +670,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiGradeTextRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/reminders': {
+      id: '/api/reminders'
+      path: '/api/reminders'
+      fullPath: '/api/reminders'
+      preLoaderRoute: typeof ApiRemindersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dm/$userId': {
       id: '/dm/$userId'
       path: '/dm/$userId'
@@ -698,6 +731,13 @@ declare module '@tanstack/react-router' {
       path: '/api/ai/report'
       fullPath: '/api/ai/report'
       preLoaderRoute: typeof ApiAiReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ai/vision': {
+      id: '/api/ai/vision'
+      path: '/api/ai/vision'
+      fullPath: '/api/ai/vision'
+      preLoaderRoute: typeof ApiAiVisionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/books/': {
@@ -759,11 +799,13 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAgentRoute: ApiAgentRoute,
   ApiChatRoute: ApiChatRoute,
   ApiGradeTextRoute: ApiGradeTextRoute,
+  ApiRemindersRoute: ApiRemindersRoute,
   DmUserIdRoute: DmUserIdRoute,
   ApiAiActionsRoute: ApiAiActionsRoute,
   ApiAiAdminRoute: ApiAiAdminRoute,
   ApiAiConversationsRoute: ApiAiConversationsRoute,
   ApiAiReportRoute: ApiAiReportRoute,
+  ApiAiVisionRoute: ApiAiVisionRoute,
   ApiBooksIndexRoute: ApiBooksIndexRoute,
 }
 export const routeTree = rootRouteImport

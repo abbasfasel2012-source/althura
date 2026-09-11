@@ -5,6 +5,7 @@ import { signOut } from "@/lib/auth";
 import { useHasUnreadNotifications, markNotificationsSeen } from "@/lib/notifications";
 import { useTheme } from "@/lib/theme";
 import { useI18n } from "@/lib/i18n";
+import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useLayoutEffect, useState, type ReactNode } from "react";
 
 const NAV = [
@@ -58,6 +59,22 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
     return () => clearTimeout(id);
   }, [isNavigating]);
   const [offline, setOffline] = useState(false);
+
+  useEffect(() => {
+    let stopped = false;
+    const checkReminders = async () => {
+      if (stopped || typeof Notification === "undefined" || Notification.permission !== "granted") return;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const response = await fetch("/api/reminders", { headers: { Authorization: `Bearer ${session.access_token}` } });
+      if (!response.ok) return;
+      const reminders = await response.json() as Array<{ title: string; note?: string | null }>;
+      reminders.forEach((reminder) => new Notification(reminder.title, { body: reminder.note ?? "حان موعد التذكير" }));
+    };
+    void checkReminders();
+    const timer = window.setInterval(() => void checkReminders(), 60_000);
+    return () => { stopped = true; window.clearInterval(timer); };
+  }, []);
 
   const activeIndex = NAV.findIndex((n) => isActive(location.pathname, n.match));
 
