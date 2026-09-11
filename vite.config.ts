@@ -32,6 +32,11 @@ export default defineConfig({
         outDir: ".output/public",
         workbox: {
           globDirectory: ".output/public",
+          // معالجات Push/الإشعارات تُدمج داخل الـ SW المولّد (كان ملف sw.js
+          // اليدوي يُستبدل بالكامل بالمولّد فتضيع الإشعارات).
+          importScripts: ["/push-sw.js"],
+          skipWaiting: true,
+          clientsClaim: true,
           globPatterns: ["**/*.{js,css,woff2,png,svg,webmanifest,html}"],
           navigateFallback: "/",
           navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//],
