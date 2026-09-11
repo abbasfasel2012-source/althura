@@ -8,7 +8,7 @@ import {
   blockUser, unblockUser, isBlocked,
 } from "@/lib/data";
 import { useState, useEffect, useMemo, useRef } from "react";
-import { Send, Loader2, ArrowRight, Paperclip, Mic, StopCircle, X, Ban, ShieldOff, Phone, Video, PhoneOff } from "lucide-react";
+import { Send, Loader2, ArrowRight, Paperclip, Mic, StopCircle, X, Ban, ShieldOff, Phone, Video, PhoneOff, Volume2, VolumeX } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { ChatMessage, AttachmentPreview } from "@/components/ChatMessage";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,6 +36,7 @@ function DMPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const localVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteAudioRef = useRef<HTMLAudioElement>(null);
   const [content, setContent] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [quality, setQuality] = useState<"high" | "medium" | "low">("medium");
@@ -43,12 +44,15 @@ function DMPage() {
   const [recording, setRecording] = useState(false);
   const [call, setCall] = useState<{ type: "audio" | "video"; incoming: boolean; active: boolean } | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+  const [speakerOn, setSpeakerOn] = useState(true);
   const recRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const peerRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const pendingOfferRef = useRef<{ type: "audio" | "video"; offer: RTCSessionDescriptionInit } | null>(null);
+  const ringTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const ringContextRef = useRef<AudioContext | null>(null);
 
   const profileQ = useQuery({ queryKey: ["profile", otherId], queryFn: () => fetchProfileById(otherId) });
   const blockedQ = useQuery({ queryKey: ["blocked", otherId], queryFn: () => isBlocked(otherId), enabled: !!userId });
@@ -198,7 +202,33 @@ function DMPage() {
   useEffect(() => {
     if (remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStream;
     if (localVideoRef.current) localVideoRef.current.srcObject = localStreamRef.current;
-  }, [remoteStream, call]);
+    if (remoteAudioRef.current) { remoteAudioRef.current.srcObject = remoteStream; remoteAudioRef.current.volume = speakerOn ? 1 : 0; }
+  }, [remoteStream, call, speakerOn]);
+
+  useEffect(() => {
+    if (!call?.incoming) {
+      if (ringTimerRef.current) clearInterval(ringTimerRef.current);
+      ringTimerRef.current = null;
+      ringContextRef.current?.close().catch(() => {});
+      ringContextRef.current = null;
+      return;
+    }
+    const beep = () => {
+      const context = ringContextRef.current ?? new AudioContext();
+      ringContextRef.current = context;
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.frequency.value = 880;
+      gain.gain.value = 0.06;
+      oscillator.connect(gain).connect(context.destination);
+      oscillator.start();
+      oscillator.stop(context.currentTime + 0.35);
+    };
+    beep();
+    ringTimerRef.current = setInterval(beep, 1800);
+    if ("vibrate" in navigator) navigator.vibrate([300, 700, 300]);
+    return () => { if (ringTimerRef.current) clearInterval(ringTimerRef.current); ringTimerRef.current = null; };
+  }, [call?.incoming]);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -221,7 +251,7 @@ function DMPage() {
           <img src="/avatar-default.jpg" alt={name || "عضو"} className="size-full object-cover" />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="font-bold text-sm truncate">{name}</div>
+          <div className="font-bold text-sm leading-tight line-clamp-2" title={name}>{name}</div>
           <div className="text-[11px] text-muted-foreground truncate">{label}</div>
         </div>
         <button type="button" onClick={() => void startCall("audio")} className="size-9 grid place-items-center rounded-xl bg-surface-2 text-primary" aria-label="مكالمة صوتية" title="مكالمة صوتية">
@@ -251,6 +281,8 @@ function DMPage() {
             <div className="relative overflow-hidden rounded-xl bg-black/10">
               {call.type === "video" && <><video ref={remoteVideoRef} autoPlay playsInline className="min-h-48 w-full rounded-xl object-cover" /><video ref={localVideoRef} autoPlay muted playsInline className="absolute bottom-2 end-2 h-24 w-20 rounded-lg object-cover" /></>}
               {call.type === "audio" && <div className="p-6 text-center text-sm">مكالمة صوتية مع {name}</div>}
+              <audio ref={remoteAudioRef} autoPlay />
+              <button type="button" onClick={() => setSpeakerOn((value) => !value)} className="mx-auto flex items-center gap-2 rounded-xl bg-surface-2 px-3 py-2 text-xs" aria-label={speakerOn ? "إيقاف مكبر الصوت" : "تشغيل مكبر الصوت"}>{speakerOn ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}{speakerOn ? "مكبر الصوت" : "السماعة"}</button>
               <button type="button" onClick={hangUp} className="mx-auto my-2 flex size-10 items-center justify-center rounded-full bg-destructive text-white" aria-label="إنهاء المكالمة"><PhoneOff className="size-4" /></button>
             </div>
           )}

@@ -289,13 +289,13 @@ export function AppShell({ children, title }: { children: ReactNode; title?: str
                 <ChevronLeft className="size-4 rotate-180" />
               </button>
             )}
-            <Link to="/" className="flex items-center gap-2 min-w-0">
+            <Link to="/" className="flex items-center gap-2 min-w-0 max-w-[calc(100vw-13rem)]">
               <div className="size-9 shrink-0 rounded-xl overflow-hidden">
                 <img src="/logo-classroom.jpg" alt="الذرى الذكية" className="size-full object-cover" />
               </div>
               <div className="min-w-0">
                 <div className="text-[11px] text-muted-foreground -mb-0.5">{t("app.name")}</div>
-                <div className="text-sm font-bold truncate">{title ?? t("nav.home")}</div>
+                <div className="text-sm font-bold truncate whitespace-nowrap">{title ?? t("nav.home")}</div>
               </div>
             </Link>
           </div>
