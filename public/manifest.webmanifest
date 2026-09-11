@@ -5,8 +5,10 @@
   "id": "/",
   "start_url": "/",
   "scope": "/",
-  "display": "browser",
+  "display": "standalone",
   "display_override": [
+    "standalone",
+    "minimal-ui",
     "browser"
   ],
   "orientation": "portrait",
