@@ -7,6 +7,7 @@ import { Bell, BellRing, Globe, Languages, Monitor, Moon, Sun, Vibrate, Volume2,
 import { useEffect, useState } from "react";
 import { enableDeviceNotifications, getPushPermission, type PushPermission } from "@/lib/push";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -32,7 +33,7 @@ function SettingsPage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     const { data } = await supabase.from("user_preferences").select("preferences").eq("user_id", user.id).maybeSingle();
-    await supabase.from("user_preferences").upsert({ user_id: user.id, preferences: { ...((data?.preferences as Record<string, unknown> | null) ?? {}), [key]: value }, updated_at: new Date().toISOString() });
+    await supabase.from("user_preferences").upsert({ user_id: user.id, preferences: { ...((data?.preferences as Record<string, unknown> | null) ?? {}), [key]: value } as unknown as Json, updated_at: new Date().toISOString() });
   };
 
   useEffect(() => { setPerm(getPushPermission()); void (async () => { const { data: { user } } = await supabase.auth.getUser(); if (!user) return; const { data } = await supabase.from("user_preferences").select("preferences").eq("user_id", user.id).maybeSingle(); const p = (data?.preferences ?? {}) as Record<string, unknown>; if (typeof p.notif === "boolean") setNotif(p.notif); if (typeof p.sound === "boolean") setSound(p.sound); if (typeof p.vibrate === "boolean") setVibrate(p.vibrate); })(); }, []);
