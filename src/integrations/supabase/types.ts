@@ -14,32 +14,365 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_audit_log: {
+        Row: {
+          action: string
+          conversation_id: string | null
+          created_at: string
+          details: Json
+          id: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          conversation_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          conversation_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_audit_log_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "ai_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_prompts: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          is_active: boolean
+          prompt: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          is_active?: boolean
+          prompt: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_active?: boolean
+          prompt?: string
+        }
+        Relationships: []
+      }
+      agent_reminders: {
+        Row: {
+          created_at: string
+          done: boolean
+          id: string
+          note: string | null
+          notified_at: string | null
+          remind_at: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          done?: boolean
+          id?: string
+          note?: string | null
+          notified_at?: string | null
+          remind_at: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          done?: boolean
+          id?: string
+          note?: string | null
+          notified_at?: string | null
+          remind_at?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      agent_runs: {
+        Row: {
+          conversation_id: string | null
+          created_at: string
+          id: string
+          plan: Json
+          request: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          plan?: Json
+          request: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          plan?: Json
+          request?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_runs_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "ai_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_steps: {
+        Row: {
+          created_at: string
+          error: string | null
+          id: string
+          label: string
+          result: Json | null
+          run_id: string
+          status: string
+          step_index: number
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          label: string
+          result?: Json | null
+          run_id: string
+          status?: string
+          step_index: number
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          label?: string
+          result?: Json | null
+          run_id?: string
+          status?: string
+          step_index?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_steps_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "agent_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_action_requests: {
+        Row: {
+          action_type: string
+          completed_at: string | null
+          confirmed_at: string | null
+          conversation_id: string | null
+          created_at: string
+          id: string
+          payload: Json
+          status: string
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          completed_at?: string | null
+          confirmed_at?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          payload?: Json
+          status?: string
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          completed_at?: string | null
+          confirmed_at?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          payload?: Json
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_action_requests_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "ai_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_conversation_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_conversation_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "ai_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          owner_deleted_at: string | null
+          title: string
+          updated_at: string
+          user_deleted_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_deleted_at?: string | null
+          title?: string
+          updated_at?: string
+          user_deleted_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_deleted_at?: string | null
+          title?: string
+          updated_at?: string
+          user_deleted_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ai_reports: {
+        Row: {
+          conversation_id: string | null
+          conversation_snapshot: Json
+          created_at: string
+          description: string
+          id: string
+          resolved_at: string | null
+          status: string
+          title: string
+          user_id: string | null
+        }
+        Insert: {
+          conversation_id?: string | null
+          conversation_snapshot?: Json
+          created_at?: string
+          description: string
+          id?: string
+          resolved_at?: string | null
+          status?: string
+          title: string
+          user_id?: string | null
+        }
+        Update: {
+          conversation_id?: string | null
+          conversation_snapshot?: Json
+          created_at?: string
+          description?: string
+          id?: string
+          resolved_at?: string | null
+          status?: string
+          title?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_reports_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "ai_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       announcements: {
         Row: {
           body: string
           created_at: string
           created_by: string | null
+          grade: string | null
           id: string
           pinned: boolean
           school_id: string
+          section: string | null
           title: string
         }
         Insert: {
           body?: string
           created_at?: string
           created_by?: string | null
+          grade?: string | null
           id?: string
           pinned?: boolean
           school_id?: string
+          section?: string | null
           title: string
         }
         Update: {
           body?: string
           created_at?: string
           created_by?: string | null
+          grade?: string | null
           id?: string
           pinned?: boolean
           school_id?: string
+          section?: string | null
           title?: string
         }
         Relationships: [
@@ -70,6 +403,44 @@ export type Database = {
         }
         Relationships: []
       }
+      book_chunks: {
+        Row: {
+          book_id: string
+          chunk_index: number
+          content: string
+          created_at: string
+          embedding: string
+          id: string
+          page_number: number | null
+        }
+        Insert: {
+          book_id: string
+          chunk_index: number
+          content: string
+          created_at?: string
+          embedding: string
+          id?: string
+          page_number?: number | null
+        }
+        Update: {
+          book_id?: string
+          chunk_index?: number
+          content?: string
+          created_at?: string
+          embedding?: string
+          id?: string
+          page_number?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_chunks_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       books: {
         Row: {
           cover_url: string | null
@@ -78,7 +449,10 @@ export type Database = {
           file_url: string
           grade: string | null
           id: string
+          indexing_error: string | null
+          indexing_status: string
           school_id: string
+          section: string | null
           subject: string | null
           title: string
         }
@@ -89,7 +463,10 @@ export type Database = {
           file_url: string
           grade?: string | null
           id?: string
+          indexing_error?: string | null
+          indexing_status?: string
           school_id?: string
+          section?: string | null
           subject?: string | null
           title: string
         }
@@ -100,7 +477,10 @@ export type Database = {
           file_url?: string
           grade?: string | null
           id?: string
+          indexing_error?: string | null
+          indexing_status?: string
           school_id?: string
+          section?: string | null
           subject?: string | null
           title?: string
         }
@@ -238,8 +618,10 @@ export type Database = {
           created_by: string | null
           description: string | null
           exam_date: string
+          grade: string | null
           id: string
           school_id: string
+          section: string | null
           subject: string
           title: string
         }
@@ -248,8 +630,10 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           exam_date: string
+          grade?: string | null
           id?: string
           school_id?: string
+          section?: string | null
           subject: string
           title: string
         }
@@ -258,8 +642,10 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           exam_date?: string
+          grade?: string | null
           id?: string
           school_id?: string
+          section?: string | null
           subject?: string
           title?: string
         }
@@ -1114,6 +1500,51 @@ export type Database = {
           },
         ]
       }
+      user_blocks: {
+        Row: {
+          blocked_by: string
+          blocked_until: string
+          created_at: string
+          id: string
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          blocked_by: string
+          blocked_until: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          blocked_by?: string
+          blocked_until?: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          preferences: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          preferences?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          preferences?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -1193,28 +1624,34 @@ export type Database = {
           created_at: string
           day_index: number
           day_name: string
+          grade: string | null
           holiday_label: string | null
           id: string
           is_holiday: boolean
           school_id: string
+          section: string | null
         }
         Insert: {
           created_at?: string
           day_index: number
           day_name: string
+          grade?: string | null
           holiday_label?: string | null
           id?: string
           is_holiday?: boolean
           school_id?: string
+          section?: string | null
         }
         Update: {
           created_at?: string
           day_index?: number
           day_name?: string
+          grade?: string | null
           holiday_label?: string | null
           id?: string
           is_holiday?: boolean
           school_id?: string
+          section?: string | null
         }
         Relationships: [
           {
@@ -1234,6 +1671,22 @@ export type Database = {
       groups_overview: { Args: never; Returns: Json }
       home_summary: { Args: never; Returns: Json }
       latest_activity_at: { Args: never; Returns: string }
+      search_book_chunks: {
+        Args: {
+          match_count?: number
+          query_embedding: string
+          requested_grade?: string
+          requested_subject?: string
+        }
+        Returns: {
+          content: string
+          grade: string
+          page_number: number
+          similarity: number
+          subject: string
+          title: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "student"

@@ -37,7 +37,7 @@ function AIPage() {
   const endRef = useRef<HTMLDivElement>(null);
   const longPressRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const authHeaders = async () => {
+  const authHeaders = async (): Promise<Record<string, string>> => {
     const { data } = await supabase.auth.getSession();
     return data.session?.access_token ? { Authorization: `Bearer ${data.session.access_token}` } : {};
   };
