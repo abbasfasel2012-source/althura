@@ -346,27 +346,33 @@ export type Database = {
           body: string
           created_at: string
           created_by: string | null
+          grade: string | null
           id: string
           pinned: boolean
           school_id: string
+          section: string | null
           title: string
         }
         Insert: {
           body?: string
           created_at?: string
           created_by?: string | null
+          grade?: string | null
           id?: string
           pinned?: boolean
           school_id?: string
+          section?: string | null
           title: string
         }
         Update: {
           body?: string
           created_at?: string
           created_by?: string | null
+          grade?: string | null
           id?: string
           pinned?: boolean
           school_id?: string
+          section?: string | null
           title?: string
         }
         Relationships: [
@@ -446,6 +452,7 @@ export type Database = {
           indexing_error: string | null
           indexing_status: string
           school_id: string
+          section: string | null
           subject: string | null
           title: string
         }
@@ -459,6 +466,7 @@ export type Database = {
           indexing_error?: string | null
           indexing_status?: string
           school_id?: string
+          section?: string | null
           subject?: string | null
           title: string
         }
@@ -472,6 +480,7 @@ export type Database = {
           indexing_error?: string | null
           indexing_status?: string
           school_id?: string
+          section?: string | null
           subject?: string | null
           title?: string
         }
@@ -609,8 +618,10 @@ export type Database = {
           created_by: string | null
           description: string | null
           exam_date: string
+          grade: string | null
           id: string
           school_id: string
+          section: string | null
           subject: string
           title: string
         }
@@ -619,8 +630,10 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           exam_date: string
+          grade?: string | null
           id?: string
           school_id?: string
+          section?: string | null
           subject: string
           title: string
         }
@@ -629,8 +642,10 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           exam_date?: string
+          grade?: string | null
           id?: string
           school_id?: string
+          section?: string | null
           subject?: string
           title?: string
         }
@@ -1609,28 +1624,34 @@ export type Database = {
           created_at: string
           day_index: number
           day_name: string
+          grade: string | null
           holiday_label: string | null
           id: string
           is_holiday: boolean
           school_id: string
+          section: string | null
         }
         Insert: {
           created_at?: string
           day_index: number
           day_name: string
+          grade?: string | null
           holiday_label?: string | null
           id?: string
           is_holiday?: boolean
           school_id?: string
+          section?: string | null
         }
         Update: {
           created_at?: string
           day_index?: number
           day_name?: string
+          grade?: string | null
           holiday_label?: string | null
           id?: string
           is_holiday?: boolean
           school_id?: string
+          section?: string | null
         }
         Relationships: [
           {
