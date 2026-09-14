@@ -7,11 +7,13 @@ import {
   fetchStudents, addGrade, uploadBook, fetchBooks, deleteBook, ar,
   fetchPendingRegistrations, approveRegistration, rejectRegistration, deleteRegistration,
   fetchWeekSchedule, fetchDayPeriods, upsertPeriod, deletePeriod, setDayHoliday,
+  createScheduleDay, deleteScheduleDay,
   fetchAdmins, setAdminLabel, deleteUser,
   fetchSchools, createSchool, updateSchool, fetchManagerCandidates, uploadSchoolLogo, fetchSchoolLogoUrl,
   fetchManagerInvites, createManagerInvite, deleteManagerInvite,
   type PendingRegistration, type School, type ManagerCandidate, type ManagerInvite,
 } from "@/lib/data";
+import { GRADE_NAMES, type Grade } from "@/lib/store";
 import { useAuth, signOut } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { AiReports } from "@/components/AiReports";
