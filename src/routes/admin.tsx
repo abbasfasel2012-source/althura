@@ -1185,11 +1185,12 @@ function ComposerAnnouncement() {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState(""); const [body, setBody] = useState("");
   const [pinned, setPinned] = useState(false); const [busy, setBusy] = useState(false);
+  const [grade, setGrade] = useState(""); const [section, setSection] = useState("");
   async function submit(e: React.FormEvent) {
     e.preventDefault(); setBusy(true);
     try {
-      await createAnnouncement({ title, body, pinned });
-      setTitle(""); setBody(""); setPinned(false); setOpen(false);
+      await createAnnouncement({ title, body, pinned, grade, section });
+      setTitle(""); setBody(""); setPinned(false); setGrade(""); setSection(""); setOpen(false);
       qc.invalidateQueries({ queryKey: ["announcements"] });
       qc.invalidateQueries({ queryKey: ["admin-stats"] });
     } finally { setBusy(false); }
@@ -1199,6 +1200,7 @@ function ComposerAnnouncement() {
       <form onSubmit={submit} className="space-y-2">
         <SmInput value={title} onChange={setTitle} placeholder="العنوان" required />
         <SmTextArea value={body} onChange={setBody} placeholder="نص التبليغ" required rows={3} />
+        <TargetPicker grade={grade} section={section} onGrade={setGrade} onSection={setSection} />
         <label className="flex items-center gap-2 text-xs text-foreground">
           <input type="checkbox" checked={pinned} onChange={(e) => setPinned(e.target.checked)} />
           تثبيت في الأعلى
@@ -1309,15 +1311,16 @@ function ComposerBook() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState(""); const [subject, setSubject] = useState("");
-  const [grade, setGrade] = useState(""); const [file, setFile] = useState<File | null>(null);
+  const [grade, setGrade] = useState(""); const [section, setSection] = useState("");
+  const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false); const [err, setErr] = useState("");
 
   async function submit(e: React.FormEvent) {
     e.preventDefault(); setErr(""); setBusy(true);
     try {
       if (!file) throw new Error("اختر ملف الكتاب");
-      await uploadBook({ file, title, subject: subject || undefined, grade: grade || undefined });
-      setTitle(""); setSubject(""); setGrade(""); setFile(null); setOpen(false);
+      await uploadBook({ file, title, subject: subject || undefined, grade: grade || undefined, section: section || undefined });
+      setTitle(""); setSubject(""); setGrade(""); setSection(""); setFile(null); setOpen(false);
       qc.invalidateQueries({ queryKey: ["books"] });
       qc.invalidateQueries({ queryKey: ["admin-stats"] });
     } catch (e: any) { setErr(e?.message ?? "تعذّر رفع الكتاب"); }
@@ -1329,7 +1332,7 @@ function ComposerBook() {
       <form onSubmit={submit} className="space-y-2">
         <SmInput value={title} onChange={setTitle} placeholder="عنوان الكتاب" required />
         <SmInput value={subject} onChange={setSubject} placeholder="المادة (اختياري)" />
-        <SmInput value={grade} onChange={setGrade} placeholder="الصف (اختياري)" />
+        <TargetPicker grade={grade} section={section} onGrade={setGrade} onSection={setSection} />
         <input type="file" accept="application/pdf,image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="w-full text-xs text-foreground" />
         {err && <div className="text-[11px] text-destructive bg-destructive/10 rounded-xl px-3 py-2 text-center font-bold">{err}</div>}
         <SubmitBtn busy={busy} label="رفع ونشر" />
