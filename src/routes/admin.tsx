@@ -7,11 +7,13 @@ import {
   fetchStudents, addGrade, uploadBook, fetchBooks, deleteBook, ar,
   fetchPendingRegistrations, approveRegistration, rejectRegistration, deleteRegistration,
   fetchWeekSchedule, fetchDayPeriods, upsertPeriod, deletePeriod, setDayHoliday,
+  createScheduleDay, deleteScheduleDay,
   fetchAdmins, setAdminLabel, deleteUser,
   fetchSchools, createSchool, updateSchool, fetchManagerCandidates, uploadSchoolLogo, fetchSchoolLogoUrl,
   fetchManagerInvites, createManagerInvite, deleteManagerInvite,
   type PendingRegistration, type School, type ManagerCandidate, type ManagerInvite,
 } from "@/lib/data";
+import { GRADE_NAMES, type Grade } from "@/lib/store";
 import { useAuth, signOut } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { AiReports } from "@/components/AiReports";
@@ -1106,6 +1108,45 @@ function FormField({ label, children }: { label: string; children: React.ReactNo
   );
 }
 
+// ========== اختيار الصف والشعبة (لتخصيص المحتوى) ==========
+const GRADE_KEYS: Grade[] = ["1", "2", "3", "4", "5", "6"];
+const SECTION_KEYS = ["أ", "ب", "ج", "د"];
+const DAY_NAMES = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+
+function TargetPicker({
+  grade, section, onGrade, onSection,
+}: { grade: string; section: string; onGrade: (v: string) => void; onSection: (v: string) => void }) {
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      <select
+        value={grade}
+        onChange={(e) => { onGrade(e.target.value); if (!e.target.value) onSection(""); }}
+        className="px-3 py-2.5 rounded-xl bg-surface-2 border border-border text-xs text-foreground"
+      >
+        <option value="">كل الصفوف</option>
+        {GRADE_KEYS.map((g) => <option key={g} value={g}>{GRADE_NAMES[g]}</option>)}
+      </select>
+      <select
+        value={section}
+        onChange={(e) => onSection(e.target.value)}
+        disabled={!grade}
+        className="px-3 py-2.5 rounded-xl bg-surface-2 border border-border text-xs text-foreground disabled:opacity-50"
+      >
+        <option value="">كل الشعب</option>
+        {SECTION_KEYS.map((s) => <option key={s} value={s}>شعبة {s}</option>)}
+      </select>
+    </div>
+  );
+}
+
+function targetLabel(grade?: string | null, section?: string | null) {
+  if (!grade) return "لكل الصفوف";
+  const name = GRADE_NAMES[grade as Grade] ?? `الصف ${grade}`;
+  return section ? `${name} — شعبة ${section}` : name;
+}
+
+
+
 // ========== Books List ==========
 function BooksList() {
   const qc = useQueryClient();
@@ -1144,11 +1185,12 @@ function ComposerAnnouncement() {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState(""); const [body, setBody] = useState("");
   const [pinned, setPinned] = useState(false); const [busy, setBusy] = useState(false);
+  const [grade, setGrade] = useState(""); const [section, setSection] = useState("");
   async function submit(e: React.FormEvent) {
     e.preventDefault(); setBusy(true);
     try {
-      await createAnnouncement({ title, body, pinned });
-      setTitle(""); setBody(""); setPinned(false); setOpen(false);
+      await createAnnouncement({ title, body, pinned, grade, section });
+      setTitle(""); setBody(""); setPinned(false); setGrade(""); setSection(""); setOpen(false);
       qc.invalidateQueries({ queryKey: ["announcements"] });
       qc.invalidateQueries({ queryKey: ["admin-stats"] });
     } finally { setBusy(false); }
@@ -1158,6 +1200,7 @@ function ComposerAnnouncement() {
       <form onSubmit={submit} className="space-y-2">
         <SmInput value={title} onChange={setTitle} placeholder="العنوان" required />
         <SmTextArea value={body} onChange={setBody} placeholder="نص التبليغ" required rows={3} />
+        <TargetPicker grade={grade} section={section} onGrade={setGrade} onSection={setSection} />
         <label className="flex items-center gap-2 text-xs text-foreground">
           <input type="checkbox" checked={pinned} onChange={(e) => setPinned(e.target.checked)} />
           تثبيت في الأعلى
@@ -1268,15 +1311,16 @@ function ComposerBook() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState(""); const [subject, setSubject] = useState("");
-  const [grade, setGrade] = useState(""); const [file, setFile] = useState<File | null>(null);
+  const [grade, setGrade] = useState(""); const [section, setSection] = useState("");
+  const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false); const [err, setErr] = useState("");
 
   async function submit(e: React.FormEvent) {
     e.preventDefault(); setErr(""); setBusy(true);
     try {
       if (!file) throw new Error("اختر ملف الكتاب");
-      await uploadBook({ file, title, subject: subject || undefined, grade: grade || undefined });
-      setTitle(""); setSubject(""); setGrade(""); setFile(null); setOpen(false);
+      await uploadBook({ file, title, subject: subject || undefined, grade: grade || undefined, section: section || undefined });
+      setTitle(""); setSubject(""); setGrade(""); setSection(""); setFile(null); setOpen(false);
       qc.invalidateQueries({ queryKey: ["books"] });
       qc.invalidateQueries({ queryKey: ["admin-stats"] });
     } catch (e: any) { setErr(e?.message ?? "تعذّر رفع الكتاب"); }
@@ -1288,7 +1332,7 @@ function ComposerBook() {
       <form onSubmit={submit} className="space-y-2">
         <SmInput value={title} onChange={setTitle} placeholder="عنوان الكتاب" required />
         <SmInput value={subject} onChange={setSubject} placeholder="المادة (اختياري)" />
-        <SmInput value={grade} onChange={setGrade} placeholder="الصف (اختياري)" />
+        <TargetPicker grade={grade} section={section} onGrade={setGrade} onSection={setSection} />
         <input type="file" accept="application/pdf,image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="w-full text-xs text-foreground" />
         {err && <div className="text-[11px] text-destructive bg-destructive/10 rounded-xl px-3 py-2 text-center font-bold">{err}</div>}
         <SubmitBtn busy={busy} label="رفع ونشر" />

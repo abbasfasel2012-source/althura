@@ -1,12 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell, Card } from "@/components/AppShell";
-import { fetchWeekSchedule, fetchDayPeriods, type SchedulePeriod } from "@/lib/data";
+import { fetchWeekSchedule, fetchDayPeriods, pickScheduleVariants, type SchedulePeriod } from "@/lib/data";
 import { Loader2, Palmtree, Download } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { SkList } from "@/components/Skeletons";
 import { exportScheduleToIcs } from "@/lib/ics-export";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/schedule")({
   head: () => ({
@@ -26,10 +27,15 @@ function SchedulePage() {
   const today = new Date().getDay(); // 0..6
   const [dayIdx, setDayIdx] = useState(today);
   const [exporting, setExporting] = useState(false);
+  const { profile } = useAuth();
 
   const daysQ = useQuery({ queryKey: ["week-schedule"], queryFn: fetchWeekSchedule });
-  const days = daysQ.data ?? [];
-  const selectedDay = days.find((d) => d.day_index === dayIdx) ?? days[dayIdx];
+  // نسخة الجدول الخاصة بصف الطالب وشعبته أولاً، وإلا الجدول العام.
+  const days = useMemo(
+    () => pickScheduleVariants(daysQ.data ?? [], profile?.grade ?? null, profile?.section ?? null),
+    [daysQ.data, profile?.grade, profile?.section],
+  );
+  const selectedDay = days.find((d) => d.day_index === dayIdx) ?? days[0];
 
   const periodsQ = useQuery({
     queryKey: ["day-periods", selectedDay?.id],

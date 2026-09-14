@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export interface Announcement {
   id: string; title: string; body: string; pinned: boolean; created_at: string;
+  grade?: string | null; section?: string | null;
 }
 export interface NewsItem {
   id: string; title: string; body: string; image_url: string | null; created_at: string;
@@ -12,7 +13,8 @@ export interface EventItem {
   id: string; title: string; description: string; location: string | null; starts_at: string | null; created_at: string;
 }
 export interface BookItem {
-  id: string; title: string; subject: string | null; grade: string | null; file_url: string; cover_url: string | null; created_at: string;
+  id: string; title: string; subject: string | null; grade: string | null; section?: string | null;
+  file_url: string; cover_url: string | null; created_at: string;
 }
 export interface GradeRecord {
   id: string; student_id: string; subject: string; score: number; term: string; created_at: string;
@@ -28,6 +30,7 @@ export interface PendingRegistration {
 }
 export interface ScheduleDay {
   id: string; day_index: number; day_name: string; is_holiday: boolean; holiday_label: string | null;
+  grade?: string | null; section?: string | null;
 }
 export interface SchedulePeriod {
   id: string; day_id: string; period_number: number; start_time: string;
@@ -74,14 +77,17 @@ export interface Message {
 // ==================== ANNOUNCEMENTS ====================
 
 export async function fetchAnnouncements(): Promise<Announcement[]> {
-  const { data, error } = await supabase.from("announcements").select("id, title, body, pinned, created_at")
+  const { data, error } = await supabase.from("announcements").select("id, title, body, pinned, created_at, grade, section")
     .order("pinned", { ascending: false }).order("created_at", { ascending: false });
   if (error) throw error;
   return data ?? [];
 }
-export async function createAnnouncement(p: { title: string; body: string; pinned: boolean }) {
+export async function createAnnouncement(p: { title: string; body: string; pinned: boolean; grade?: string | null; section?: string | null }) {
   const { data: { user } } = await supabase.auth.getUser();
-  const { error } = await supabase.from("announcements").insert({ title: p.title, body: p.body, pinned: p.pinned, created_by: user?.id });
+  const { error } = await supabase.from("announcements").insert({
+    title: p.title, body: p.body, pinned: p.pinned, created_by: user?.id,
+    grade: p.grade || null, section: p.section || null,
+  });
   if (error) throw error;
 }
 export async function deleteAnnouncement(id: string) {
@@ -129,7 +135,7 @@ export async function deleteEvent(id: string) {
 // ==================== BOOKS ====================
 
 export async function fetchBooks(): Promise<BookItem[]> {
-  const { data, error } = await supabase.from("books").select("id, title, subject, grade, file_url, cover_url, created_at").order("created_at", { ascending: false });
+  const { data, error } = await supabase.from("books").select("id, title, subject, grade, section, file_url, cover_url, created_at").order("created_at", { ascending: false });
   if (error) throw error;
   return data ?? [];
 }
@@ -138,14 +144,14 @@ export async function signedBookUrl(path: string): Promise<string> {
   if (error) throw error;
   return data.signedUrl;
 }
-export async function uploadBook(p: { file: File; title: string; subject?: string; grade?: string }) {
+export async function uploadBook(p: { file: File; title: string; subject?: string; grade?: string; section?: string }) {
   const { data: { user } } = await supabase.auth.getUser();
   const safe = p.file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
   const path = `${Date.now()}_${safe}`;
   const up = await supabase.storage.from("books").upload(path, p.file);
   if (up.error) throw up.error;
   const { data: book, error } = await supabase.from("books").insert({
-    title: p.title, subject: p.subject ?? null, grade: p.grade ?? null,
+    title: p.title, subject: p.subject ?? null, grade: p.grade || null, section: p.section || null,
     file_url: path, created_by: user?.id,
   }).select("id").single();
   if (error) throw error;
@@ -247,6 +253,38 @@ export async function fetchWeekSchedule(): Promise<ScheduleDay[]> {
   const { data, error } = await supabase.from("weekly_schedule").select("*").order("day_index", { ascending: true });
   if (error) throw error;
   return (data ?? []) as ScheduleDay[];
+}
+
+// اختيار نسخة الجدول الأنسب لكل يوم: الأخص (صف+شعبة) يتقدّم على العام،
+// وتُستثنى النسخ التي تخص صفوفاً أو شعباً أخرى.
+export function pickScheduleVariants(days: ScheduleDay[], grade?: string | null, section?: string | null): ScheduleDay[] {
+  const score = (d: ScheduleDay) => {
+    let s = 0;
+    if (d.grade) { if (d.grade !== grade) return -1; s += 2; }
+    if (d.section) { if (d.section !== section) return -1; s += 1; }
+    return s;
+  };
+  const best = new Map<number, { day: ScheduleDay; score: number }>();
+  for (const day of days) {
+    const s = score(day);
+    if (s < 0) continue;
+    const cur = best.get(day.day_index);
+    if (!cur || cur.score < s) best.set(day.day_index, { day, score: s });
+  }
+  return [...best.values()].map((v) => v.day).sort((a, b) => a.day_index - b.day_index);
+}
+
+export async function createScheduleDay(p: { day_index: number; day_name: string; grade?: string | null; section?: string | null }) {
+  const { error } = await supabase.from("weekly_schedule").insert({
+    day_index: p.day_index, day_name: p.day_name,
+    grade: p.grade || null, section: p.section || null,
+  });
+  if (error) throw error;
+}
+
+export async function deleteScheduleDay(id: string) {
+  const { error } = await supabase.from("weekly_schedule").delete().eq("id", id);
+  if (error) throw error;
 }
 export async function fetchDayPeriods(dayId: string): Promise<SchedulePeriod[]> {
   const { data, error } = await supabase.from("schedule_periods").select("*")
@@ -546,10 +584,19 @@ export async function fetchMyHomework(userId: string): Promise<HomeworkItem[]> {
 
 export async function fetchTodayPeriods(): Promise<SchedulePeriod[]> {
   const dayIndex = new Date().getDay(); // 0..6 sun..sat
-  const { data: day, error: dayErr } = await supabase
-    .from("weekly_schedule").select("id, is_holiday")
-    .eq("day_index", dayIndex).maybeSingle();
-  if (dayErr || !day || day.is_holiday) return [];
+  const { data: { user } } = await supabase.auth.getUser();
+  let grade: string | null = null;
+  let section: string | null = null;
+  if (user) {
+    const { data: profile } = await supabase.from("profiles").select("grade, section").eq("id", user.id).maybeSingle();
+    grade = profile?.grade ?? null;
+    section = profile?.section ?? null;
+  }
+  const { data: dayRows, error: dayErr } = await supabase
+    .from("weekly_schedule").select("*").eq("day_index", dayIndex);
+  if (dayErr) return [];
+  const day = pickScheduleVariants((dayRows ?? []) as ScheduleDay[], grade, section)[0];
+  if (!day || day.is_holiday) return [];
   const { data, error } = await supabase.from("schedule_periods").select("*")
     .eq("day_id", day.id).order("period_number", { ascending: true });
   if (error) return [];
