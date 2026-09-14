@@ -584,10 +584,19 @@ export async function fetchMyHomework(userId: string): Promise<HomeworkItem[]> {
 
 export async function fetchTodayPeriods(): Promise<SchedulePeriod[]> {
   const dayIndex = new Date().getDay(); // 0..6 sun..sat
-  const { data: day, error: dayErr } = await supabase
-    .from("weekly_schedule").select("id, is_holiday")
-    .eq("day_index", dayIndex).maybeSingle();
-  if (dayErr || !day || day.is_holiday) return [];
+  const { data: { user } } = await supabase.auth.getUser();
+  let grade: string | null = null;
+  let section: string | null = null;
+  if (user) {
+    const { data: profile } = await supabase.from("profiles").select("grade, section").eq("id", user.id).maybeSingle();
+    grade = profile?.grade ?? null;
+    section = profile?.section ?? null;
+  }
+  const { data: dayRows, error: dayErr } = await supabase
+    .from("weekly_schedule").select("*").eq("day_index", dayIndex);
+  if (dayErr) return [];
+  const day = pickScheduleVariants((dayRows ?? []) as ScheduleDay[], grade, section)[0];
+  if (!day || day.is_holiday) return [];
   const { data, error } = await supabase.from("schedule_periods").select("*")
     .eq("day_id", day.id).order("period_number", { ascending: true });
   if (error) return [];
