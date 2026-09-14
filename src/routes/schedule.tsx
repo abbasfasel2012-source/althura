@@ -27,10 +27,15 @@ function SchedulePage() {
   const today = new Date().getDay(); // 0..6
   const [dayIdx, setDayIdx] = useState(today);
   const [exporting, setExporting] = useState(false);
+  const { profile } = useAuth();
 
   const daysQ = useQuery({ queryKey: ["week-schedule"], queryFn: fetchWeekSchedule });
-  const days = daysQ.data ?? [];
-  const selectedDay = days.find((d) => d.day_index === dayIdx) ?? days[dayIdx];
+  // نسخة الجدول الخاصة بصف الطالب وشعبته أولاً، وإلا الجدول العام.
+  const days = useMemo(
+    () => pickScheduleVariants(daysQ.data ?? [], profile?.grade ?? null, profile?.section ?? null),
+    [daysQ.data, profile?.grade, profile?.section],
+  );
+  const selectedDay = days.find((d) => d.day_index === dayIdx) ?? days[0];
 
   const periodsQ = useQuery({
     queryKey: ["day-periods", selectedDay?.id],
