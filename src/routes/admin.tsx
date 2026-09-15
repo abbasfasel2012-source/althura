@@ -524,6 +524,13 @@ function TabSchedule() {
                     ? <Loader2 className="size-3 animate-spin" />
                     : selectedDay.is_holiday ? "إلغاء العطلة" : "تعيين عطلة"}
                 </button>
+                <button
+                  onClick={() => removeDay(selectedDay.id, selectedDay.day_name)}
+                  className="size-9 grid place-items-center rounded-xl text-muted-foreground hover:text-destructive border border-border"
+                  aria-label="حذف اليوم"
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
               </div>
             </div>
           </Card>
