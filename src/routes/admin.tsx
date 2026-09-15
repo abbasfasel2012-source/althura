@@ -429,8 +429,22 @@ function TabSchedule() {
     <>
       <SectionTitle eyebrow="الجدول" title="الأسبوعي" />
 
+      {/* اختيار نسخة الجدول */}
+      <Card className="!p-4 mb-4">
+        <div className="text-xs font-bold text-muted-foreground mb-2">نسخة الجدول</div>
+        <TargetPicker
+          grade={grade}
+          section={section}
+          onGrade={(v) => { setGrade(v); setSelectedDayId(null); }}
+          onSection={(v) => { setSection(v); setSelectedDayId(null); }}
+        />
+        <div className="text-[11px] text-muted-foreground mt-2">
+          الجدول المعروض الآن: {targetLabel(grade || null, section || null)}
+        </div>
+      </Card>
+
       {/* Day selector */}
-      <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 mb-4 scrollbar-none">
+      <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 mb-2 scrollbar-none">
         {days.map((d) => (
           <button
             key={d.id}
@@ -447,6 +461,32 @@ function TabSchedule() {
           </button>
         ))}
       </div>
+
+      {missingDays.length > 0 && (
+        <Card className="!p-4 mb-4">
+          <div className="text-xs font-bold text-muted-foreground mb-2">إضافة يوم لهذه النسخة</div>
+          <div className="flex gap-2 flex-wrap">
+            {missingDays.map(({ name, idx }) => (
+              <button
+                key={idx}
+                onClick={() => addDay(idx, name)}
+                disabled={creating !== null}
+                className="px-3 py-2 rounded-xl bg-primary/10 text-primary text-xs font-bold flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {creating === idx ? <Loader2 className="size-3 animate-spin" /> : <Plus className="size-3" />}
+                {name}
+              </button>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {days.length === 0 && (
+        <Card className="text-center text-xs text-muted-foreground py-6 mb-4">
+          لا توجد أيام في هذه النسخة — أضف الأيام من الأعلى.
+        </Card>
+      )}
+
 
       {selectedDay && (
         <>
