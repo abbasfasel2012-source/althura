@@ -346,13 +346,38 @@ function TabRequests() {
 function TabSchedule() {
   const qc = useQueryClient();
   const daysQ = useQuery({ queryKey: ["week-schedule"], queryFn: fetchWeekSchedule });
-  const days = daysQ.data ?? [];
+  const allDays = daysQ.data ?? [];
+  const [grade, setGrade] = useState("");
+  const [section, setSection] = useState("");
   const [selectedDayId, setSelectedDayId] = useState<string | null>(null);
   const [busyHoliday, setBusyHoliday] = useState<string | null>(null);
   const [holidayLabel, setHolidayLabel] = useState("");
-  const [editingLabel, setEditingLabel] = useState<string | null>(null);
+  const [creating, setCreating] = useState<number | null>(null);
+
+  // نسخة الجدول الحالية: مطابقة تماماً للصف والشعبة المختارين (أو العام عند عدم الاختيار)
+  const days = allDays
+    .filter((d) => (d.grade ?? "") === grade && (d.section ?? "") === section)
+    .sort((a, b) => a.day_index - b.day_index);
+  const missingDays = DAY_NAMES.map((name, idx) => ({ name, idx }))
+    .filter(({ idx }) => !days.some((d) => d.day_index === idx));
 
   const selectedDay = days.find((d) => d.id === selectedDayId) ?? days[0];
+
+  async function addDay(idx: number, name: string) {
+    setCreating(idx);
+    try {
+      await createScheduleDay({ day_index: idx, day_name: name, grade: grade || null, section: section || null });
+      await qc.invalidateQueries({ queryKey: ["week-schedule"] });
+    } finally { setCreating(null); }
+  }
+
+  async function removeDay(id: string, name: string) {
+    if (!confirm(`حذف ${name} من هذه النسخة مع كل حصصه؟`)) return;
+    await deleteScheduleDay(id);
+    setSelectedDayId(null);
+    await qc.invalidateQueries({ queryKey: ["week-schedule"] });
+  }
+
 
   const periodsQ = useQuery({
     queryKey: ["day-periods", selectedDay?.id],
