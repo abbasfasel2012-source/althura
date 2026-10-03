@@ -44,12 +44,15 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error, reset }: { error: unknown; reset: () => void }) {
+  // يمرّر الموجّه الخطأ كـ unknown — نطبع التفاصيل كاملة في الكونسول ونبلّغ
+  // عن نسخة Error موحّدة.
   console.error(error);
   const router = useRouter();
+  const normalized = error instanceof Error ? error : new Error(String(error));
   useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
-  }, [error]);
+    reportLovableError(normalized, { boundary: "tanstack_root_error_component" });
+  }, [normalized]);
 
   return (
     <div className="flex min-h-dvh items-center justify-center bg-background px-4" dir="rtl">
